@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Html, OrbitControls } from '@react-three/drei'
 import { useRouter } from 'next/navigation'
-import { createFloatingBoard } from '../boards/FloatingBoard' 
+import { createFloatingBoard } from '../boards/FloatingBoard'
 
 type Vec3 = [number, number, number]
 type Section = {
@@ -13,6 +13,10 @@ type Section = {
   position: Vec3
   count: number
   route: string
+}
+
+interface ThreeCanvasProps {
+  theme: 'light' | 'dark'
 }
 
 const spacing = 3.5 // distância entre painéis
@@ -27,11 +31,11 @@ const sections: Section[] = baseSections.map((s, i, arr) => {
   const x = i * spacing - totalWidth / 2
   return {
     ...s,
-    position: [x, 0, 0] as Vec3
+    position: [x, 0, 0] as Vec3,
   }
 })
 
-const ThreeCanvas = () => {
+const ThreeCanvas = ({ theme }: ThreeCanvasProps) => {
   const router = useRouter()
   const cameraRef = useRef<THREE.PerspectiveCamera>(null)
   const animationState = useRef<{
@@ -109,18 +113,23 @@ const ThreeCanvas = () => {
 
     return (
       <group position={position} onClick={() => handleBoardClick(position, route)}>
-        <primitive object={createFloatingBoard({ color: 0xffffff, label })} ref={meshRef} />
+        <primitive
+          object={createFloatingBoard({ color: theme === 'light' ? 0xffffff : 0x1e293b, label })}
+          ref={meshRef}
+        />
         <Html center position={[0, 0.3, 0.1]}>
           <div
             style={{
               textAlign: 'center',
               fontFamily: 'sans-serif',
               fontSize: '16px',
-              color: '#333',
+              color: theme === 'light' ? '#333' : '#E5E7EB',
               pointerEvents: 'none',
             }}
           >
-            <div style={{ fontSize: '12px', marginBottom: 4 }}>{count}</div>
+            <div style={{ fontSize: '12px', marginBottom: 4, color: theme === 'light' ? '#333' : '#E5E7EB' }}>
+              {count}
+            </div>
             <strong>{label}</strong>
           </div>
         </Html>
@@ -131,10 +140,10 @@ const ThreeCanvas = () => {
   return (
     <Canvas shadows camera={{ position: [0, 0, 10], fov: 50 }}>
       <CameraSetup />
-      <ambientLight intensity={0.5} />
+      <ambientLight intensity={theme === 'light' ? 0.5 : 0.6} />
       <directionalLight
         position={[10, 10, 5]}
-        intensity={1}
+        intensity={theme === 'light' ? 1 : 0.8}
         castShadow
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}

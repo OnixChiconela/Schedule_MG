@@ -2,8 +2,8 @@ import { format, parseISO } from 'date-fns'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical } from 'lucide-react'
-import { Menu, Transition } from '@headlessui/react'
-import { Fragment } from 'react'
+import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react'
+import { Fragment, useCallback, useMemo, useState } from 'react'
 
 type Task = {
   id: number
@@ -51,6 +51,8 @@ const SortableTask: React.FC<SortableTaskProps> = ({
     transition,
   }
 
+  const [isSelecting, setIsSelecting] = useState(false)
+
   const formatDate = (date: string) => {
     try {
       return format(parseISO(date), 'dd MMM, yyyy')
@@ -59,41 +61,48 @@ const SortableTask: React.FC<SortableTaskProps> = ({
     }
   }
 
-  const getStatusStyles = (status: Task['status']) => {
-    switch (status) {
-      case 'To Do':
-        return 'bg-blue-100 text-blue-700'
-      case 'In Progress':
-        return 'bg-yellow-100 text-yellow-700'
-      case 'Done':
-        return 'bg-green-100 text-green-700'
-      default:
-        return ''
-    }
-  }
+  const getStatusStyles = useMemo(
+    () => (status: Task['status']) => {
+      switch (status) {
+        case 'To Do':
+          return 'bg-blue-100 text-blue-700'
+        case 'In Progress':
+          return 'bg-yellow-100 text-yellow-700'
+        case 'Done':
+          return 'bg-green-100 text-green-700'
+        default:
+          return ''
+      }
+    },
+    []
+  )
 
-  const getPriorityStyles = (priority: Task['priority']) => {
-    switch (priority) {
-      case 'High':
-        return 'bg-red-100 text-red-700'
-      case 'Medium':
-        return 'bg-yellow-100 text-yellow-700'
-      case 'Low':
-        return 'bg-green-100 text-green-700'
-      default:
-        return ''
-    }
-  }
+  const getPriorityStyles = useMemo(
+    () => (priority: Task['priority']) => {
+      switch (priority) {
+        case 'High':
+          return 'bg-red-100 text-red-700'
+        case 'Medium':
+          return 'bg-yellow-100 text-yellow-700'
+        case 'Low':
+          return 'bg-green-100 text-green-700'
+        default:
+          return ''
+      }
+    },
+    []
+  )
 
-  const handleEditClick = (e: React.MouseEvent, field: keyof Task, value: string) => {
-    startEditing(task.id, field, value)
-  }
-
-  const handleOptionSelect = (field: keyof Task, value: string) => {
-    console.log(`Selecting ${field}: ${value}`) // Debug
-    handleEditChange(field, value)
-    submitEdit(task.id)
-  }
+  const handleOptionSelect = useCallback(
+    (field: keyof Task, value: string) => {
+      console.log(`SortableTask: Selecting ${field}: ${value}, task ID: ${task.id}`)
+      setIsSelecting(true)
+      handleEditChange(field, value)
+      submitEdit(task.id)
+      setIsSelecting(false)
+    },
+    [handleEditChange, submitEdit, task.id]
+  )
 
   return (
     <div
@@ -113,17 +122,29 @@ const SortableTask: React.FC<SortableTaskProps> = ({
         />
       </div>
       <div
-        onClick={(e) => handleEditClick(e, 'title', task.title)}
+        onClick={() => {
+          console.log('SortableTask: Starting edit: title')
+          startEditing(task.id, 'title', task.title)
+        }}
         className="cursor-text"
       >
         {editingTaskId === task.id && editingField === 'title' ? (
           <input
             type="text"
             value={editValues.title ?? task.title}
-            onChange={(e) => handleEditChange('title', e.target.value)}
-            onBlur={() => submitEdit(task.id)}
+            onChange={(e) => {
+              console.log(`SortableTask: Changing title to: ${e.target.value}`)
+              handleEditChange('title', e.target.value)
+            }}
+            onBlur={() => {
+              console.log('SortableTask: Submitting title edit')
+              submitEdit(task.id)
+            }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') submitEdit(task.id)
+              if (e.key === 'Enter') {
+                console.log('SortableTask: Submitting title edit via Enter')
+                submitEdit(task.id)
+              }
             }}
             className="w-full px-2 py-1 border border-gray-300 rounded animate-pulse"
             autoFocus
@@ -134,16 +155,16 @@ const SortableTask: React.FC<SortableTaskProps> = ({
       </div>
       <div className="cursor-pointer">
         {editingTaskId === task.id && editingField === 'status' ? (
-          <Menu as="div" className="relative inline-block text-left">
-            <Menu.Button
-              onClick={(e) => handleEditClick(e, 'status', task.status)}
-              className={`w-fit max-w-[280px] px-4 py-2 border border-gray-300 rounded-md text-sm bg-white animate-pulse ${getStatusStyles(
-                (editValues.status ?? task.status) as Task['status']
-              )}`}
+          <Menu as="div" className="relative inline-block text-left" key={`status-${task.id}`}>
+            <MenuButton
+              disabled={isSelecting}
+              className={`w-fit max-w-[280px] px-4 py-2 border border-gray-300 rounded-md text-sm bg-white animate-pulse ${
+                isSelecting ? 'opacity-50 cursor-not-allowed' : ''
+              } ${getStatusStyles((editValues.status ?? task.status) as Task['status'])}`}
               data-testid="status-menu-button"
             >
               {editValues.status ?? task.status}
-            </Menu.Button>
+            </MenuButton>
             <Transition
               as={Fragment}
               enter="transition ease-out duration-100"
@@ -153,35 +174,38 @@ const SortableTask: React.FC<SortableTaskProps> = ({
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <Menu.Items className="absolute left-0 mt-1 w-full max-w-[280px] rounded-md bg-white shadow-lg border border-gray-200 focus:outline-none z-20">
+              <MenuItems className="absolute left-0 mt-1 w-full max-w-[280px] rounded-md bg-white shadow-lg border border-gray-200 focus:outline-none z-30">
                 <div className="p-2 space-y-2">
                   {['To Do', 'In Progress', 'Done'].map((option) => (
-                    <Menu.Item key={option}>
-                      {({ active }) => (
+                    <MenuItem key={option} disabled={isSelecting}>
+                      {// @ts-ignore active is deprecated but still works
+                      ({ active }) => (
                         <button
                           type="button"
-                          onMouseDown={() => handleOptionSelect('status', option)}
                           onClick={() => handleOptionSelect('status', option)}
                           className={`w-full text-left px-4 py-1.5 rounded-md text-sm mx-2 ${
                             getStatusStyles(option as Task['status'])
-                          } ${active ? 'bg-gray-100' : ''}`}
+                          } ${active && !isSelecting ? 'bg-gray-100' : ''}`}
                           data-testid={`status-option-${option}`}
                         >
                           {option}
                         </button>
                       )}
-                    </Menu.Item>
+                    </MenuItem>
                   ))}
                 </div>
-              </Menu.Items>
+              </MenuItems>
             </Transition>
           </Menu>
         ) : (
           <span
-            onClick={(e) => handleEditClick(e, 'status', task.status)}
-            className={`inline-block px-3 py-1.5 rounded-md text-sm mx-2 ${getStatusStyles(
-              task.status
-            )}`}
+            onClick={(e) => {
+              e.stopPropagation()
+              console.log('SortableTask: Starting edit: status')
+              console.log(`SortableTask: Opened status dropdown for task ID: ${task.id}`)
+              startEditing(task.id, 'status', task.status)
+            }}
+            className={`inline-block px-3 py-1.5 rounded-md text-sm mx-2 ${getStatusStyles(task.status)}`}
           >
             {task.status}
           </span>
@@ -189,17 +213,29 @@ const SortableTask: React.FC<SortableTaskProps> = ({
       </div>
       <div>{formatDate(task.createdDate)}</div>
       <div
-        onClick={(e) => handleEditClick(e, 'dueDate', task.dueDate)}
+        onClick={() => {
+          console.log('SortableTask: Starting edit: dueDate')
+          startEditing(task.id, 'dueDate', task.dueDate)
+        }}
         className="cursor-pointer"
       >
         {editingTaskId === task.id && editingField === 'dueDate' ? (
           <input
             type="date"
             value={editValues.dueDate ?? task.dueDate}
-            onChange={(e) => handleEditChange('dueDate', e.target.value)}
-            onBlur={() => submitEdit(task.id)}
+            onChange={(e) => {
+              console.log(`SortableTask: Changing dueDate to: ${e.target.value}`)
+              handleEditChange('dueDate', e.target.value)
+            }}
+            onBlur={() => {
+              console.log('SortableTask: Submitting dueDate edit')
+              submitEdit(task.id)
+            }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') submitEdit(task.id)
+              if (e.key === 'Enter') {
+                console.log('SortableTask: Submitting dueDate edit via Enter')
+                submitEdit(task.id)
+              }
             }}
             className="w-full px-2 py-1 border border-gray-300 rounded animate-pulse"
             autoFocus
@@ -210,16 +246,16 @@ const SortableTask: React.FC<SortableTaskProps> = ({
       </div>
       <div className="cursor-pointer">
         {editingTaskId === task.id && editingField === 'priority' ? (
-          <Menu as="div" className="relative inline-block text-left">
-            <Menu.Button
-              onClick={(e) => handleEditClick(e, 'priority', task.priority)}
-              className={`w-fit max-w-[280px] px-4 py-2 border border-gray-300 rounded-md text-sm bg-white animate-pulse ${getPriorityStyles(
-                (editValues.priority ?? task.priority) as Task['priority']
-              )}`}
+          <Menu as="div" className="relative inline-block text-left" key={`priority-${task.id}`}>
+            <MenuButton
+              disabled={isSelecting}
+              className={`w-fit max-w-[280px] px-4 py-2 border border-gray-300 rounded-md text-sm bg-white animate-pulse ${
+                isSelecting ? 'opacity-50 cursor-not-allowed' : ''
+              } ${getPriorityStyles((editValues.priority ?? task.priority) as Task['priority'])}`}
               data-testid="priority-menu-button"
             >
               {editValues.priority ?? task.priority}
-            </Menu.Button>
+            </MenuButton>
             <Transition
               as={Fragment}
               enter="transition ease-out duration-100"
@@ -229,35 +265,38 @@ const SortableTask: React.FC<SortableTaskProps> = ({
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <Menu.Items className="absolute left-0 mt-1 w-full max-w-[280px] rounded-md bg-white shadow-lg border border-gray-200 focus:outline-none z-20">
+              <MenuItems className="absolute left-0 mt-1 w-full max-w-[280px] rounded-md bg-white shadow-lg border border-gray-200 focus:outline-none z-30">
                 <div className="p-2 space-y-2">
                   {['Low', 'Medium', 'High'].map((option) => (
-                    <Menu.Item key={option}>
-                      {({ active }) => (
+                    <MenuItem key={option} disabled={isSelecting}>
+                      {// @ts-ignore active is deprecated but still works
+                      ({ active }) => (
                         <button
                           type="button"
-                          onMouseDown={() => handleOptionSelect('priority', option)}
                           onClick={() => handleOptionSelect('priority', option)}
                           className={`w-full text-left px-4 py-1.5 rounded-md text-sm mx-2 ${
                             getPriorityStyles(option as Task['priority'])
-                          } ${active ? 'bg-gray-100' : ''}`}
+                          } ${active && !isSelecting ? 'bg-gray-100' : ''}`}
                           data-testid={`priority-option-${option}`}
                         >
                           {option}
                         </button>
                       )}
-                    </Menu.Item>
+                    </MenuItem>
                   ))}
                 </div>
-              </Menu.Items>
+              </MenuItems>
             </Transition>
           </Menu>
         ) : (
           <span
-            onClick={(e) => handleEditClick(e, 'priority', task.priority)}
-            className={`inline-block px-3 py-1.5 rounded-md text-sm mx-2 ${getPriorityStyles(
-              task.priority
-            )}`}
+            onClick={(e) => {
+              e.stopPropagation()
+              console.log('SortableTask: Starting edit: priority')
+              console.log(`SortableTask: Opened priority dropdown for task ID: ${task.id}`)
+              startEditing(task.id, 'priority', task.priority)
+            }}
+            className={`inline-block px-3 py-1.5 rounded-md text-sm mx-2 ${getPriorityStyles(task.priority)}`}
           >
             {task.priority}
           </span>
