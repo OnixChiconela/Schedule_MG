@@ -20,13 +20,16 @@ interface ProjectSelectorProps {
   corners: Corner[]
   selectedCornerId: number | null
   onSelect: (id: number | null) => void
+  theme: 'light' | 'dark'
 }
 
 const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   corners,
   selectedCornerId,
   onSelect,
+  theme,
 }) => {
+  console.log(`ProjectSelector: Theme applied ${theme}`)
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
 
@@ -35,6 +38,7 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   )
 
   const handleSelect = (id: number) => {
+    console.log(`ProjectSelector: Selected corner ${id}`)
     onSelect(id)
     setIsOpen(false)
     setSearch('')
@@ -43,8 +47,16 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   return (
     <div className="relative w-full max-w-md">
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2 text-left flex items-center justify-between"
+        onClick={() => {
+          console.log(`ProjectSelector: Toggling dropdown`)
+          setIsOpen(!isOpen)
+        }}
+        className={`w-full border rounded-xl px-4 py-2 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+          theme === 'light'
+            ? 'bg-white border-gray-300 text-black'
+            : 'bg-slate-700 border-slate-500 text-gray-200'
+        } transition-colors duration-300`}
+        data-testid="project-selector"
       >
         <span>
           {selectedCornerId
@@ -62,36 +74,70 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+        <div
+          className={`absolute z-40 w-full mt-1 border rounded-xl shadow-lg max-h-64 overflow-y-auto ${
+            theme === 'light' ? 'bg-white border-gray-300' : 'bg-slate-700 border-slate-500'
+          } transition-colors duration-300`}
+        >
           <div className="p-2">
             <input
               type="text"
               placeholder="Search Corners..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl"
+              className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                theme === 'light'
+                  ? 'bg-white border-gray-300 text-black'
+                  : 'bg-slate-700 border-slate-500 text-gray-200'
+              }`}
               autoFocus
+              data-testid="corner-search"
             />
           </div>
           {filteredCorners.length === 0 ? (
-            <div className="px-4 py-2 text-gray-500">No Corners found.</div>
+            <div
+              className={`px-4 py-2 ${
+                theme === 'light' ? 'text-gray-500' : 'text-gray-400'
+              }`}
+              data-testid="no-corners"
+            >
+              No Corners found.
+            </div>
           ) : (
             filteredCorners.map((corner) => (
               <button
                 key={corner.id}
                 onClick={() => handleSelect(corner.id)}
-                className="w-full px-4 py-2 text-left hover:bg-gray-100 transition"
+                className={`w-full px-4 py-2 text-left transition ${
+                  theme === 'light'
+                    ? 'text-black hover:bg-gray-100'
+                    : 'text-gray-200 hover:bg-slate-600'
+                }`}
+                data-testid={`corner-${corner.id}`}
               >
                 {corner.title}
               </button>
             ))
           )}
-          {filteredCorners.length > 0 && <hr className="my-2 border-gray-200" />}
-          <div className="px-4 py-2 text-gray-400">
+          {filteredCorners.length > 0 && (
+            <hr
+              className={`my-2 ${
+                theme === 'light' ? 'border-gray-200' : 'border-slate-500'
+              }`}
+            />
+          )}
+          <div
+            className={`px-4 py-2 ${
+              theme === 'light' ? 'text-gray-400' : 'text-gray-500'
+            }`}
+          >
             <button
               onClick={() => setIsOpen(false)}
-              className="w-full text-left hover:bg-gray-100 transition"
+              className={`w-full text-left transition ${
+                theme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-slate-600'
+              } opacity-50 cursor-not-allowed`}
               disabled
+              data-testid="new-view"
             >
               New View (Coming Soon)
             </button>

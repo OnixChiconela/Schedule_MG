@@ -28,15 +28,18 @@ interface TaskCardProps {
   onTaskToggle: (taskId: number, isCompleted: boolean) => void
   onTaskUpdate: (taskId: number, updates: Partial<Task>) => void
   onTaskReorder: (cornerId: number, sourceIndex: number, destinationIndex: number) => void
+  theme: 'light' | 'dark'
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({
+export default function TaskCard({
   corner,
   onNewTaskClick,
   onTaskToggle,
   onTaskUpdate,
   onTaskReorder,
-}) => {
+  theme,
+}: TaskCardProps) {
+  console.log(`TaskCard: Received theme ${theme}`)
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
   const [editingField, setEditingField] = useState<keyof Task | null>(null)
   const [editValues, setEditValues] = useState<Partial<Task>>({})
@@ -102,12 +105,15 @@ const TaskCard: React.FC<TaskCardProps> = ({
   }, [corner.tasks, onTaskReorder])
 
   return (
-    <div className="bg-white rounded-2xl shadow-md p-4">
+    <div className={`rounded-2xl shadow-md p-4 ${theme === 'light' ? 'bg-white' : 'bg-slate-700'} transition-colors duration-300`}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold">{corner.title}</h2>
         <button
           onClick={onNewTaskClick}
-          className="flex items-center gap-2 bg-gray-200 text-black px-3 py-1 rounded-xl hover:bg-gray-300 transition"
+          className={`flex items-center gap-2 px-3 py-1 rounded-xl transition ${
+            theme === 'light' ? 'bg-gray-200 text-black hover:bg-gray-300' : 'bg-slate-600 text-gray-200 hover:bg-slate-500'
+          }`}
+          data-testid="new-task"
         >
           <Plus size={14} />
           New Task
@@ -117,9 +123,13 @@ const TaskCard: React.FC<TaskCardProps> = ({
         <SortableContext items={corner.tasks.map((task) => task.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-2">
             {corner.tasks.length === 0 ? (
-              <div className="text-sm text-gray-400">No tasks yet.</div>
+              <div className={theme === 'light' ? 'text-gray-400' : 'text-gray-500'}>No tasks yet.</div>
             ) : (
-              <div className="grid grid-cols-7 gap-2 text-sm font-semibold text-gray-600 bg-gray-50 rounded-xl p-2">
+              <div
+                className={`grid grid-cols-7 gap-2 text-sm font-semibold rounded-xl p-2 ${
+                  theme === 'light' ? 'text-gray-600 bg-gray-50' : 'text-gray-300 bg-slate-600'
+                }`}
+              >
                 <div>Drag</div>
                 <div>Completed</div>
                 <div>Title</div>
@@ -141,6 +151,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 handleEditChange={handleEditChange}
                 submitEdit={(taskId: number) => submitEdit(taskId, editValuesRef.current)}
                 onTaskToggle={onTaskToggle}
+                theme={theme}
               />
             ))}
           </div>
@@ -149,5 +160,3 @@ const TaskCard: React.FC<TaskCardProps> = ({
     </div>
   )
 }
-
-export default TaskCard

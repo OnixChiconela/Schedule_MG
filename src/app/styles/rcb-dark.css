@@ -1,0 +1,45 @@
+.rbc-dark .rbc-calendar {
+    background-color: #1e293b;
+    color: #e5e7eb;
+  }
+  
+  .rbc-dark .rbc-header,
+  .rbc-dark .rbc-time-header-cell,
+  .rbc-dark .rbc-time-header-content {
+    background-color: #334155;
+    color: #e5e7eb;
+    border-color: #475569;
+  }
+  
+  .rbc-dark .rbc-day-bg,
+  .rbc-dark .rbc-time-content,
+  .rbc-dark .rbc-time-view {
+    background-color: #1e293b;
+    border-color: #475569;
+  }
+  
+  .rbc-dark .rbc-off-range-bg {
+    background-color: #4b5563;
+  }
+  
+  .rbc-dark .rbc-today {
+    background-color: #3b82f6;
+  }
+  
+  .rbc-dark .rbc-event {
+    border: none !important;
+  }
+  
+  .rbc-dark .rbc-time-slot {
+    border-color: #475569;
+  }
+  
+  .rbc-dark .rbc-btn-group button {
+    background-color: #334155;
+    color: #e5e7eb;
+    border: 1px solid #475569;
+  }
+  
+  .rbc-dark .rbc-btn-group button:hover {
+    background-color: #4b5563;
+  }

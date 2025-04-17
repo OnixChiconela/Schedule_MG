@@ -29,7 +29,7 @@
     },
     "typeRoots": [
       "./node_modules/@types",
-      "./declarations.d.ts"
+      "./declarations.d.ts",
     ],
     "baseUrl": "."
   },

@@ -1,7 +1,5 @@
 'use client'
 
-import { Dialog } from '@headlessui/react'
-import { X } from 'lucide-react'
 import { useState } from 'react'
 
 type Task = {
@@ -18,105 +16,120 @@ interface NewTaskModalProps {
   isOpen: boolean
   onClose: () => void
   onCreate: (task: Task) => void
+  theme: 'light' | 'dark'
 }
 
-const NewTaskModal: React.FC<NewTaskModalProps> = ({ isOpen, onClose, onCreate }) => {
+export default function NewTaskModal({ isOpen, onClose, onCreate, theme }: NewTaskModalProps) {
+  console.log(`NewTaskModal: Theme applied ${theme}`)
   const [title, setTitle] = useState('')
   const [status, setStatus] = useState<Task['status']>('To Do')
-  const [dueDate, setDueDate] = useState('')
+  const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0])
   const [priority, setPriority] = useState<Task['priority']>('Medium')
 
   const handleSubmit = () => {
     if (title.trim()) {
+      console.log(`NewTaskModal: Creating task "${title}"`)
       onCreate({
         id: Date.now(),
         title: title.trim(),
         status,
         createdDate: new Date().toISOString().split('T')[0],
-        dueDate: dueDate || new Date().toISOString().split('T')[0],
+        dueDate,
         priority,
         isCompleted: status === 'Done',
       })
       setTitle('')
       setStatus('To Do')
-      setDueDate('')
+      setDueDate(new Date().toISOString().split('T')[0])
       setPriority('Medium')
       onClose()
     }
   }
 
+  if (!isOpen) return null
+
   return (
-    <Dialog
-      open={isOpen}
-      onClose={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center"
-    >
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md z-50 relative shadow-xl">
-        <button
-          className="absolute top-3 right-3 text-gray-500 hover:text-black"
-          onClick={onClose}
-        >
-          <X size={20} />
-        </button>
-
-        <Dialog.Title className="text-xl font-bold mb-4">New Task</Dialog.Title>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Task Title</label>
-          <input
-            className="w-full border border-gray-300 rounded-xl px-3 py-2"
-            placeholder="e.g. Buy coffee"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div
+        className={`rounded-xl p-6 w-full max-w-md shadow-xl ${
+          theme === 'light' ? 'bg-white text-black' : 'bg-slate-700 text-gray-200'
+        } transition-colors duration-300`}
+      >
+        <h2 className="text-xl font-semibold mb-4">New Task</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Title</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                theme === 'light' ? 'bg-white border-gray-300 text-black' : 'bg-slate-700 border-slate-500 text-gray-200'
+              }`}
+              placeholder="Task title"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Status</label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as Task['status'])}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                theme === 'light' ? 'bg-white border-gray-300 text-black' : 'bg-slate-700 border-slate-500 text-gray-200'
+              }`}
+            >
+              <option value="To Do">To Do</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Done">Done</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Due Date</label>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                theme === 'light' ? 'bg-white border-gray-300 text-black' : 'bg-slate-700 border-slate-500 text-gray-200'
+              }`}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Priority</label>
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as Task['priority'])}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                theme === 'light' ? 'bg-white border-gray-300 text-black' : 'bg-slate-700 border-slate-500 text-gray-200'
+              }`}
+            >
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
         </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Status</label>
-          <select
-            className="w-full border border-gray-300 rounded-xl px-3 py-2"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as Task['status'])}
+        <div className="flex justify-end gap-2 mt-6">
+          <button
+            onClick={onClose}
+            className={`px-4 py-2 rounded-md transition ${
+              theme === 'light' ? 'bg-gray-200 text-black hover:bg-gray-300' : 'bg-slate-600 text-gray-200 hover:bg-slate-500'
+            }`}
+            data-testid="modal-cancel"
           >
-            <option value="To Do">To Do</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Done">Done</option>
-          </select>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Due Date</label>
-          <input
-            type="date"
-            className="w-full border border-gray-300 rounded-xl px-3 py-2"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Priority</label>
-          <select
-            className="w-full border border-gray-300 rounded-xl px-3 py-2"
-            value={priority}
-            onChange={(e) => setPriority(e.target.value as Task['priority'])}
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            className={`px-4 py-2 rounded-md transition ${
+              theme === 'light' ? 'bg-black text-white hover:bg-neutral-800' : 'bg-slate-900 text-gray-200 hover:bg-slate-700'
+            }`}
+            data-testid="modal-create"
           >
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-          </select>
+            Create
+          </button>
         </div>
-
-        <button
-          className="bg-black text-white px-4 py-2 rounded-xl hover:bg-neutral-800 transition w-full"
-          onClick={handleSubmit}
-        >
-          Create Task
-        </button>
       </div>
-    </Dialog>
+    </div>
   )
 }
-
-export default NewTaskModal

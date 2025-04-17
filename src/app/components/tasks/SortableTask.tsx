@@ -25,9 +25,10 @@ interface SortableTaskProps {
   handleEditChange: (field: keyof Task, value: string) => void
   submitEdit: (taskId: number) => void
   onTaskToggle: (taskId: number, isCompleted: boolean) => void
+  theme: 'light' | 'dark'
 }
 
-const SortableTask: React.FC<SortableTaskProps> = ({
+export default function SortableTask({
   task,
   index,
   editingTaskId,
@@ -37,7 +38,8 @@ const SortableTask: React.FC<SortableTaskProps> = ({
   handleEditChange,
   submitEdit,
   onTaskToggle,
-}) => {
+  theme,
+}: SortableTaskProps) {
   const {
     attributes,
     listeners,
@@ -65,32 +67,32 @@ const SortableTask: React.FC<SortableTaskProps> = ({
     () => (status: Task['status']) => {
       switch (status) {
         case 'To Do':
-          return 'bg-blue-100 text-blue-700'
+          return theme === 'light' ? 'bg-blue-100 text-blue-700' : 'bg-blue-900 text-blue-200'
         case 'In Progress':
-          return 'bg-yellow-100 text-yellow-700'
+          return theme === 'light' ? 'bg-yellow-100 text-yellow-700' : 'bg-yellow-900 text-yellow-200'
         case 'Done':
-          return 'bg-green-100 text-green-700'
+          return theme === 'light' ? 'bg-green-100 text-green-700' : 'bg-green-900 text-green-200'
         default:
           return ''
       }
     },
-    []
+    [theme]
   )
 
   const getPriorityStyles = useMemo(
     () => (priority: Task['priority']) => {
       switch (priority) {
         case 'High':
-          return 'bg-red-100 text-red-700'
+          return theme === 'light' ? 'bg-red-100 text-red-700' : 'bg-red-900 text-red-200'
         case 'Medium':
-          return 'bg-yellow-100 text-yellow-700'
+          return theme === 'light' ? 'bg-yellow-100 text-yellow-700' : 'bg-yellow-900 text-yellow-200'
         case 'Low':
-          return 'bg-green-100 text-green-700'
+          return theme === 'light' ? 'bg-green-100 text-green-700' : 'bg-green-900 text-green-200'
         default:
           return ''
       }
     },
-    []
+    [theme]
   )
 
   const handleOptionSelect = useCallback(
@@ -108,17 +110,21 @@ const SortableTask: React.FC<SortableTaskProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="grid grid-cols-7 gap-2 items-center bg-gray-100 rounded-xl p-2 text-sm"
+      className={`grid grid-cols-7 gap-2 items-center rounded-xl p-2 text-sm ${
+        theme === 'light' ? 'bg-gray-100' : 'bg-slate-600'
+      } transition-colors duration-300`}
     >
       <div {...attributes} {...listeners} className="cursor-grab">
-        <GripVertical size={16} className="text-gray-500" />
+        <GripVertical size={16} className={theme === 'light' ? 'text-gray-500' : 'text-gray-400'} />
       </div>
       <div>
         <input
           type="checkbox"
           checked={task.isCompleted}
           onChange={(e) => onTaskToggle(task.id, e.target.checked)}
-          className="h-4 w-4 rounded border-gray-300 text-black focus:ring-black"
+          className={`h-4 w-4 rounded border-gray-300 focus:ring-blue-500 ${
+            theme === 'light' ? 'text-black' : 'text-gray-200'
+          }`}
         />
       </div>
       <div
@@ -146,7 +152,9 @@ const SortableTask: React.FC<SortableTaskProps> = ({
                 submitEdit(task.id)
               }
             }}
-            className="w-full px-2 py-1 border border-gray-300 rounded animate-pulse"
+            className={`w-full px-2 py-1 border rounded animate-pulse ${
+              theme === 'light' ? 'border-gray-300 bg-white' : 'border-slate-500 bg-slate-700 text-gray-200'
+            }`}
             autoFocus
           />
         ) : (
@@ -158,9 +166,11 @@ const SortableTask: React.FC<SortableTaskProps> = ({
           <Menu as="div" className="relative inline-block text-left" key={`status-${task.id}`}>
             <MenuButton
               disabled={isSelecting}
-              className={`w-fit max-w-[280px] px-4 py-2 border border-gray-300 rounded-md text-sm bg-white animate-pulse ${
+              className={`w-fit max-w-[280px] px-4 py-2 border rounded-md text-sm animate-pulse ${
                 isSelecting ? 'opacity-50 cursor-not-allowed' : ''
-              } ${getStatusStyles((editValues.status ?? task.status) as Task['status'])}`}
+              } ${theme === 'light' ? 'bg-white border-gray-300' : 'bg-slate-700 border-slate-500 text-gray-200'} ${
+                getStatusStyles((editValues.status ?? task.status) as Task['status'])
+              }`}
               data-testid="status-menu-button"
             >
               {editValues.status ?? task.status}
@@ -174,18 +184,21 @@ const SortableTask: React.FC<SortableTaskProps> = ({
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <MenuItems className="absolute left-0 mt-1 w-full max-w-[280px] rounded-md bg-white shadow-lg border border-gray-200 focus:outline-none z-30">
+              <MenuItems
+                className={`absolute left-0 mt-1 w-full max-w-[280px] rounded-md shadow-lg border focus:outline-none z-30 ${
+                  theme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-slate-500'
+                }`}
+              >
                 <div className="p-2 space-y-2">
                   {['To Do', 'In Progress', 'Done'].map((option) => (
                     <MenuItem key={option} disabled={isSelecting}>
-                      {// @ts-ignore active is deprecated but still works
-                      ({ active }) => (
+                      {({ active }) => (
                         <button
                           type="button"
                           onClick={() => handleOptionSelect('status', option)}
                           className={`w-full text-left px-4 py-1.5 rounded-md text-sm mx-2 ${
                             getStatusStyles(option as Task['status'])
-                          } ${active && !isSelecting ? 'bg-gray-100' : ''}`}
+                          } ${active && !isSelecting ? (theme === 'light' ? 'bg-gray-100' : 'bg-slate-600') : ''}`}
                           data-testid={`status-option-${option}`}
                         >
                           {option}
@@ -237,7 +250,9 @@ const SortableTask: React.FC<SortableTaskProps> = ({
                 submitEdit(task.id)
               }
             }}
-            className="w-full px-2 py-1 border border-gray-300 rounded animate-pulse"
+            className={`w-full px-2 py-1 border rounded animate-pulse ${
+              theme === 'light' ? 'border-gray-300 bg-white' : 'border-slate-500 bg-slate-700 text-gray-200'
+            }`}
             autoFocus
           />
         ) : (
@@ -249,9 +264,11 @@ const SortableTask: React.FC<SortableTaskProps> = ({
           <Menu as="div" className="relative inline-block text-left" key={`priority-${task.id}`}>
             <MenuButton
               disabled={isSelecting}
-              className={`w-fit max-w-[280px] px-4 py-2 border border-gray-300 rounded-md text-sm bg-white animate-pulse ${
+              className={`w-fit max-w-[280px] px-4 py-2 border rounded-md text-sm animate-pulse ${
                 isSelecting ? 'opacity-50 cursor-not-allowed' : ''
-              } ${getPriorityStyles((editValues.priority ?? task.priority) as Task['priority'])}`}
+              } ${theme === 'light' ? 'bg-white border-gray-300' : 'bg-slate-700 border-slate-500 text-gray-200'} ${
+                getPriorityStyles((editValues.priority ?? task.priority) as Task['priority'])
+              }`}
               data-testid="priority-menu-button"
             >
               {editValues.priority ?? task.priority}
@@ -265,18 +282,21 @@ const SortableTask: React.FC<SortableTaskProps> = ({
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <MenuItems className="absolute left-0 mt-1 w-full max-w-[280px] rounded-md bg-white shadow-lg border border-gray-200 focus:outline-none z-30">
+              <MenuItems
+                className={`absolute left-0 mt-1 w-full max-w-[280px] rounded-md shadow-lg border focus:outline-none z-30 ${
+                  theme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-slate-500'
+                }`}
+              >
                 <div className="p-2 space-y-2">
                   {['Low', 'Medium', 'High'].map((option) => (
                     <MenuItem key={option} disabled={isSelecting}>
-                      {// @ts-ignore active is deprecated but still works
-                      ({ active }) => (
+                      {({ active }) => (
                         <button
                           type="button"
                           onClick={() => handleOptionSelect('priority', option)}
                           className={`w-full text-left px-4 py-1.5 rounded-md text-sm mx-2 ${
                             getPriorityStyles(option as Task['priority'])
-                          } ${active && !isSelecting ? 'bg-gray-100' : ''}`}
+                          } ${active && !isSelecting ? (theme === 'light' ? 'bg-gray-100' : 'bg-slate-600') : ''}`}
                           data-testid={`priority-option-${option}`}
                         >
                           {option}
@@ -305,5 +325,3 @@ const SortableTask: React.FC<SortableTaskProps> = ({
     </div>
   )
 }
-
-export default SortableTask

@@ -36,6 +36,7 @@ const sections: Section[] = baseSections.map((s, i, arr) => {
 })
 
 const ThreeCanvas = ({ theme }: ThreeCanvasProps) => {
+  console.log(`ThreeCanvas: Received theme ${theme}`)
   const router = useRouter()
   const cameraRef = useRef<THREE.PerspectiveCamera>(null)
   const animationState = useRef<{
@@ -111,10 +112,13 @@ const ThreeCanvas = ({ theme }: ThreeCanvasProps) => {
       }
     })
 
+    const boardColor = theme === 'light' ? 0xffffff : 0x1e293b
+    console.log(`ThreeCanvas: Board "${label}" color set to ${boardColor.toString(16)}`)
+
     return (
       <group position={position} onClick={() => handleBoardClick(position, route)}>
         <primitive
-          object={createFloatingBoard({ color: theme === 'light' ? 0xffffff : 0x1e293b, label })}
+          object={createFloatingBoard({ color: boardColor, label })}
           ref={meshRef}
         />
         <Html center position={[0, 0.3, 0.1]}>
@@ -145,8 +149,8 @@ const ThreeCanvas = ({ theme }: ThreeCanvasProps) => {
         position={[10, 10, 5]}
         intensity={theme === 'light' ? 1 : 0.8}
         castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
+        shadow-mapSize-width={512}
+        shadow-mapSize-height={512}
       />
       <Suspense fallback={null}>
         {sections.map((section, idx) => (

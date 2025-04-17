@@ -9,6 +9,8 @@ interface SideNavbarProps {
 }
 
 export default function SideNavbar({ theme }: SideNavbarProps) {
+  console.log(`SideNavbar: Received theme ${theme}`)
+
   return (
     <aside
       className={`fixed left-0 top-0 h-full w-60 shadow-md p-4 flex flex-col justify-between z-50 ${
