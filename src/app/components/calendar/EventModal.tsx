@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from 'react'
 
 interface Event {
-  id?: number
+  id: number
   title: string
   start: Date
   end: Date
@@ -14,8 +14,8 @@ interface Event {
 interface EventModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (event: Event) => void
-  onDelete?: (id: number) => void
+  onSave: (eventData: Omit<Event, 'id'> & { id?: number }) => void
+  onDelete: (id: number) => void
   event: Event | null
   slot: { start: Date; end: Date } | null
   theme: 'light' | 'dark'
@@ -30,112 +30,94 @@ export default function EventModal({
   slot,
   theme,
 }: EventModalProps) {
-  console.log(`EventModal: Theme applied ${theme}`)
-  const [title, setTitle] = useState(event?.title || '')
-  const [start, setStart] = useState(
-    event?.start || slot?.start || new Date()
-  )
-  const [end, setEnd] = useState(
-    event?.end || slot?.end || new Date()
-  )
-  const [priority, setPriority] = useState<Event['priority']>(
-    event?.priority || 'Medium'
-  )
-  const [description, setDescription] = useState(event?.description || '')
+  const [title, setTitle] = useState('')
+  const [start, setStart] = useState('')
+  const [end, setEnd] = useState('')
+  const [priority, setPriority] = useState<'Low' | 'Medium' | 'High'>('Low')
+  const [description, setDescription] = useState('')
+
+  useEffect(() => {
+    if (event) {
+      setTitle(event.title)
+      setStart(event.start.toISOString().slice(0, 16))
+      setEnd(event.end.toISOString().slice(0, 16))
+      setPriority(event.priority)
+      setDescription(event.description || '')
+    } else if (slot) {
+      setTitle('')
+      setStart(slot.start.toISOString().slice(0, 16))
+      setEnd(slot.end.toISOString().slice(0, 16))
+      setPriority('Low')
+      setDescription('')
+    }
+  }, [event, slot])
 
   const handleSubmit = () => {
-    if (title.trim()) {
-      onSave({
-        id: event?.id,
-        title: title.trim(),
-        start,
-        end,
-        priority,
-        description: description.trim() || undefined,
-      })
-      console.log(`EventModal: Saving event "${title}"`)
-      resetForm()
+    const eventData: Omit<Event, 'id'> & { id?: number } = {
+      id: event?.id,
+      title,
+      start: new Date(start),
+      end: new Date(end),
+      priority,
+      description: description || undefined,
     }
-  }
-
-  const handleDelete = () => {
-    if (event?.id && onDelete) {
-      onDelete(event.id)
-      resetForm()
-    }
-  }
-
-  const resetForm = () => {
-    setTitle('')
-    setStart(new Date())
-    setEnd(new Date())
-    setPriority('Medium')
-    setDescription('')
-    onClose()
+    onSave(eventData)
   }
 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div
+      className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50`}
+      data-testid="modal-create"
+    >
       <div
-        className={`rounded-xl p-6 w-full max-w-md shadow-xl ${
+        className={`p-6 rounded-xl shadow-lg max-w-md w-full ${
           theme === 'light' ? 'bg-white text-black' : 'bg-slate-700 text-gray-200'
-        } transition-colors duration-300`}
+        }`}
       >
-        <h2 className="text-xl font-semibold mb-4">
-          {event ? 'Edit Event' : 'New Event'}
-        </h2>
+        <h2 className="text-xl font-bold mb-4">{event ? 'Edit Event' : 'Create Event'}</h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Title</label>
+            <label className="block text-sm font-medium">Title</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                theme === 'light'
-                  ? 'bg-white border-gray-300'
-                  : 'bg-slate-700 border-slate-500 text-gray-200'
+              className={`mt-1 p-2 w-full rounded-md border ${
+                theme === 'light' ? 'border-gray-300 bg-white' : 'border-slate-500 bg-slate-600'
               }`}
-              placeholder="Event title"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Start Date</label>
+            <label className="block text-sm font-medium">Start</label>
             <input
               type="datetime-local"
-              value={start.toISOString().slice(0, 16)}
-              onChange={(e) => setStart(new Date(e.target.value))}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                theme === 'light'
-                  ? 'bg-white border-gray-300'
-                  : 'bg-slate-700 border-slate-500 text-gray-200'
+              value={start}
+              onChange={(e) => setStart(e.target.value)}
+              className={`mt-1 p-2 w-full rounded-md border ${
+                theme === 'light' ? 'border-gray-300 bg-white' : 'border-slate-500 bg-slate-600'
               }`}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">End Date</label>
+            <label className="block text-sm font-medium">End</label>
             <input
               type="datetime-local"
-              value={end.toISOString().slice(0, 16)}
-              onChange={(e) => setEnd(new Date(e.target.value))}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                theme === 'light'
-                  ? 'bg-white border-gray-300'
-                  : 'bg-slate-700 border-slate-500 text-gray-200'
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+              className={`mt-1 p-2 w-full rounded-md border ${
+                theme === 'light' ? 'border-gray-300 bg-white' : 'border-slate-500 bg-slate-600'
               }`}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Priority</label>
+            <label className="block text-sm font-medium">Priority</label>
             <select
               value={priority}
-              onChange={(e) => setPriority(e.target.value as Event['priority'])}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                theme === 'light'
-                  ? 'bg-white border-gray-300'
-                  : 'bg-slate-700 border-slate-500 text-gray-200'
+              onChange={(e) => setPriority(e.target.value as 'Low' | 'Medium' | 'High')}
+              className={`mt-1 p-2 w-full rounded-md border ${
+                theme === 'light' ? 'border-gray-300 bg-white' : 'border-slate-500 bg-slate-600'
               }`}
             >
               <option value="Low">Low</option>
@@ -144,28 +126,30 @@ export default function EventModal({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
+            <label className="block text-sm font-medium">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                theme === 'light'
-                  ? 'bg-white border-gray-300'
-                  : 'bg-slate-700 border-slate-500 text-gray-200'
+              className={`mt-1 p-2 w-full rounded-md border ${
+                theme === 'light' ? 'border-gray-300 bg-white' : 'border-slate-500 bg-slate-600'
               }`}
-              placeholder="Optional details"
-              rows={4}
             />
           </div>
         </div>
-        <div className="flex justify-end gap-2 mt-6">
-          {event && onDelete && (
+        <div className="mt-6 flex justify-between">
+          <button
+            onClick={handleSubmit}
+            className={`px-4 py-2 rounded-xl ${
+              theme === 'light' ? 'bg-blue-500 text-white' : 'bg-blue-600 text-gray-200'
+            }`}
+          >
+            Save
+          </button>
+          {event && (
             <button
-              onClick={handleDelete}
-              className={`px-4 py-2 rounded-md transition ${
-                theme === 'light'
-                  ? 'bg-red-500 text-white hover:bg-red-600'
-                  : 'bg-red-600 text-gray-200 hover:bg-red-700'
+              onClick={() => onDelete(event.id)}
+              className={`px-4 py-2 rounded-xl ${
+                theme === 'light' ? 'bg-red-500 text-white' : 'bg-red-600 text-gray-200'
               }`}
               data-testid="modal-delete"
             >
@@ -174,25 +158,11 @@ export default function EventModal({
           )}
           <button
             onClick={onClose}
-            className={`px-4 py-2 rounded-md transition ${
-              theme === 'light'
-                ? 'bg-gray-200 text-black hover:bg-gray-300'
-                : 'bg-slate-600 text-gray-200 hover:bg-slate-500'
+            className={`px-4 py-2 rounded-xl ${
+              theme === 'light' ? 'bg-gray-200 text-black' : 'bg-slate-600 text-gray-200'
             }`}
-            data-testid="modal-cancel"
           >
             Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className={`px-4 py-2 rounded-md transition ${
-              theme === 'light'
-                ? 'bg-black text-white hover:bg-neutral-800'
-                : 'bg-slate-900 text-gray-200 hover:bg-slate-700'
-            }`}
-            data-testid="modal-create"
-          >
-            Save
           </button>
         </div>
       </div>

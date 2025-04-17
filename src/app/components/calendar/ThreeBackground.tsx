@@ -1,71 +1,79 @@
-'use client'
-
-import { useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
+import { OrbitControls, Text, MeshWobbleMaterial } from '@react-three/drei'
 import * as THREE from 'three'
+
+interface Event {
+  id: number
+  title: string
+  start: Date
+  end: Date
+  priority: 'Low' | 'Medium' | 'High'
+  description?: string
+}
 
 interface ThreeBackgroundProps {
   theme: 'light' | 'dark'
+  events: Event[]
+  onEventClick: (event: Event) => void
 }
 
-export default function ThreeBackground({ theme }: ThreeBackgroundProps) {
-  const mountRef = useRef<HTMLDivElement>(null)
+export default function ThreeBackground({ theme, events, onEventClick }: ThreeBackgroundProps) {
+  const Panel = ({ event, position }: { event: Event; position: [number, number, number] }) => {
+    const meshRef = useRef<THREE.Mesh>(null)
+    const [hovered, setHovered] = useState(false)
 
-  useEffect(() => {
-    if (!mountRef.current) return
-
-    // Cena
-    const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
-    )
-    const renderer = new THREE.WebGLRenderer({ alpha: true })
-    renderer.setSize(window.innerWidth, window.innerHeight)
-    mountRef.current.appendChild(renderer.domElement)
-
-    // Cubo
-    const geometry = new THREE.BoxGeometry(2, 2, 2)
-    const material = new THREE.MeshBasicMaterial({
-      color: theme === 'light' ? 0xaaaaaa : 0x1e293b,
-      wireframe: true,
+    useFrame(() => {
+      if (meshRef.current) {
+        meshRef.current.position.y += Math.sin(Date.now() * 0.001 + position[0]) * 0.005
+      }
     })
-    const cube = new THREE.Mesh(geometry, material)
-    scene.add(cube)
 
-    camera.position.z = 5
+    const color = event.priority === 'High' ? '#ef4444' : event.priority === 'Medium' ? '#f59e0b' : '#10b981'
 
-    // Animação
-    const animate = () => {
-      requestAnimationFrame(animate)
-      cube.rotation.x += 0.01
-      cube.rotation.y += 0.01
-      renderer.render(scene, camera)
-    }
-    animate()
-
-    // Resize
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight
-      camera.updateProjectionMatrix()
-      renderer.setSize(window.innerWidth, window.innerHeight)
-    }
-    window.addEventListener('resize', handleResize)
-
-    // Limpeza
-    return () => {
-      window.removeEventListener('resize', handleResize)
-      mountRef.current?.removeChild(renderer.domElement)
-      renderer.dispose()
-    }
-  }, [theme])
+    return (
+      <group position={position} onClick={() => onEventClick(event)} onPointerOver={() => setHovered(true)} onPointerOut={() => setHovered(false)}>
+        <mesh ref={meshRef} scale={hovered ? 1.1 : 1}>
+          <boxGeometry args={[2, 1, 0.2]} />
+          <MeshWobbleMaterial
+            factor={hovered ? 0.3 : 0.1}
+            speed={2}
+            color={color}
+            emissive={theme === 'dark' ? color : '#000000'}
+            emissiveIntensity={theme === 'dark' ? 0.5 : 0}
+            metalness={theme === 'dark' ? 0.8 : 0.2}
+            roughness={0.4}
+          />
+        </mesh>
+        <Text
+          position={[0, 0, 0.11]}
+          fontSize={0.2}
+          color={theme === 'dark' ? '#ffffff' : '#000000'}
+          anchorX="center"
+          anchorY="middle"
+        >
+          {event.title}
+        </Text>
+      </group>
+    )
+  }
 
   return (
-    <div
-      className="absolute inset-0 z-0"
-      ref={mountRef}
-      style={{ pointerEvents: 'none' }}
-    />
+    <Canvas
+      style={{ position: 'absolute', top: 0, left: 0, zIndex: 0 }}
+      gl={{ preserveDrawingBuffer: true }}
+      camera={{ position: [0, 0, 10], fov: 50 }}
+    >
+      <ambientLight intensity={theme === 'light' ? 0.8 : 0.4} />
+      <pointLight position={[10, 10, 10]} intensity={theme === 'light' ? 1 : 0.6} />
+      {events.map((event, index) => (
+        <Panel
+          key={event.id}
+          event={event}
+          position={[(index % 3 - 1) * 3, Math.floor(index / 3) * -2, 0]}
+        />
+      ))}
+      <OrbitControls enablePan={false} enableZoom={true} minDistance={5} maxDistance={20} />
+    </Canvas>
   )
 }
