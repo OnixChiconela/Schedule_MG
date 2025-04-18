@@ -10,6 +10,7 @@ import { motion } from 'framer-motion'
 import ProjectSelector from './BusinessProjectSelector'
 import AddProjectModal from './AddProjectModal'
 import AddTaskModal from './AddTaskModal'
+import AddBusinessModal from './AddBusinessModal'
 
 interface BusinessTask {
   id: string
@@ -47,7 +48,6 @@ interface Corner {
 
 export default function MyBusinessTab() {
   const { theme } = useTheme()
-  // Inicializar com dados fixos para evitar discrepâncias no SSR
   const [businesses, setBusinesses] = useState<Business[]>([
     {
       id: '1',
@@ -76,15 +76,16 @@ export default function MyBusinessTab() {
   const [formData, setFormData] = useState({ name: businesses[0]?.name || '', description: businesses[0]?.description || '' })
   const [isLinkingTask, setIsLinkingTask] = useState(false)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(businesses[0]?.projects[0]?.id || null)
+  const [isAddBusinessModalOpen, setIsAddBusinessModalOpen] = useState(false)
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false)
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState<{ open: boolean; projectId: string | null }>({ open: false, projectId: null })
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [corners, setCorners] = useState<Corner[]>([])
   const [init, setInit] = useState(false)
 
-  // Carregar localStorage apenas no cliente
+  // Carregar localStorage no cliente
   useEffect(() => {
-    console.log('Running client-side useEffect')
+    console.log('Running client-side useEffect for localStorage')
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('businesses')
@@ -133,7 +134,7 @@ export default function MyBusinessTab() {
       } catch (error) {
         console.error('Error initializing particles:', error)
         setInit(false)
-        setToastMessage('Failed to load particles')
+        setToastMessage('Failed to load particles, continuing without them')
       }
     })
   }, [])
@@ -166,19 +167,25 @@ export default function MyBusinessTab() {
     setToastMessage('Business updated successfully')
   }
 
-  const handleAddBusiness = () => {
-    console.log('Adding new business')
+  const handleAddBusiness = (name: string, description: string) => {
+    console.log('Adding new business:', { name, description })
     const newBusiness: Business = {
       id: Date.now().toString(),
-      name: 'New Business',
-      description: '',
+      name,
+      description,
       projects: [],
     }
-    setBusinesses([...businesses, newBusiness])
+    console.log('New business created:', newBusiness)
+    setBusinesses((prev) => {
+      const updated = [...prev, newBusiness]
+      console.log('Updated businesses:', updated)
+      return updated
+    })
     setSelectedBusiness(newBusiness)
-    setFormData({ name: newBusiness.name, description: newBusiness.description })
+    setFormData({ name, description })
     setSelectedProjectId(null)
-    setToastMessage('Business added successfully')
+    setIsAddBusinessModalOpen(false)
+    setToastMessage(`Business "${name}" added successfully`)
   }
 
   const handleAddProject = (name: string, description: string) => {
@@ -390,7 +397,7 @@ export default function MyBusinessTab() {
           className="absolute inset-0 z-0"
         />
       )}
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 max-w-full mx-auto">
         <motion.h1
           className={`text-4xl font-bold mb-6 ${
             safeTheme === 'light' ? 'text-gray-900' : 'text-white'
@@ -421,6 +428,15 @@ export default function MyBusinessTab() {
             </div>
           </motion.div>
         )}
+        <AddBusinessModal
+          isOpen={isAddBusinessModalOpen}
+          onClose={() => {
+            console.log('Closing AddBusinessModal')
+            setIsAddBusinessModalOpen(false)
+          }}
+          onSave={handleAddBusiness}
+          theme={safeTheme}
+        />
         <AddProjectModal
           isOpen={isAddProjectModalOpen}
           onClose={() => {
@@ -442,9 +458,9 @@ export default function MyBusinessTab() {
           }}
           theme={safeTheme}
         />
-        <div className="flex space-x-6">
+        <div className="flex space-x-6 w-full">
           <motion.div
-            className="w-1/4"
+            className="w-64" // Ajustado para largura fixa, compatível com SideNavbar
             variants={cardVariants}
             initial="hidden"
             animate="visible"
@@ -452,7 +468,7 @@ export default function MyBusinessTab() {
             <motion.button
               onClick={() => {
                 console.log('Clicked Add Business')
-                handleAddBusiness()
+                setIsAddBusinessModalOpen(true)
               }}
               className={`w-full mb-4 px-4 py-2 rounded-xl font-semibold transition-colors ${
                 safeTheme === 'light'
@@ -470,41 +486,47 @@ export default function MyBusinessTab() {
                 safeTheme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-gray-700'
               }`}
             >
-              {businesses.map((business, index) => (
-                <motion.div
-                  key={business.id}
-                  className={`p-3 mb-2 rounded-lg cursor-pointer transition-colors ${
-                    selectedBusiness?.id === business.id
-                      ? safeTheme === 'light'
-                        ? 'bg-blue-100 text-blue-900'
-                        : 'bg-slate-600 text-white'
-                      : safeTheme === 'light'
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'bg-slate-800 text-gray-200'
-                  } hover:${
-                    safeTheme === 'light'
-                      ? 'bg-gradient-to-r from-gray-200 to-gray-300'
-                      : 'bg-gradient-to-r from-slate-600 to-slate-700'
-                  }`}
-                  onClick={() => {
-                    console.log('Selecting business:', business.name)
-                    setSelectedBusiness(business)
-                    setFormData({ name: business.name, description: business.description })
-                    setSelectedProjectId(business.projects[0]?.id || null)
-                    setIsEditing(false)
-                  }}
-                  variants={cardVariants}
-                  initial="hidden"
-                  animate="visible"
-                  transition={{ delay: index * 0.1 }}
-                >
-                  {business.name}
-                </motion.div>
-              ))}
+              {businesses.length > 0 ? (
+                businesses.map((business, index) => (
+                  <motion.div
+                    key={business.id}
+                    className={`p-3 mb-2 rounded-lg cursor-pointer transition-colors ${
+                      selectedBusiness?.id === business.id
+                        ? safeTheme === 'light'
+                          ? 'bg-blue-100 text-blue-900'
+                          : 'bg-slate-600 text-white'
+                        : safeTheme === 'light'
+                        ? 'bg-gray-100 text-gray-900'
+                        : 'bg-slate-800 text-gray-200'
+                    } hover:${
+                      safeTheme === 'light'
+                        ? 'bg-gradient-to-r from-gray-200 to-gray-300'
+                        : 'bg-gradient-to-r from-slate-600 to-slate-700'
+                    }`}
+                    onClick={() => {
+                      console.log('Selecting business:', business.name)
+                      setSelectedBusiness(business)
+                      setFormData({ name: business.name, description: business.description })
+                      setSelectedProjectId(business.projects[0]?.id || null)
+                      setIsEditing(false)
+                    }}
+                    variants={cardVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    {business.name}
+                  </motion.div>
+                ))
+              ) : (
+                <p className={`text-sm ${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
+                  No businesses available.
+                </p>
+              )}
             </div>
           </motion.div>
           <motion.div
-            className="w-3/4"
+            className="flex-1" // Ocupa o espaço restante
             variants={cardVariants}
             initial="hidden"
             animate="visible"
