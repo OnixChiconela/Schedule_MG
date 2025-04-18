@@ -1,79 +1,68 @@
-import { useState, useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Text, MeshWobbleMaterial } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
-
-interface Event {
-  id: number
-  title: string
-  start: Date
-  end: Date
-  priority: 'Low' | 'Medium' | 'High'
-  description?: string
-}
 
 interface ThreeBackgroundProps {
   theme: 'light' | 'dark'
-  events: Event[]
-  onEventClick: (event: Event) => void
+  onEventClick: (event: any) => void
 }
 
-export default function ThreeBackground({ theme, events, onEventClick }: ThreeBackgroundProps) {
-  const Panel = ({ event, position }: { event: Event; position: [number, number, number] }) => {
-    const meshRef = useRef<THREE.Mesh>(null)
-    const [hovered, setHovered] = useState(false)
+export default function ThreeBackground({ theme, onEventClick }: ThreeBackgroundProps) {
+  console.log(`ThreeBackground: Rendering with theme ${theme}`)
 
-    useFrame(() => {
-      if (meshRef.current) {
-        meshRef.current.position.y += Math.sin(Date.now() * 0.001 + position[0]) * 0.005
+  const Notebook = () => {
+    const groupRef = useRef<THREE.Group>(null)
+    const pageRef = useRef<THREE.Mesh>(null)
+
+    useFrame(({ clock }) => {
+      if (groupRef.current) {
+        groupRef.current.rotation.y += 0.005 // Rotação suave
+      }
+      if (pageRef.current) {
+        pageRef.current.rotation.x = Math.sin(clock.getElapsedTime()) * 0.1 // Folhear
       }
     })
 
-    const color = event.priority === 'High' ? '#ef4444' : event.priority === 'Medium' ? '#f59e0b' : '#10b981'
-
     return (
-      <group position={position} onClick={() => onEventClick(event)} onPointerOver={() => setHovered(true)} onPointerOut={() => setHovered(false)}>
-        <mesh ref={meshRef} scale={hovered ? 1.1 : 1}>
-          <boxGeometry args={[2, 1, 0.2]} />
-          <MeshWobbleMaterial
-            factor={hovered ? 0.3 : 0.1}
-            speed={2}
-            color={color}
-            emissive={theme === 'dark' ? color : '#000000'}
-            emissiveIntensity={theme === 'dark' ? 0.5 : 0}
+      <group ref={groupRef} position={[-6, 0, 0]}>
+        <mesh>
+          <boxGeometry args={[3, 4, 0.5]} />
+          <meshStandardMaterial
+            color={theme === 'dark' ? '#1e293b' : '#ffffff'}
             metalness={theme === 'dark' ? 0.8 : 0.2}
             roughness={0.4}
           />
         </mesh>
-        <Text
-          position={[0, 0, 0.11]}
-          fontSize={0.2}
-          color={theme === 'dark' ? '#ffffff' : '#000000'}
-          anchorX="center"
-          anchorY="middle"
-        >
-          {event.title}
-        </Text>
+        <mesh ref={pageRef} position={[0, 0, 0.26]}>
+          <planeGeometry args={[2.8, 3.8]} />
+          <meshStandardMaterial
+            color={theme === 'dark' ? '#e2e8f0' : '#f1f5f9'}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+        <mesh position={[-1.5, 0, 0]}>
+          <cylinderGeometry args={[0.2, 0.2, 4, 16]} />
+          <meshStandardMaterial
+            color={theme === 'dark' ? '#64748b' : '#d1d5db'}
+            metalness={0.5}
+            roughness={0.5}
+          />
+        </mesh>
       </group>
     )
   }
 
   return (
     <Canvas
-      style={{ position: 'absolute', top: 0, left: 0, zIndex: 0 }}
+      style={{ position: 'absolute', top: 0, left: 0, zIndex: 0, width: '100%', height: '100%' }}
       gl={{ preserveDrawingBuffer: true }}
-      camera={{ position: [0, 0, 10], fov: 50 }}
+      camera={{ position: [0, 0, 10], fov: 60 }}
     >
       <ambientLight intensity={theme === 'light' ? 0.8 : 0.4} />
       <pointLight position={[10, 10, 10]} intensity={theme === 'light' ? 1 : 0.6} />
-      {events.map((event, index) => (
-        <Panel
-          key={event.id}
-          event={event}
-          position={[(index % 3 - 1) * 3, Math.floor(index / 3) * -2, 0]}
-        />
-      ))}
-      <OrbitControls enablePan={false} enableZoom={true} minDistance={5} maxDistance={20} />
+      <Notebook />
+      <OrbitControls enablePan={false} enableZoom={true} minDistance={5} maxDistance={15} />
     </Canvas>
   )
 }
