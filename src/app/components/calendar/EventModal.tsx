@@ -60,6 +60,12 @@ export default function EventModal({
   })
   const [selectedBusinessId, setSelectedBusinessId] = useState<string>(event?.businessId || '')
 
+  // Data mínima para input datetime-local (início do dia atual)
+  const today = new Date()
+  const minDateTime = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    .toISOString()
+    .slice(0, 16)
+
   if (!isOpen) return null
 
   const handleSave = () => {
@@ -74,6 +80,10 @@ export default function EventModal({
     const today = new Date()
     const startDate = new Date(formData.start.getFullYear(), formData.start.getMonth(), formData.start.getDate())
     const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    if (startDate < todayDate) {
+      toast.error('Não é possível agendar em datas passadas.')
+      return
+    }
     if (startDate.getTime() === todayDate.getTime() && formData.start < today) {
       toast.error('Eventos no dia atual devem começar no futuro.')
       return
@@ -126,6 +136,7 @@ export default function EventModal({
             type="datetime-local"
             value={formData.start.toISOString().slice(0, 16)}
             onChange={(e) => setFormData({ ...formData, start: new Date(e.target.value) })}
+            min={minDateTime}
             className={`w-full p-3 rounded-lg border ${
               theme === 'light'
                 ? 'border-gray-300 bg-white text-gray-900'
@@ -136,6 +147,7 @@ export default function EventModal({
             type="datetime-local"
             value={formData.end.toISOString().slice(0, 16)}
             onChange={(e) => setFormData({ ...formData, end: new Date(e.target.value) })}
+            min={minDateTime}
             className={`w-full p-3 rounded-lg border ${
               theme === 'light'
                 ? 'border-gray-300 bg-white text-gray-900'
