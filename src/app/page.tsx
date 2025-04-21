@@ -17,7 +17,6 @@ export default function Home() {
       <div className="flex-1 ml-60">
         <button
           onClick={() => {
-            console.log('Home: Button clicked')
             toggleTheme()
           }}
           className={`absolute top-4 right-4 p-2 rounded-md z-50 pointer-events-auto ${

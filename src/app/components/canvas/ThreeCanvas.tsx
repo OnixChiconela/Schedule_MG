@@ -23,7 +23,7 @@ const spacing = 3.5 // distância entre painéis
 const baseSections = [
   { label: 'Task', count: 1, route: '/tasks' },
   { label: 'Calendar', count: 2, route: '/calendar' },
-  { label: 'Objectives', count: 0, route: '/objectives' },
+  { label: 'My Business', count: 0, route: '/business' },
 ]
 
 const sections: Section[] = baseSections.map((s, i, arr) => {
@@ -127,7 +127,7 @@ const ThreeCanvas = ({ theme }: ThreeCanvasProps) => {
               textAlign: 'center',
               fontFamily: 'sans-serif',
               fontSize: '16px',
-              color: theme === 'light' ? '#333' : '#E5E7EB',
+              color: theme === 'light' ? '#000' : '#E5E7EB',
               pointerEvents: 'none',
             }}
           >

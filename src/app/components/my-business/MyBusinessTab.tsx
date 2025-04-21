@@ -200,12 +200,18 @@ export default function MyBusinessTab() {
       description,
       tasks: [],
     }
-    setBusinesses(
-      businesses.map((b) =>
+    setBusinesses((prev) =>
+      prev.map((b) =>
         b.id === selectedBusiness.id
           ? { ...b, projects: [...b.projects, newProject] }
           : b
       )
+    )
+    // Sincronizar selectedBusiness para refletir o novo projeto
+    setSelectedBusiness((prev) =>
+      prev && prev.id === selectedBusiness.id
+        ? { ...prev, projects: [...prev.projects, newProject] }
+        : prev
     )
     setSelectedProjectId(newProject.id)
     setIsAddProjectModalOpen(false)
@@ -226,8 +232,8 @@ export default function MyBusinessTab() {
       ...taskData,
     }
     console.log('Adding task:', newTask)
-    setBusinesses(
-      businesses.map((b) =>
+    setBusinesses((prev) =>
+      prev.map((b) =>
         b.id === selectedBusiness.id
           ? {
               ...b,
@@ -237,6 +243,17 @@ export default function MyBusinessTab() {
             }
           : b
       )
+    )
+    // Sincronizar selectedBusiness para refletir a nova tarefa
+    setSelectedBusiness((prev) =>
+      prev && prev.id === selectedBusiness.id
+        ? {
+            ...prev,
+            projects: prev.projects.map((p) =>
+              p.id === projectId ? { ...p, tasks: [...p.tasks, newTask] } : p
+            ),
+          }
+        : prev
     )
     setIsAddTaskModalOpen({ open: false, projectId: null })
     setToastMessage(`Task "${newTask.title}" added successfully`)
@@ -278,6 +295,19 @@ export default function MyBusinessTab() {
             }
           : b
       )
+    )
+    // Sincronizar selectedBusiness para refletir a tarefa vinculada
+    setSelectedBusiness((prev) =>
+      prev && prev.id === selectedBusiness.id
+        ? {
+            ...prev,
+            projects: prev.projects.map((p) =>
+              p.id === selectedProjectId
+                ? { ...p, tasks: [...p.tasks, newTask] }
+                : p
+            ),
+          }
+        : prev
     )
     setIsLinkingTask(false)
     setToastMessage(`Task "${task.title}" linked successfully`)
@@ -460,7 +490,7 @@ export default function MyBusinessTab() {
         />
         <div className="flex space-x-6 w-full">
           <motion.div
-            className="w-64" // Ajustado para largura fixa, compatível com SideNavbar
+            className="w-64"
             variants={cardVariants}
             initial="hidden"
             animate="visible"
@@ -526,7 +556,7 @@ export default function MyBusinessTab() {
             </div>
           </motion.div>
           <motion.div
-            className="flex-1" // Ocupa o espaço restante
+            className="flex-1"
             variants={cardVariants}
             initial="hidden"
             animate="visible"
