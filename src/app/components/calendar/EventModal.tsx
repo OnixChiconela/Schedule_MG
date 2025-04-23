@@ -1,26 +1,9 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState } from 'react'
-import toast from 'react-hot-toast'
-
-interface Event {
-  id?: number
-  title: string
-  start: Date
-  end: Date
-  priority: 'Low' | 'Medium' | 'High'
-  description?: string
-  businessId?: string
-  projectId?: string
-}
-
-interface Business {
-  id: string
-  name: string
-  description: string
-  projects: { id: string; name: string; tasks: any[] }[]
-}
+import { useEffect, useState } from 'react'
+import { toast } from 'react-hot-toast'
+import { Event, Business } from "@/app/types/events"
 
 interface EventModalProps {
   isOpen: boolean
@@ -32,6 +15,8 @@ interface EventModalProps {
   theme: 'light' | 'dark'
   businesses: Business[]
 }
+
+const categories = ['Tecnologia', 'Arte', 'Finanças', 'Educação', 'Saúde', 'Viagens', 'Música']
 
 const buttonVariants = {
   hover: { scale: 1.05, transition: { duration: 0.2 } },
@@ -52,23 +37,49 @@ export default function EventModal({
     id: event?.id,
     title: event?.title || '',
     start: event?.start || slot?.start || new Date(),
-    end: event?.end || slot?.end || new Date(),
+    end: event?.end || slot?.end || new Date(new Date().getTime() + 60 * 60 * 1000),
     priority: event?.priority || 'Low',
     description: event?.description || '',
     businessId: event?.businessId || '',
     projectId: event?.projectId || '',
+    tags: event?.tags || [],
   })
   const [selectedBusinessId, setSelectedBusinessId] = useState<string>(event?.businessId || '')
 
-  // Data mínima para input datetime-local (início do dia atual)
-  const today = new Date()
-  const minDateTime = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-    .toISOString()
-    .slice(0, 16)
+  useEffect(() => {
+    console.log('EventModal: Updating formData', { event, slot })
+    setFormData({
+      id: event?.id,
+      title: event?.title || '',
+      start: event?.start || slot?.start || new Date(),
+      end: event?.end || slot?.end || new Date(new Date().getTime() + 60 * 60 * 1000),
+      priority: event?.priority || 'Low',
+      description: event?.description || '',
+      businessId: event?.businessId || '',
+      projectId: event?.projectId || '',
+      tags: event?.tags || [],
+    })
+    setSelectedBusinessId(event?.businessId || '')
+  }, [event, slot])
 
-  if (!isOpen) return null
+  const today = new Date()
+  const minDateTime = event?.id
+    ? undefined
+    : new Date(today.getFullYear(), today.getMonth(), today.getDate())
+        .toISOString()
+        .slice(0, 16)
+
+  const handleTagToggle = (tag: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.includes(tag)
+        ? prev.tags.filter((t) => t !== tag)
+        : [...prev.tags, tag],
+    }))
+  }
 
   const handleSave = () => {
+    console.log('EventModal: Attempting to save', formData)
     if (!formData.title.trim()) {
       toast.error('O título é obrigatório.')
       return
@@ -80,17 +91,19 @@ export default function EventModal({
     const today = new Date()
     const startDate = new Date(formData.start.getFullYear(), formData.start.getMonth(), formData.start.getDate())
     const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-    if (startDate < todayDate) {
+    if (!formData.id && startDate < todayDate) {
       toast.error('Não é possível agendar em datas passadas.')
       return
     }
-    if (startDate.getTime() === todayDate.getTime() && formData.start < today) {
+    if (!formData.id && startDate.getTime() === todayDate.getTime() && formData.start < today) {
       toast.error('Eventos no dia atual devem começar no futuro.')
       return
     }
     console.log('EventModal: Saving event', formData)
     onSave(formData)
   }
+
+  if (!isOpen) return null
 
   return (
     <motion.div
@@ -118,14 +131,14 @@ export default function EventModal({
             theme === 'light' ? 'text-gray-900' : 'text-white'
           }`}
         >
-          {formData.id ? 'Edit Event' : 'New Event'}
+          {formData.id ? 'Editar Evento' : 'Novo Evento'}
         </h2>
         <div className="space-y-4">
           <input
             type="text"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            placeholder="Event Title"
+            placeholder="Título do Evento"
             className={`w-full p-3 rounded-lg border ${
               theme === 'light'
                 ? 'border-gray-300 bg-white text-gray-900'
@@ -165,14 +178,34 @@ export default function EventModal({
                 : 'border-slate-600 bg-slate-800 text-gray-200'
             } focus:outline-none focus:ring-2 focus:ring-blue-500`}
           >
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
+            <option value="Low">Baixa</option>
+            <option value="Medium">Média</option>
+            <option value="High">Alta</option>
           </select>
+          <div className="space-y-2">
+            <label className={`text-sm ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
+              Categorias:
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagToggle(tag)}
+                  className={`px-2 py-1 rounded-lg ${
+                    formData.tags.includes(tag)
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-200 dark:bg-slate-600 text-gray-900 dark:text-gray-200'
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
           <textarea
             value={formData.description || ''}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Description"
+            placeholder="Descrição"
             rows={4}
             className={`w-full p-3 rounded-lg border ${
               theme === 'light'
@@ -192,7 +225,7 @@ export default function EventModal({
                 : 'border-slate-600 bg-slate-800 text-gray-200'
             } focus:outline-none focus:ring-2 focus:ring-blue-500`}
           >
-            <option value="">Select Business</option>
+            <option value="">Selecionar Negócio</option>
             {businesses.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
@@ -209,7 +242,7 @@ export default function EventModal({
                   : 'border-slate-600 bg-slate-800 text-gray-200'
               } focus:outline-none focus:ring-2 focus:ring-blue-500`}
             >
-              <option value="">Select Project</option>
+              <option value="">Selecionar Projeto</option>
               {businesses
                 .find((b) => b.id === selectedBusinessId)
                 ?.projects.map((p) => (
@@ -232,7 +265,7 @@ export default function EventModal({
               whileTap="tap"
               disabled={!formData.title.trim()}
             >
-              Save
+              Salvar
             </motion.button>
             <motion.button
               onClick={() => {
@@ -248,13 +281,17 @@ export default function EventModal({
               whileHover="hover"
               whileTap="tap"
             >
-              Cancel
+              Cancelar
             </motion.button>
             {formData.id && onDelete && (
               <motion.button
                 onClick={() => {
-                  console.log('Clicked Delete Event')
-                  onDelete(formData.id!)
+                  console.log('Clicked Delete Event, ID:', formData.id)
+                  if (formData.id) {
+                    onDelete(formData.id)
+                  } else {
+                    toast.error('Erro: ID do evento inválido.')
+                  }
                 }}
                 className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
                   theme === 'light'
@@ -265,7 +302,7 @@ export default function EventModal({
                 whileHover="hover"
                 whileTap="tap"
               >
-                Delete
+                Excluir
               </motion.button>
             )}
           </div>

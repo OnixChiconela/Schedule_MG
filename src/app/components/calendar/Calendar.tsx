@@ -5,20 +5,9 @@ import { Calendar as BigCalendar, momentLocalizer, Views } from 'react-big-calen
 import moment from 'moment'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import '@/app/styles/rcb-dark.css'
+import { Event } from '@/app/types/events'
 
 const localizer = momentLocalizer(moment)
-
-export interface Event {
-  id: number
-  title: string
-  start: Date
-  end: Date
-  priority: 'Low' | 'Medium' | 'High'
-  description?: string
-  businessId?: string
-  projectId?: string
-}
-
 interface CalendarProps {
   events: Event[]
   onSelectSlot: (slot: { start: Date; end: Date }) => void

@@ -1,29 +1,49 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useTheme } from '../themeContext'
-import SideNavbar from '../components/navbars/SideNavbar'
-import Calendar from '../components/calendar/Calendar'
+import { toast } from 'react-hot-toast'
+import { motion } from 'framer-motion'
+import Calendar from '../components/calendar/Calendar' 
 import EventModal from '../components/calendar/EventModal'
 import Error3DAnimation from '../components/calendar/Error3DAnimation'
-import toast from 'react-hot-toast'
+import { useTheme } from '../themeContext'
+import { Event, Business, UserPreferences } from "@/app/types/events"
+import { Project } from '../types/events'
 
-interface Event {
-  id: number
-  title: string
-  start: Date
-  end: Date
-  priority: 'Low' | 'Medium' | 'High'
-  description?: string
-  businessId?: string
-  projectId?: string
-}
+const SuggestedEvents = ({ events, userPreferences }: { events: Event[]; userPreferences: UserPreferences }) => {
+  const suggestedEvents = events
+    .filter((event) => Array.isArray(event.tags) && event.tags.some((tag) => userPreferences.interests.includes(tag)))
+    .slice(0, 3)
 
-interface Business {
-  id: string
-  name: string
-  description: string
-  projects: { id: string; name: string; tasks: any[] }[]
+  return (
+    <div className="mb-6">
+      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Suggested Events</h3>
+      {suggestedEvents.length > 0 ? (
+        <div className="space-y-2">
+          {suggestedEvents.map((event) => (
+            <motion.div
+              key={event.id}
+              className="p-4 rounded-lg bg-gray-100 dark:bg-slate-700"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <h4 className="font-medium text-gray-800 dark:text-gray-200">{event.title}</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {event.start.toLocaleString()} - {event.end.toLocaleString()}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Categories: {event.tags.join(', ') || 'None'}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          No suggested events. Add more events with categories!
+        </p>
+      )}
+    </div>
+  )
 }
 
 export default function CalendarPage() {
@@ -35,73 +55,79 @@ export default function CalendarPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date } | null>(null)
+  const [userPreferences, setUserPreferences] = useState<UserPreferences>({
+    userId: 'default-user',
+    interests: [],
+  })
 
-  // Carregar eventos e negócios do localStorage
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const savedEvents = localStorage.getItem('calendarEvents')
-        if (savedEvents) {
-          console.log('Loading calendar events from localStorage:', savedEvents)
-          const parsedEvents = JSON.parse(savedEvents).map((e: any) => ({
-            ...e,
-            id: Number(e.id),
-            start: new Date(e.start),
-            end: new Date(e.end),
-          }))
-          setEvents(parsedEvents)
-        }
-        const savedBusinesses = localStorage.getItem('businesses')
-        if (savedBusinesses) {
-          console.log('Loading businesses from localStorage:', savedBusinesses)
-          setBusinesses(JSON.parse(savedBusinesses))
-        }
-      } catch (error) {
-        console.error('Error loading from localStorage:', error)
-        localStorage.removeItem('calendarEvents')
-        localStorage.removeItem('businesses')
-        toast.error('Dados corrompidos. Reiniciando armazenamento.')
+    try {
+      const storedEvents = localStorage.getItem('calendarEvents')
+      const storedBusinesses = localStorage.getItem('businesses')
+      const storedPreferences = localStorage.getItem('userPreferences')
+      if (storedEvents) {
+        const parsedEvents = JSON.parse(storedEvents).map((e: any) => ({
+          ...e,
+          id: Number(e.id),
+          start: new Date(e.start),
+          end: new Date(e.end),
+          tags: Array.isArray(e.tags) ? e.tags : [],
+        }))
+        setEvents(parsedEvents)
+        console.log('Loaded calendar events:', parsedEvents)
       }
+      if (storedBusinesses) {
+        const parsedBusinesses = JSON.parse(storedBusinesses)
+        setBusinesses(parsedBusinesses)
+        console.log('Loaded businesses:', parsedBusinesses)
+      }
+      if (storedPreferences) {
+        const parsedPreferences = JSON.parse(storedPreferences)
+        setUserPreferences(parsedPreferences)
+        console.log('Loaded user preferences:', parsedPreferences)
+      }
+    } catch (error) {
+      console.error('Error loading from localStorage:', error)
+      localStorage.removeItem('calendarEvents')
+      localStorage.removeItem('businesses')
+      setShowErrorAnimation(true)
+      toast.error('Corrupted data. Resetting storage.')
     }
   }, [])
 
-  // Salvar eventos no localStorage
   useEffect(() => {
-    if (typeof window !== 'undefined' && events.length > 0) {
+    if (events.length > 0) {
       try {
         console.log('Saving calendar events to localStorage:', events)
         localStorage.setItem('calendarEvents', JSON.stringify(events))
       } catch (error) {
         console.error('Error saving to localStorage:', error)
+        toast.error('Error saving events.')
       }
     }
   }, [events])
 
-  // Atualizar negócios no localStorage
-  const updateBusinessesInStorage = (updatedBusinesses: Business[]) => {
-    try {
-      console.log('Saving updated businesses to localStorage:', updatedBusinesses)
-      localStorage.setItem('businesses', JSON.stringify(updatedBusinesses))
-      setBusinesses(updatedBusinesses)
-    } catch (error) {
-      console.error('Error saving businesses to localStorage:', error)
+  useEffect(() => {
+    if (businesses.length > 0) {
+      try {
+        console.log('Saving businesses to localStorage:', businesses)
+        localStorage.setItem('businesses', JSON.stringify(businesses))
+      } catch (error) {
+        console.error('Error saving to localStorage:', error)
+        toast.error('Error saving businesses.')
+      }
     }
-  }
+  }, [businesses])
 
-  const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
+  const handleSelectSlot = (slot: { start: Date; end: Date }) => {
     const today = new Date()
-    const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate())
+    const slotDate = new Date(slot.start.getFullYear(), slot.start.getMonth(), slot.start.getDate())
     const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-    if (startDate < todayDate) {
-      console.log(`Calendar: Blocked past date ${start.toISOString()}`)
-      toast.error('Não é possível agendar em datas passadas.')
-      setShowErrorAnimation(true)
-      setTimeout(() => setShowErrorAnimation(false), 3000)
+    if (slotDate < todayDate) {
+      toast.error('Cannot schedule on past dates.')
       return
     }
-    console.log('Slot selected:', { start, end })
-    setSelectedSlot({ start, end })
-    setSelectedEvent(null)
+    setSelectedSlot(slot)
     setIsModalOpen(true)
   }
 
@@ -122,52 +148,48 @@ export default function CalendarPage() {
       description: eventData.description,
       businessId: eventData.businessId,
       projectId: eventData.projectId,
+      tags: Array.isArray(eventData.tags) ? eventData.tags : [],
     }
     console.log(`CalendarPage: ${eventData.id ? 'Updated' : 'Created'} event ID ${event.id}`)
-    setEvents((prev) => (eventData.id ? prev.map((e) => (e.id === event.id ? event : e)) : [...prev, event]))
-    toast.success(eventData.id ? 'Evento atualizado!' : 'Evento criado!')
+    const updatedEvents = eventData.id
+      ? events.map((e) => (e.id === event.id ? event : e))
+      : [...events, event]
+    setEvents(updatedEvents)
+    toast.success(eventData.id ? 'Event updated!' : 'Event created!')
 
-    // Sincronizar com businesses se vinculado a um projeto
-    if (eventData.businessId && eventData.projectId) {
-      console.log('Before update:', JSON.stringify(businesses))
-      const updatedBusinesses = businesses.map((b) =>
-        b.id === eventData.businessId
+    if (event.businessId && event.projectId) {
+      const updatedBusinesses = businesses.map((business) =>
+        business.id === event.businessId
           ? {
-              ...b,
-              projects: b.projects.map((p) =>
-                p.id === eventData.projectId
+              ...business,
+              projects: business.projects.map((project: Project) =>
+                project.id === event.projectId
                   ? {
-                      ...p,
-                      tasks: eventData.id
-                        ? p.tasks.map((t) =>
-                            t.id === `task-${event.id}`
-                              ? {
-                                  id: t.id,
-                                  title: event.title,
-                                  status: event.priority === 'Low' ? 'To Do' : event.priority === 'Medium' ? 'In Progress' : 'Done',
-                                  dueDate: event.start.toISOString().split('T')[0],
-                                  description: event.description,
-                                }
-                              : t
-                          )
-                        : [
-                            ...p.tasks,
-                            {
-                              id: `task-${event.id}`,
-                              title: event.title,
-                              status: event.priority === 'Low' ? 'To Do' : event.priority === 'Medium' ? 'In Progress' : 'Done',
-                              dueDate: event.start.toISOString().split('T')[0],
-                              description: event.description,
-                            },
-                          ],
+                      ...project,
+                      tasks: [
+                        ...project.tasks,
+                        {
+                          id: event.id.toString(),
+                          title: event.title,
+                          priority: event.priority,
+                          dueDate: event.end.toISOString(),
+                        },
+                      ],
                     }
-                  : p
+                  : project
               ),
             }
-          : b
+          : business
       )
-      console.log('After update:', JSON.stringify(updatedBusinesses))
-      updateBusinessesInStorage(updatedBusinesses)
+      setBusinesses(updatedBusinesses)
+    }
+
+    if (
+      Array.isArray(event.tags) &&
+      Array.isArray(userPreferences.interests) &&
+      event.tags.some((tag) => userPreferences.interests.includes(tag))
+    ) {
+      toast.success('New suggested event for you!')
     }
 
     setIsModalOpen(false)
@@ -177,52 +199,51 @@ export default function CalendarPage() {
 
   const handleDeleteEvent = (id: number) => {
     console.log(`CalendarPage: Deleted event ID ${id}`)
-    setEvents(events.filter((e) => e.id !== id))
-    toast.success('Evento removido!')
-    // Remover tarefa correspondente do negócio
-    const updatedBusinesses = businesses.map((b) => ({
-      ...b,
-      projects: b.projects.map((p) => ({
-        ...p,
-        tasks: p.tasks.filter((t) => t.id !== `task-${id}`),
+    const updatedEvents = events.filter((e) => e.id !== id)
+    setEvents(updatedEvents)
+    toast.success('Event removed!')
+
+    const updatedBusinesses = businesses.map((business) => ({
+      ...business,
+      projects: business.projects.map((project: Project) => ({
+        ...project,
+        tasks: project.tasks.filter((task) => task.id !== id.toString()),
       })),
     }))
-    updateBusinessesInStorage(updatedBusinesses)
+    setBusinesses(updatedBusinesses)
+
     setIsModalOpen(false)
     setSelectedEvent(null)
     setSelectedSlot(null)
   }
 
   return (
-    <div className={`flex min-h-screen ${safeTheme === 'light' ? 'bg-gray-100' : 'bg-slate-800'}`}>
-      <SideNavbar theme={safeTheme} toggleTheme={() => {}} />
-      <div className="flex-1 p-6 ml-[260px]">
-        <h1 className={`text-2xl font-semibold mb-4 ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-          Calendar
-        </h1>
-        <Calendar
-          events={events}
-          onSelectSlot={handleSelectSlot}
-          onSelectEvent={handleSelectEvent}
-          theme={safeTheme}
-        />
-        <EventModal
-          isOpen={isModalOpen}
-          onClose={() => {
-            console.log('Closing EventModal')
-            setIsModalOpen(false)
-            setSelectedEvent(null)
-            setSelectedSlot(null)
-          }}
-          onSave={handleSaveEvent}
-          onDelete={handleDeleteEvent}
-          event={selectedEvent}
-          slot={selectedSlot}
-          theme={safeTheme}
-          businesses={businesses}
-        />
-        <Error3DAnimation theme={safeTheme} isVisible={showErrorAnimation} />
-      </div>
+    <div className={`p-6 min-h-screen ${safeTheme === 'light' ? 'bg-gray-100' : 'bg-slate-900'}`}>
+      <h1 className={`text-2xl font-semibold mb-4 ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+        Calendar
+      </h1>
+      <SuggestedEvents events={events} userPreferences={userPreferences} />
+      <Calendar
+        events={events}
+        onSelectSlot={handleSelectSlot}
+        onSelectEvent={handleSelectEvent}
+        theme={safeTheme}
+      />
+      <EventModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          setSelectedEvent(null)
+          setSelectedSlot(null)
+        }}
+        onSave={handleSaveEvent}
+        onDelete={handleDeleteEvent}
+        event={selectedEvent}
+        slot={selectedSlot}
+        theme={safeTheme}
+        businesses={businesses}
+      />
+      <Error3DAnimation theme={safeTheme} isVisible={showErrorAnimation} />
     </div>
   )
 }
