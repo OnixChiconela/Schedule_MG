@@ -93,7 +93,7 @@ export default function LandingPage() {
       </div>
 
       {/* Hero Section */}
-      <section id="landing" className="pt-24 pb-16 relative overflow-hidden">
+      <section id="landing" className="pt-16 pb-16 relative overflow-hidden">
         <div className="">
           <div className="max-w-screen-xl mx-auto">
             <Container>
