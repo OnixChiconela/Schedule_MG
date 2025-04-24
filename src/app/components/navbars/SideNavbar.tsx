@@ -18,7 +18,7 @@ export default function SideNavbar({ theme, toggleTheme }: SideNavbarProps) {
 
   return (
     <motion.nav
-    className={`p-4 ${theme === 'light' ? 'bg-gray-100' : 'bg-slate-800'} text-white fixed w-[260px] h-screen`}
+    className={`p-4 ${theme === 'light' ? 'bg-gray-100' : 'bg-slate-900'} text-white fixed w-[260px] h-screen`}
       initial={{ x: -64 }}
       animate={{ x: 0 }}
       transition={{ duration: 0.3 }}

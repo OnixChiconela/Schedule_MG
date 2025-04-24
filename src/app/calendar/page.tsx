@@ -9,42 +9,43 @@ import Error3DAnimation from '../components/calendar/Error3DAnimation'
 import { useTheme } from '../themeContext'
 import { Event, Business, UserPreferences } from "@/app/types/events"
 import { Project } from '../types/events'
+import SuggestedEvents from '../components/SuggestedEvents'
 
-const SuggestedEvents = ({ events, userPreferences }: { events: Event[]; userPreferences: UserPreferences }) => {
-  const suggestedEvents = events
-    .filter((event) => Array.isArray(event.tags) && event.tags.some((tag) => userPreferences.interests.includes(tag)))
-    .slice(0, 3)
+// const SuggestedEvents = ({ events, userPreferences }: { events: Event[]; userPreferences: UserPreferences }) => {
+//   const suggestedEvents = events
+//     .filter((event) => Array.isArray(event.tags) && event.tags.some((tag) => userPreferences.interests.includes(tag)))
+//     .slice(0, 3)
 
-  return (
-    <div className="mb-6">
-      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Suggested Events</h3>
-      {suggestedEvents.length > 0 ? (
-        <div className="space-y-2">
-          {suggestedEvents.map((event) => (
-            <motion.div
-              key={event.id}
-              className="p-4 rounded-lg bg-gray-100 dark:bg-slate-700"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <h4 className="font-medium text-gray-800 dark:text-gray-200">{event.title}</h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {event.start.toLocaleString()} - {event.end.toLocaleString()}
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Categories: {event.tags.join(', ') || 'None'}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          No suggested events. Add more events with categories!
-        </p>
-      )}
-    </div>
-  )
-}
+//   return (
+//     <div className="mb-6">
+//       <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Suggested Events</h3>
+//       {suggestedEvents.length > 0 ? (
+//         <div className="space-y-2">
+//           {suggestedEvents.map((event) => (
+//             <motion.div
+//               key={event.id}
+//               className="p-4 rounded-lg bg-gray-100 dark:bg-slate-700"
+//               initial={{ opacity: 0, y: 10 }}
+//               animate={{ opacity: 1, y: 0 }}
+//             >
+//               <h4 className="font-medium text-gray-800 dark:text-gray-200">{event.title}</h4>
+//               <p className="text-sm text-gray-600 dark:text-gray-400">
+//                 {event.start.toLocaleString()} - {event.end.toLocaleString()}
+//               </p>
+//               <p className="text-sm text-gray-600 dark:text-gray-400">
+//                 Categories: {event.tags.join(', ') || 'None'}
+//               </p>
+//             </motion.div>
+//           ))}
+//         </div>
+//       ) : (
+//         <p className="text-sm text-gray-600 dark:text-gray-400">
+//           No suggested events. Add more events with categories!
+//         </p>
+//       )}
+//     </div>
+//   )
+// }
 
 export default function CalendarPage() {
   const { theme } = useTheme()
@@ -222,13 +223,13 @@ export default function CalendarPage() {
       <h1 className={`text-2xl font-semibold mb-4 ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}>
         Calendar
       </h1>
-      <SuggestedEvents events={events} userPreferences={userPreferences} />
       <Calendar
         events={events}
         onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent}
         theme={safeTheme}
       />
+        <SuggestedEvents userPreferences={userPreferences} />
       <EventModal
         isOpen={isModalOpen}
         onClose={() => {

@@ -502,8 +502,8 @@ export default function MyBusinessTab() {
               }}
               className={`w-full mb-4 px-4 py-2 rounded-xl font-semibold transition-colors ${
                 safeTheme === 'light'
-                  ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                  : 'bg-blue-600 hover:bg-blue-700 text-gray-100'
+                  ? 'bg-gray-950 hover:bg-black text-white'
+                  : 'bg-gray-950 hover:bg-black text-gray-100'
               } shadow-md`}
               variants={buttonVariants}
               whileHover="hover"
@@ -523,7 +523,7 @@ export default function MyBusinessTab() {
                     className={`p-3 mb-2 rounded-lg cursor-pointer transition-colors ${
                       selectedBusiness?.id === business.id
                         ? safeTheme === 'light'
-                          ? 'bg-blue-100 text-blue-900'
+                          ? 'bg-fuchsia-100 text-fuchsia-900'
                           : 'bg-slate-600 text-white'
                         : safeTheme === 'light'
                         ? 'bg-gray-100 text-gray-900'
@@ -604,8 +604,8 @@ export default function MyBusinessTab() {
                         }}
                         className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
                           safeTheme === 'light'
-                            ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                            : 'bg-blue-600 hover:bg-blue-700 text-gray-100'
+                            ? 'bg-gray-950 hover:bg-black text-white'
+                            : 'bg-gray-950 hover:bg-black text-gray-100'
                         }`}
                         variants={buttonVariants}
                         whileHover="hover"
@@ -664,10 +664,10 @@ export default function MyBusinessTab() {
                           console.log('Clicked Edit Business')
                           setIsEditing(true)
                         }}
-                        className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
+                        className={`px-4 py-2 rounded-xl font-semibold transition-colors bg-transparent border-2 ${
                           safeTheme === 'light'
-                            ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                            : 'bg-blue-600 hover:bg-blue-700 text-gray-100'
+                            ? 'border-fuchsia-800 hover:border-fuchsia-500 text-gray-900'
+                            : 'border-fuchsia-900 hover:border-fuchsia-700 text-gray-100'
                         }`}
                         variants={buttonVariants}
                         whileHover="hover"
@@ -680,10 +680,10 @@ export default function MyBusinessTab() {
                           console.log('Clicked Add Project')
                           setIsAddProjectModalOpen(true)
                         }}
-                        className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
+                        className={`px-4 py-2 rounded-xl font-semibold transition-colors bg-transparent border-2 ${
                           safeTheme === 'light'
-                            ? 'bg-green-500 hover:bg-green-600 text-white'
-                            : 'bg-green-600 hover:bg-green-700 text-gray-100'
+                            ? 'border-green-500 hover:border-green-600 text-gray-900'
+                            : 'border-green-600 hover:border-green-700 text-gray-100'
                         }`}
                         variants={buttonVariants}
                         whileHover="hover"
@@ -696,10 +696,10 @@ export default function MyBusinessTab() {
                           console.log('Clicked Link Task from Tasks')
                           setIsLinkingTask(true)
                         }}
-                        className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
+                        className={`px-4 py-2 rounded-xl font-semibold transition-colors bg-transparent border-2 ${
                           safeTheme === 'light'
-                            ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                            : 'bg-yellow-600 hover:bg-yellow-700 text-gray-100'
+                            ? 'border-yellow-500 hover:border-yellow-600 text-gray-900'
+                            : 'border-yellow-600 hover:border-yellow-700 text-gray-100'
                         }`}
                         variants={buttonVariants}
                         whileHover="hover"
@@ -876,10 +876,10 @@ export default function MyBusinessTab() {
                                     console.log('Clicked Add Task for project:', project.id)
                                     setIsAddTaskModalOpen({ open: true, projectId: project.id })
                                   }}
-                                  className={`px-3 py-1 rounded-lg font-semibold transition-colors ${
+                                  className={`px-3 py-1 rounded-lg font-semibold transition-colors border-2 ${
                                     safeTheme === 'light'
-                                      ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                                      : 'bg-blue-600 hover:bg-blue-700 text-gray-100'
+                                      ? 'bg-fuchsia-900 hover:bg-fuchsia-950 text-white'
+                                      : 'bg-fuchsia-900 hover:bg-fuchsia-950 text-gray-100'
                                   }`}
                                   variants={buttonVariants}
                                   whileHover="hover"

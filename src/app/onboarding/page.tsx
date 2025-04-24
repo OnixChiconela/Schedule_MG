@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { toast } from 'react-hot-toast'
 
-const categories = ['Tecnologia', 'Arte', 'Finanças', 'Educação', 'Saúde', 'Viagens', 'Música']
+const categories = ['Technology', 'Art', 'Finance', 'Education', 'Health', 'Travel', 'Music']
 
 export default function Onboarding() {
   const router = useRouter()

@@ -11,6 +11,7 @@ import { FaClock, FaRobot } from 'react-icons/fa'
 import { MdPeople, MdSettings, MdTrendingUp } from 'react-icons/md'
 import { BiGlobe, BiSpreadsheet, BiTrendingUp, BiWorld } from 'react-icons/bi'
 import Container from './components/Container'
+import { useTheme } from './themeContext'
 // Componente Card
 const Card = ({ children }: { children: React.ReactNode }) => (
   <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">{children}</div>
@@ -63,6 +64,7 @@ export default function LandingPage() {
 
   const handleRegisterOpen = () => setIsRegisterOpen(true)
   const handleRegisterClose = () => setIsRegisterOpen(false)
+    const { theme, toggleTheme } = useTheme()
 
   return (
     <div className="bg-white">
