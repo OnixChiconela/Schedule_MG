@@ -40,9 +40,8 @@ const InfoCard = ({
     <Card>
       <div className="p-6 flex flex-col gap-2">
         <div
-          className={`inline-flex h-10 w-10 items-center justify-center rounded-full ${
-            smallBg || 'bg-fuchsia-100'
-          } ${iconColor === 'fuchsia' ? 'text-fuchsia-600' : 'text-white'}`}
+          className={`inline-flex h-10 w-10 items-center justify-center rounded-full ${smallBg || 'bg-fuchsia-100'
+            } ${iconColor === 'fuchsia' ? 'text-fuchsia-600' : 'text-white'}`}
         >
           <Icon size={24} />
         </div>
@@ -64,10 +63,10 @@ export default function LandingPage() {
 
   const handleRegisterOpen = () => setIsRegisterOpen(true)
   const handleRegisterClose = () => setIsRegisterOpen(false)
-    const { theme, toggleTheme } = useTheme()
+  const { theme, toggleTheme } = useTheme()
 
   return (
-    <div className="bg-white">
+    <div className="flex flex-col items-center">
       {/* Navbar */}
       <div className="fixed w-full z-20 shadow-sm bg-white">
         <Container>
@@ -93,7 +92,7 @@ export default function LandingPage() {
       </div>
 
       {/* Hero Section */}
-      <section id="landing" className="pt-16 pb-16 relative overflow-hidden">
+      <section id="landing" className="pt-16 pb-16 relative overflow-hidden justify-center">
         <div className="">
           <div className="max-w-screen-xl mx-auto">
             <Container>
@@ -104,18 +103,18 @@ export default function LandingPage() {
                         py-24 rounded-3xl transition"
                   >
                     <Container>
-                      <div className="flex flex-col">
-                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-                          Connect and Grow with Scheuor
+                      <div className="flex flex-col ">
+                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 text-center">
+                          Manage your destiny
                           <br />
                           <span className="bg-gradient-to-r from-fuchsia-500 to-fuchsia-900 bg-clip-text text-transparent">
                             Engage Your Audience
                           </span>
                         </h1>
-                        <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mb-8">
+                        <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mb-8 text-center">
                           Join Scheuor to connect with your audience, gain actionable insights, and grow your business with ease.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                           <Link
                             href="/onboarding"
                             className="text-sm font-semibold py-3 px-8 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-900 transition flex items-center justify-center"
@@ -140,103 +139,123 @@ export default function LandingPage() {
       </section>
 
       {/* How Scheuor Can Help */}
-      <section id="connect-with-us" className="py-16 bg-gray-50">
+      <section id="connect-with-us" className="relative overflow-hidden py-20 sm:py-32">
         <Container>
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">How Scheuor Can Help</h2>
-            <p className="text-lg text-gray-600 mt-4">Tools to boost your engagement</p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <InfoCard
-              icon={MdTrendingUp}
-              title="Actionable Insights"
-              content="Gain insights to optimize your strategy and drive growth."
-              iconColor="fuchsia"
-            />
-            <InfoCard
-              icon={BiGlobe}
-              title="Connect with Audiences"
-              content="Reach and engage with your target audience effectively."
-              iconColor="fuchsia"
-            />
-            <InfoCard
-              icon={MdPeople}
-              title="Build Relationships"
-              content="Foster trust and loyalty through meaningful interactions."
-              iconColor="fuchsia"
-            />
+          <div className="flex flex-col justify-center items-center max-w-screen-xl mx-auto">
+
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">How Scheuor Can Help</h2>
+              <p className="text-lg text-gray-600 mt-4">Tools to boost your engagement</p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <InfoCard
+                icon={MdTrendingUp}
+                title="Actionable Insights"
+                content="Gain insights to optimize your strategy and drive growth."
+                iconColor="fuchsia"
+              />
+              <InfoCard
+                icon={BiGlobe}
+                title="Connect with Audiences"
+                content="Reach and engage with your target audience effectively."
+                iconColor="fuchsia"
+              />
+              <InfoCard
+                icon={MdPeople}
+                title="Build Relationships"
+                content="Foster trust and loyalty through meaningful interactions."
+                iconColor="fuchsia"
+              />
+            </div>
           </div>
         </Container>
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-16">
+      <section id="how-it-works" className="relative overflow-hidden py-20 sm:py-32">
         <Container>
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">How It Works</h2>
-            <p className="text-lg text-gray-600 mt-4">Get started with Scheuor in simple steps</p>
-          </div>
-          <div className="space-y-16">
-            <div className="flex flex-col lg:flex-row items-center gap-8">
-              <div className="flex-1 text-center lg:text-left">
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center text-xl font-bold bg-fuchsia-600 text-white rounded-xl">
-                  1
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Sign Up</h3>
-                <p className="text-lg text-gray-600">Create your account to start exploring Scheuor.</p>
-              </div>
-              <div className="flex-1 lg:max-w-xl">
-                <div className="relative aspect-[4/2.5] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:block">
-                  <Image
-                    alt="Sign Up"
-                    src="/how_it_works/signup.png"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              </div>
+          <div className="mx-auto max-w-screen-xl text-center">
+            <div className="relative">
+              <h2 className="mb-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl" style={{
+                translate: "none", rotate: "none", scale: "none"
+              }}>How It Works</h2>
+              <p className="text-lg leading-8 text-gray-800">
+                Get started with Scheuor in simple steps
+              </p>
             </div>
-            <div className="flex flex-col lg:flex-row-reverse items-center gap-8">
-              <div className="flex-1 text-center lg:text-left">
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center text-xl font-bold bg-fuchsia-600 text-white rounded-xl">
-                  2
+            <div className="mx-auto mt-16">
+              <div className="space-y-16 lg:space-y-20">
+
+                <div className="flex flex-col items-center gap-6 lg:gap-16 lg:flex-row">
+                  <div className="flex-none md:flex-1 lg:max-w-xl">
+                    <div className="relative aspect-[4/2.5] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
+
+                    </div>
+                  </div>
+                  <div className="flex-1 text-center lg:text-left">
+                    <div className="
+                      mb-6 inline-flex h-12 w-12 
+                      items-center justify-center 
+                      text-xl font-bold bg-gradient-to-bl
+                      text-black rounded-xl">
+                      1
+                    </div>
+                    <h3 className="mb-4 text-2xl font-bold text-gray-900/95">Create a Track</h3>
+                    <p className="text-lg leading-relaxed text-gray-800">
+                      {`Put your site url and start track your engagement`}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Engage Your Audience</h3>
-                <p className="text-lg text-gray-600">Use Scheuor’s tools to connect and interact.</p>
-              </div>
-              <div className="flex-1 lg:max-w-xl">
-                <div className="relative aspect-[4/2.5] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:block">
-                  <Image
-                    alt="Engage Audience"
-                    src="/how_it_works/engage.png"
-                    fill
-                    className="object-cover"
-                  />
+                <div className="flex flex-col items-center gap-6 lg:gap-16 lg:flex-row">
+
+                  <div className="flex-1 text-center lg:text-left">
+                    <div className="
+                      mb-6 inline-flex h-12 w-12 
+                      items-center justify-center 
+                      text-xl font-bold bg-gradient-to-b
+                      text-black rounded-xl ">
+                      2
+                    </div>
+                    <h3 className="mb-4 text-2xl font-bold text-gray-900/95">Visualize Your Site Performance</h3>
+                    <p className="text-lg leading-relaxed text-gray-800">
+                      {`!`}
+                    </p>
+                  </div>
+                  <div className="flex-1 lg:max-w-xl">
+                    <div className="relative aspect-[4/2.5] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
+
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="flex flex-col lg:flex-row items-center gap-8">
-              <div className="flex-1 text-center lg:text-left">
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center text-xl font-bold bg-fuchsia-600 text-white rounded-xl">
-                  3
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Grow Your Business</h3>
-                <p className="text-lg text-gray-600">Leverage insights to expand your reach and impact.</p>
-              </div>
-              <div className="flex-1 lg:max-w-xl">
-                <div className="relative aspect-[4/2.5] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:block">
-                  <Image
-                    alt="Grow Business"
-                    src="/how_it_works/grow.png"
-                    fill
-                    className="object-cover"
-                  />
+                <div className="flex flex-col items-center gap-6 lg:gap-16 lg:flex-row">
+                  <div className="flex-none md:flex-1 lg:max-w-xl">
+                    <div className="relative aspect-[4/2.5] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
+
+                    </div>
+                  </div>
+                  <div className="flex-1 text-center lg:text-left">
+                    <div className="
+                      mb-6 inline-flex h-12 w-12 
+                      items-center justify-center 
+                      bg-gradient-to-t text-xl font-bold 
+                      text-black rounded-xl">
+                      3
+                    </div>
+                    <h3 className="mb-4 text-2xl font-bold text-gray-900/95">Start Receiving Reservations</h3>
+                    <p className="text-lg leading-relaxed text-gray-800">
+                      {`You're all set! Now it's time to start eaning with Fireus. Welcome your guests, create
+                        memorable experiences, and grow your business`}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </Container>
+        <div className="h-3 md:h-5" />
       </section>
+
+
 
       {/* Why Scheuor */}
       <section id="why-scheuor" className="py-16 bg-gray-50">
@@ -275,12 +294,14 @@ export default function LandingPage() {
           <div className="mt-12 text-center">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Ready to Grow with Scheuor?</h3>
             <p className="text-lg text-gray-600 mb-8">Start engaging your audience today.</p>
-            <Link
-              href="/onboarding"
-              className="text-sm font-semibold py-3 px-8 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition flex items-center justify-center mx-auto"
-            >
-              Get Started <IoMdArrowForward size={20} className="ml-2" />
-            </Link>
+            <div className='flex justify-center'>
+              <Link
+                href="/onboarding"
+                className="text-sm font-semibold py-3 px-8 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition flex items-center justify-center mx-auto"
+              >
+                Get Started <IoMdArrowForward size={20} className="ml-2" />
+              </Link>
+            </div>
           </div>
         </Container>
       </section>
@@ -402,12 +423,14 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="mt-8 text-center">
-            <Link
-              href="/onboarding"
-              className="text-sm font-semibold py-3 px-8 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition flex items-center justify-center mx-auto"
-            >
-              Try Scheuor Now <IoMdArrowForward size={20} className="ml-2" />
-            </Link>
+            <div className='flex justify-center'>
+              <Link
+                href="/onboarding"
+                className="text-sm font-semibold py-3 px-8 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition flex items-center justify-center mx-auto"
+              >
+                Try Scheuor Now <IoMdArrowForward size={20} className="ml-2" />
+              </Link>
+            </div>
           </div>
         </Container>
       </section>
@@ -437,7 +460,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 py-12">
+      <footer className="bg-gray-900 py-12 w-full">
         <Container>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex flex-col items-center md:items-start">
