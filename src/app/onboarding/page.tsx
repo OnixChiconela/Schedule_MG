@@ -4,11 +4,16 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { toast } from 'react-hot-toast'
+import { useTheme } from '../themeContext'
+import { MoonStar, Sun } from 'lucide-react'
+import Card from '../components/cards/Card'
 
 const categories = ['Technology', 'Art', 'Finance', 'Education', 'Health', 'Travel', 'Music']
 
 export default function Onboarding() {
   const router = useRouter()
+  const { theme, toggleTheme } = useTheme()
+
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
 
   const handleInterestToggle = (category: string) => {
@@ -16,14 +21,14 @@ export default function Onboarding() {
       prev.includes(category)
         ? prev.filter((c) => c !== category)
         : prev.length < 5
-        ? [...prev, category]
-        : prev
+          ? [...prev, category]
+          : prev
     )
   }
 
   const handleStart = () => {
     if (selectedInterests.length < 3) {
-      toast.error('Selecione pelo menos 3 interesses.')
+      toast.error('Select at least 3 interest.')
       return
     }
     const userPreferences = { userId: 'default-user', interests: selectedInterests }
@@ -33,30 +38,62 @@ export default function Onboarding() {
     router.push('/calendar')
   }
 
+  const buttonVariants = {
+    hover: { scale: 1.05, transition: { duration: 0.2 } },
+    tap: { scale: 0.95 },
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
+    <div className={`min-h-screen flex items-center justify-center bg-gradient-to-br ${theme == "light" ? 'from-white via-neutral-200/60  to-purple-600/60' : 'from-slate-800 via-neutral-600  to-purple-600/90'}
+    transition-colors duration-300`}>
+      <div className='absolute bottom-8'>
+        <motion.button
+          onClick={toggleTheme}
+          whileHover="hover"
+          whileTap="tap"
+          variants={buttonVariants}
+          className={`px-3 py-2 rounded-lg ${theme === 'light' ? 'bg-gray-200 text-gray-900' : 'bg-slate-800 text-gray-200'}`}
+        >
+          {theme == "light" ?
+            <Sun size={20} /> :
+            <div>
+              {/* {init && (
+                <Particles
+                  id="tsparticles"
+                  options={particlesOptions}
+                  className="absolute inset-0 z-0"
+                />
+              )} */}
+              {/* <Particles 
+                id='tsparticles'
+              /> */}
+              <MoonStar size={20} />
+            </div>
+          }
+         
+        </motion.button>
+      </div>
       <motion.div
-        className="p-8 bg-white dark:bg-slate-800 rounded-xl shadow-lg max-w-md w-full"
+        className={`p-8 bg-white dark:bg-slate-800 rounded-xl shadow-lg max-w-md w-full`}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
         <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-          Personalize Sua Experiência
+          Personilize your experience.
         </h1>
         <p className="mb-6 text-gray-600 dark:text-gray-300">
-          Selecione 3 a 5 interesses para receber sugestões personalizadas:
+          Select between 3 to 5 interest so we can give you personilized suggestions
         </p>
         <div className="space-y-2 mb-6">
           {categories.map((category) => (
             <button
               key={category}
               onClick={() => handleInterestToggle(category)}
-              className={`w-full p-2 rounded-lg text-left ${
-                selectedInterests.includes(category)
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-200 dark:bg-slate-600 text-gray-900 dark:text-gray-200'
-              }`}
+              className={`w-full p-2 rounded-lg text-left ${selectedInterests.includes(category)
+                ? 'bg-fuchsia-800/60 text-white'
+                : 'bg-gray-200 dark:bg-slate-600 text-gray-900 dark:text-gray-200'
+                }`}
             >
               {category}
             </button>
@@ -64,7 +101,7 @@ export default function Onboarding() {
         </div>
         <motion.button
           onClick={handleStart}
-          className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
+          className="w-full py-3 bg-black text-white rounded-lg font-semibold hover:bg-blue-700"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >

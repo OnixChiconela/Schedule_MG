@@ -45,12 +45,12 @@ export default function DashboardPPage() {
     return (
         <ClientOnly>
             <ThemeProvider>
-                <div className={`min-h-screen flex ${theme === 'light' ? 'bg-gray-white' : 'bg-slate-900'}`}>
-                    {/* Sidebar */}
-                    <SideNavbar theme={theme} toggleTheme={toggleTheme} />
-
+                <div className={`min-h-screen flex ${theme === 'light' ? 'bg-gray-white' : 'bg-slate-900'} transition-colors duration-300`}>
+                    <div className='hidden lg:flex'>
+                        <SideNavbar theme={theme} toggleTheme={toggleTheme} />
+                    </div>
                     {/* Main Content */}
-                    <main className="flex-1 p-6 md:ml-[260px]">
+                    <main className="flex-1 p-6 lg:ml-[260px]">
                         <h1 className={`text-3xl font-bold mb-6 ${theme === 'light' ? 'text-gray-900' : 'text-gray-100'}`}>
                             Dashboard
                         </h1>
@@ -64,11 +64,11 @@ export default function DashboardPPage() {
                                 Upcoming
                             </h2>
                             {upcomingItems.length > 0 ? (
-                                <div className="space-y-4">
+                                <div className="space-x-5 flex">
                                     {upcomingItems.map((item) => (
                                         <motion.div
                                             key={item.id}
-                                            className={`p-4 rounded-lg shadow-md ${theme === 'light' ? 'bg-white' : 'bg-slate-800'}`}
+                                            className={`py-4 pr-12 pl-4 rounded-lg shadow-md ${theme === 'light' ? 'bg-white' : 'bg-slate-800'}`}
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.3 }}

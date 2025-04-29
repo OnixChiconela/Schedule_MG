@@ -362,7 +362,7 @@ export default function MyBusinessTab() {
         value: 0.8,
       },
       size: {
-        value: { min: 1, max: 3 },
+        value: { min: 1, max: 2 },
       },
       move: {
         enable: true,
@@ -412,12 +412,12 @@ export default function MyBusinessTab() {
   return (
     <div
       className={`min-h-screen p-6 relative ${
-        safeTheme === 'light' ? 'bg-gray-100' : 'bg-slate-800'
+        safeTheme === 'light' ? 'bg-white' : 'bg-slate-800'
       }`}
       style={{
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
-        backgroundColor: safeTheme === 'light' ? 'rgba(243, 244, 246, 0.8)' : 'rgba(30, 41, 59, 0.8)',
+        backgroundColor: safeTheme === 'light' ? 'bg-white' : 'rgba(30, 41, 59, 0.8)',
       }}
     >
       {init && (

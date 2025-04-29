@@ -35,22 +35,22 @@ const TasksPage = () => {
       return saved
         ? JSON.parse(saved)
         : [
-            {
-              id: 1,
-              title: 'Onixin',
-              tasks: [
-                {
-                  id: Date.now(),
-                  title: 'Task 2',
-                  status: 'To Do' as const,
-                  createdDate: new Date().toISOString().split('T')[0],
-                  dueDate: '2025-04-18',
-                  priority: 'Medium' as const,
-                  isCompleted: false,
-                },
-              ],
-            },
-          ]
+          {
+            id: 1,
+            title: 'Onixin',
+            tasks: [
+              {
+                id: Date.now(),
+                title: 'Task 2',
+                status: 'To Do' as const,
+                createdDate: new Date().toISOString().split('T')[0],
+                dueDate: '2025-04-18',
+                priority: 'Medium' as const,
+                isCompleted: false,
+              },
+            ],
+          },
+        ]
     }
     return []
   })
@@ -103,13 +103,13 @@ const TasksPage = () => {
       prev.map((corner) =>
         corner.id === selectedCornerId
           ? {
-              ...corner,
-              tasks: corner.tasks.map((task) =>
-                task.id === taskId
-                  ? { ...task, isCompleted, status: isCompleted ? 'Done' : 'To Do' }
-                  : task
-              ),
-            }
+            ...corner,
+            tasks: corner.tasks.map((task) =>
+              task.id === taskId
+                ? { ...task, isCompleted, status: isCompleted ? 'Done' : 'To Do' }
+                : task
+            ),
+          }
           : corner
       )
     )
@@ -121,11 +121,11 @@ const TasksPage = () => {
       prev.map((corner) =>
         corner.id === selectedCornerId
           ? {
-              ...corner,
-              tasks: corner.tasks.map((task) =>
-                task.id === taskId ? { ...task, ...updates } : task
-              ),
-            }
+            ...corner,
+            tasks: corner.tasks.map((task) =>
+              task.id === taskId ? { ...task, ...updates } : task
+            ),
+          }
           : corner
       )
     )
@@ -136,9 +136,9 @@ const TasksPage = () => {
       prev.map((corner) =>
         corner.id === cornerId
           ? {
-              ...corner,
-              tasks: reorderTasks(corner.tasks, sourceIndex, destinationIndex),
-            }
+            ...corner,
+            tasks: reorderTasks(corner.tasks, sourceIndex, destinationIndex),
+          }
           : corner
       )
     )
@@ -155,15 +155,16 @@ const TasksPage = () => {
 
   return (
     <main className={`flex h-screen w-full ${theme === 'light' ? 'bg-white text-black' : 'bg-slate-800 text-gray-200'} transition-colors duration-300 relative`}>
-      <SideNavbar theme={theme} toggleTheme={toggleTheme} />
-      <div className="flex-1 overflow-y-auto p-6 ml-[260px]">
+      <div className='hidden lg:flex'>
+        <SideNavbar theme={theme} toggleTheme={toggleTheme} />
+      </div>
+      <div className="flex-1 overflow-y-auto p-6 lg:ml-[260px]">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-semibold">My Tasks</h1>
           <button
             onClick={() => setIsProjectModalOpen(true)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${
-              theme === 'light' ? 'bg-black text-white hover:bg-neutral-800' : 'bg-slate-900 text-gray-200 hover:bg-slate-700'
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${theme === 'light' ? 'bg-black text-white hover:bg-neutral-800' : 'bg-slate-900 text-gray-200 hover:bg-slate-700'
+              }`}
           >
             <Plus size={16} />
             New Corner

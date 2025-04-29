@@ -73,7 +73,7 @@ export default function Calendar({ events, onSelectSlot, onSelectEvent, theme }:
         date={date}
         selectable
         views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
-        className={theme === 'dark' ? 'rbc-dark' : ''}
+        className={theme === 'dark' ? 'rbc-dark text-white' : ''}
         eventPropGetter={eventPropGetter}
         style={{ minHeight: '600px' }}
       />

@@ -92,13 +92,11 @@ const ThreeCanvas = ({ theme }: ThreeCanvasProps) => {
   const handleBoardClick = (route: string) => {
     if (isLoading) return;
 
-    console.log(`handleBoardClick: Triggering loader for route ${route}`);
     setIsLoading(true);
     setTargetRoute(route);
 
     // Navigate after loading delay
     setTimeout(() => {
-      console.log(`Navigating to ${route}`);
       router.push(route);
     }, 1500); // 1.5 seconds delay
   };

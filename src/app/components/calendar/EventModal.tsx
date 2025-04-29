@@ -187,8 +187,8 @@ export default function EventModal({
                   key={tag}
                   onClick={() => handleTagToggle(tag)}
                   className={`px-2 py-1 rounded-lg border-2 bg-transparent ${formData.tags.includes(tag)
-                      ? 'border-fuchsia-600 text-gray-900'
-                      : 'border-gray-200 dark:border-slate-600 text-gray-900 dark:text-gray-200'
+                      ? `border-fuchsia-600 ${theme == "light" ? 'text-gray-900' : 'text-gray-300'}`
+                      : `border-gray-200 dark:border-slate-600 ${theme == "light" ? 'text-gray-900' : 'text-gray-200'}`
                     }`}
                 >
                   {tag}
@@ -243,12 +243,13 @@ export default function EventModal({
                 ))}
             </select>
           )}
-          <div className="flex space-x-2">
+          <div className="flex justify-between">
+            <div className='flex space-x-2'>
             <motion.button
               onClick={handleSave}
-              className={`px-4 py-2 rounded-xl font-semibold transition-colors flex items-center ${theme === 'light'
-                  ? 'bg-fuchsia-700 hover:bg-fuchsia-800 text-white'
-                  : 'bg-fuchsia-800 hover:bg-fuchsia-900 text-gray-100'
+              className={`px-4 py-2 rounded-xl font-semibold transition-colors flex items-center gap-1 ${theme === 'light'
+                  ? 'bg-gray-700 hover:bg-gray-800 text-white'
+                  : 'bg-gray-950 hover:bg-black text-gray-100'
                 }`}
               variants={buttonVariants}
               whileHover="hover"
@@ -273,6 +274,7 @@ export default function EventModal({
             >
               Cancelar
             </motion.button>
+            </div>
             {formData.id && onDelete && (
               <motion.button
                 onClick={() => {
@@ -283,7 +285,7 @@ export default function EventModal({
                     toast.error('Erro: ID do evento inválido.')
                   }
                 }}
-                className={`px-4 py-2 rounded-xl font-semibold transition-colors flex items-center ${theme === 'light'
+                className={`px-4 py-2 rounded-xl font-semibold transition-colors flex items-center  gap-1 ${theme === 'light'
                     ? 'bg-red-700 hover:bg-red-800 text-white'
                     : 'bg-red-700 hover:bg-red-800 text-gray-100'
                   }`}
