@@ -4,18 +4,19 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { IconType } from 'react-icons'
+import { AnimatePresence, motion } from 'framer-motion'
 import { IoLogoLinkedin, IoLogoTwitter, IoMdArrowForward } from 'react-icons/io'
 import { FaClock, FaRobot } from 'react-icons/fa'
 import { MdPeople, MdSettings, MdTrendingUp } from 'react-icons/md'
-import { BiGlobe, BiSpreadsheet, BiTrendingUp, BiWorld } from 'react-icons/bi'
+import { BiGlobe, BiSpreadsheet, BiWorld } from 'react-icons/bi'
 import Container from './components/Container'
-import { ThemeProvider, useTheme } from './themeContext'
+import { useTheme } from './themeContext'
 import ClientOnly from './components/ClientOnly'
 import { MoonStar, Sun } from 'lucide-react'
 import Card from './components/cards/Card'
 import InfoCard from './components/cards/CardInfo'
+import { HiMenu, HiX } from 'react-icons/hi'
+import LandingNavbar from './components/LandingNavbar'
 
 
 export default function LandingPage() {
@@ -25,40 +26,18 @@ export default function LandingPage() {
   const handleRegisterOpen = () => setIsRegisterOpen(true)
   const handleRegisterClose = () => setIsRegisterOpen(false)
   const { theme, toggleTheme } = useTheme()
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const buttonVariants = {
-    hover: { scale: 1.05, transition: { duration: 0.2 } },
-    tap: { scale: 0.95 },
-  }
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   return (
     <ClientOnly>
       {/* <ThemeProvider> */}
       <div className={`flex flex-col items-center ${theme == "light" ? "bg-white" : "bg-slate-800"} transition-colors duration-300`}>
-        {/* Navbar */}
-        <div className={`fixed w-full z-20 shadow-sm ${theme == "light" ? 'bg-white' : 'bg-slate-700'} transition-colors duration-300 `}>
-          <Container>
-            <div className="flex flex-row items-center justify-between py-4 max-w-screen-xl mx-auto">
-              <Link href="/" className="flex items-center gap-2">
-                <Image
-                  alt="Scheuor Logo"
-                  className="h-12 w-auto"
-                  height={48}
-                  width={100}
-                  src="/scheuor.png"
-                  priority
-                />
-              </Link>
-              <button
-                onClick={handleRegisterOpen}
-                className="text-sm font-semibold py-2 px-6 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition"
-              >
-                Sign Up
-              </button>
-            </div>
-          </Container>
-        </div>
-
+        <LandingNavbar />
         {/* Hero Section */}
         <section id="landing" className={`pt-16 pb-16 relative overflow-hidden justify-center`}>
           <div className="">
@@ -85,9 +64,9 @@ export default function LandingPage() {
                           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <Link
                               href="/onboarding"
-                              className="text-sm font-semibold py-3 px-8 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-900 transition flex items-center justify-center"
+                              className="text-sm font-semibold py-3 px-8 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-900 hover:gap-2 transition flex items-center justify-center"
                             >
-                              Get Started <IoMdArrowForward size={20} className="ml-2" />
+                              Get Started <IoMdArrowForward size={20} className="ml-2 hover:scale-120 transition" />
                             </Link>
                             <a
                               href="mailto:contact@scheuor.com"
@@ -529,33 +508,6 @@ export default function LandingPage() {
           </motion.div>
         )}
       </div>
-      <div className='bottom-8 right-8 fixed'>
-        <motion.button
-          onClick={toggleTheme}
-          whileHover="hover"
-          whileTap="tap"
-          variants={buttonVariants}
-          className={`px-3 py-2 rounded-lg ${theme === 'light' ? 'bg-gray-200 text-gray-900' : 'bg-slate-800 text-gray-200'}`}
-        >
-          {theme == "light" ?
-            <Sun size={20} /> :
-            <div>
-              {/* {init && (
-                <Particles
-                  id="tsparticles"
-                  options={particlesOptions}
-                  className="absolute inset-0 z-0"
-                />
-              )} */}
-              {/* <Particles 
-                id='tsparticles'
-              /> */}
-              <MoonStar size={20} />
-            </div>
-          }
-        </motion.button>
-      </div>
-      {/* </ThemeProvider> */}
     </ClientOnly>
   )
 }
