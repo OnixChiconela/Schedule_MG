@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Briefcase, BriefcaseBusiness, Calendar, Mail, MoonStar, PenBox, Sun } from 'lucide-react'
+import { Briefcase, BriefcaseBusiness, Calendar, Car, Mail, MoonStar, PenBox, Sun } from 'lucide-react'
 import { IOptions, RecursivePartial } from 'node_modules/@tsparticles/engine/types/export-types'
 import Particles, { initParticlesEngine } from '@tsparticles/react'
 import { loadSlim } from '@tsparticles/slim'
@@ -150,6 +150,13 @@ export default function SideNavbar({ theme, toggleTheme }: SideNavbarProps) {
             icon={Mail}
           />
         </li>
+        <li>
+          <SideNavButton
+            title='Roadmap'
+            link='/tracking'
+            icon={Car}
+          />
+        </li>
         
       </ul>
 
@@ -161,7 +168,7 @@ const SideNavButton = ({ title, link, icon: Icon }: { title: string, link?: stri
   const { theme } = useTheme()
   return (
     <Link href={link!}>
-      <span className={`flex gap-1 p-2 rounded-lg hover:bg-fuchsia-800/50 hover:text-white ${theme === 'light' ? 'text-gray-800' : 'text-gray-200'}`}>
+      <span className={`flex gap-1 p-2 rounded-lg hover:bg-fuchsia-800/50 hover:text-white ${theme == 'light' ? 'text-gray-800' : 'text-gray-200'}`}>
         <Icon size={22} />
         {title}
       </span>
