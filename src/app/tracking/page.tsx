@@ -111,9 +111,9 @@ const mockNodes: Node<TaskNodeData>[] = [
 
 // Mock edges
 const mockEdges: Edge[] = [
-    { id: 'e1-2', source: '1', target: '2', style: { stroke: '#a855f7' } },
-    { id: 'e3-4', source: '3', target: '4', style: { stroke: '#a855f7' } },
-    { id: 'e1-3', source: '1', target: '3', style: { stroke: '#a855f7' } },
+    { id: 'e1-2', source: '1', target: '2', style: { stroke: '#a855f7', strokeWidth: 2 } },
+    { id: 'e3-4', source: '3', target: '4', style: { stroke: '#a855f7', strokeWidth: 2 } },
+    { id: 'e1-3', source: '1', target: '3', style: { stroke: '#a855f7', strokeWidth: 2 } },
 ];
 
 // Custom node component
@@ -147,8 +147,7 @@ const TaskNodeComponent = ({
 
     return (
         <motion.div
-            className={`p-4 rounded-lg shadow-md w-48 relative ${theme === 'light' ? 'bg-white' : 'bg-slate-700'
-                } border-2`}
+            className={`p-4 rounded-lg shadow-md w-48 relative ${theme === 'light' ? 'bg-white' : 'bg-slate-700'} border-2`}
             style={{ borderColor: categoryColors[data.category] }}
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
@@ -175,24 +174,21 @@ const TaskNodeComponent = ({
                         value={editData.title}
                         onChange={(e) => setEditData({ ...editData, title: e.target.value })}
                         placeholder="Task title"
-                        className={`w-full px-2 py-1 text-sm ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-600 text-neutral-200'
-                            } border rounded focus:outline-none`}
+                        className={`w-full px-2 py-1 text-sm ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-600 text-neutral-200'} border rounded focus:outline-none`}
                     />
                     <div className="flex gap-2">
                         <input
                             type="date"
                             value={editData.dueDate || ''}
                             onChange={(e) => setEditData({ ...editData, dueDate: e.target.value || undefined })}
-                            className={`w-full px-2 py-1 text-sm ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-600 text-neutral-200'
-                                } border rounded focus:outline-none`}
+                            className={`w-full px-2 py-1 text-sm ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-600 text-neutral-200'} border rounded focus:outline-none`}
                         />
                         <IoMdCalendar size={16} className="text-fuchsia-600 mt-2" />
                     </div>
                     <select
                         value={editData.priority}
                         onChange={(e) => setEditData({ ...editData, priority: e.target.value as TaskNodeData['priority'] })}
-                        className={`w-full px-2 py-1 text-sm ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-600 text-neutral-200'
-                            } border rounded focus:outline-none`}
+                        className={`w-full px-2 py-1 text-sm ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-600 text-neutral-200'} border rounded focus:outline-none`}
                     >
                         <option value="Low">Low</option>
                         <option value="Medium">Medium</option>
@@ -201,8 +197,7 @@ const TaskNodeComponent = ({
                     <select
                         value={editData.category}
                         onChange={(e) => setEditData({ ...editData, category: e.target.value as TaskNodeData['category'] })}
-                        className={`w-full px-2 py-1 text-sm ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-600 text-neutral-200'
-                            } border rounded focus:outline-none`}
+                        className={`w-full px-2 py-1 text-sm ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-600 text-neutral-200'} border rounded focus:outline-none`}
                     >
                         <option value="Work">Work</option>
                         <option value="Personal">Personal</option>
@@ -212,8 +207,7 @@ const TaskNodeComponent = ({
                     <select
                         value={editData.cornerId || ''}
                         onChange={(e) => setEditData({ ...editData, cornerId: e.target.value || undefined })}
-                        className={`w-full px-2 py-1 text-sm ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-600 text-neutral-200'
-                            } border rounded focus:outline-none`}
+                        className={`w-full px-2 py-1 text-sm ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-600 text-neutral-200'} border rounded focus:outline-none`}
                     >
                         <option value="">No Corner</option>
                         {mockCorners.map((corner) => (
@@ -224,8 +218,7 @@ const TaskNodeComponent = ({
                     </select>
                     <div className="flex items-center gap-2">
                         <label
-                            className={`text-sm ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
-                                }`}
+                            className={`text-sm ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
                         >
                             Done:
                             <input
@@ -247,10 +240,7 @@ const TaskNodeComponent = ({
                         </button>
                         <button
                             onClick={cancelEdit}
-                            className={`px-2 py-1 rounded-md text-sm ${theme === 'light'
-                                ? 'bg-gray-200 text-gray-900'
-                                : 'bg-slate-600 text-neutral-200'
-                                }`}
+                            className={`px-2 py-1 rounded-md text-sm ${theme === 'light' ? 'bg-gray-200 text-gray-900' : 'bg-slate-600 text-neutral-200'}`}
                         >
                             Cancel
                         </button>
@@ -266,34 +256,29 @@ const TaskNodeComponent = ({
                                         nds.map((node) =>
                                             node.id === id
                                                 ? {
-                                                    ...node,
-                                                    data: {
-                                                        ...node.data,
-                                                        status: node.data.status === 'Todo' ? 'Done' : 'Todo',
-                                                    },
-                                                }
+                                                      ...node,
+                                                      data: {
+                                                          ...node.data,
+                                                          status: node.data.status === 'Todo' ? 'Done' : 'Todo',
+                                                      },
+                                                  }
                                                 : node
                                         )
                                     )
                                 }
-                                className={`p-1 rounded-full ${data.status === 'Done'
-                                    ? 'bg-fuchsia-600 text-white'
-                                    : 'bg-gray-200 text-gray-900'
-                                    }`}
+                                className={`p-1 rounded-full ${data.status === 'Done' ? 'bg-fuchsia-600 text-white' : 'bg-gray-200 text-gray-900'}`}
                             >
                                 <IoMdCheckmark size={16} />
                             </button>
                             <span
-                                className={`text-sm font-medium ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
-                                    } ${data.status === 'Done' ? 'line-through' : ''}`}
+                                className={`text-sm font-medium ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'} ${data.status === 'Done' ? 'line-through' : ''}`}
                             >
                                 {data.title}
                             </span>
                         </div>
                         <button
                             onClick={() => setIsEditing(true)}
-                            className={`p-1 rounded-md ${theme === 'light' ? 'text-gray-600' : 'text-neutral-400'
-                                } hover:text-fuchsia-600`}
+                            className={`p-1 rounded-md ${theme === 'light' ? 'text-gray-600' : 'text-neutral-400'} hover:text-fuchsia-600`}
                         >
                             <IoMdCreate size={16} />
                         </button>
@@ -364,12 +349,26 @@ function TrackingPageContent() {
                     {
                         ...params,
                         id: `e${params.source}-${params.target}`,
-                        style: { stroke: theme === 'light' ? '#a855f7' : '#7e22ce' },
+                        style: { stroke: theme === 'light' ? '#a855f7' : '#7e22ce', strokeWidth: 2 },
                     },
                     eds
                 )
             ),
         [setEdges, theme]
+    );
+
+    const onEdgeClick = useCallback(
+        (event: React.MouseEvent, edge: Edge) => {
+            setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+        },
+        [setEdges]
+    );
+
+    const onEdgeDoubleClick = useCallback(
+        (event: React.MouseEvent, edge: Edge) => {
+            setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+        },
+        [setEdges]
     );
 
     const addTask = () => {
@@ -407,16 +406,14 @@ function TrackingPageContent() {
 
     return (
         <div
-            className={`flex flex-col min-h-screen ${theme === 'light' ? 'bg-gray-100' : 'bg-slate-900'
-                }`}
+            className={`flex flex-col min-h-screen ${theme === 'light' ? 'bg-gray-100' : 'bg-slate-900'}`}
         >
             <LandingNavbar />
             <main className="flex-1 py-12">
                 <Container>
                     <div className="max-w-screen-4xl mx-auto">
                         <h1
-                            className={`text-3xl sm:text-4xl font-bold mb-8 text-center ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
-                                }`}
+                            className={`text-3xl sm:text-4xl font-bold mb-8 text-center ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
                         >
                             Roadmap
                         </h1>
@@ -424,8 +421,7 @@ function TrackingPageContent() {
                             {/* Sidebar Toggle Button (Mobile) */}
                             <button
                                 onClick={toggleSidebar}
-                                className={`lg:hidden p-2 rounded-md bg-fuchsia-600 text-white mb-4 ${isSidebarOpen ? 'hidden' : 'block'
-                                    }`}
+                                className={`lg:hidden p-2 rounded-md bg-fuchsia-600 text-white mb-4 ${isSidebarOpen ? 'hidden' : 'block'}`}
                             >
                                 <IoMdMenu size={20} />
                             </button>
@@ -434,14 +430,12 @@ function TrackingPageContent() {
                                 initial={{ x: -100, opacity: 0 }}
                                 animate={{ x: 0, opacity: 1 }}
                                 transition={{ duration: 0.3 }}
-                                className={`w-full lg:w-80 h-[calc(100vh-200px)] p-4 rounded-lg ${theme === 'light' ? 'bg-white' : 'bg-slate-700'
-                                    } shadow-md overflow-y-auto ${isSidebarOpen ? 'block' : 'hidden lg:block'}`}
+                                className={`w-full lg:w-80 h-[calc(100vh-200px)] p-4 rounded-lg ${theme === 'light' ? 'bg-white' : 'bg-slate-700'} shadow-md overflow-y-auto ${isSidebarOpen ? 'block' : 'hidden lg:block'}`}
                             >
                                 {/* Add Task */}
                                 <div className="mb-6">
                                     <h2
-                                        className={`text-lg font-semibold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
-                                            }`}
+                                        className={`text-lg font-semibold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
                                     >
                                         Add New Task
                                     </h2>
@@ -451,30 +445,21 @@ function TrackingPageContent() {
                                             value={newTaskTitle}
                                             onChange={(e) => setNewTaskTitle(e.target.value)}
                                             placeholder="Task title"
-                                            className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light'
-                                                ? 'bg-white text-gray-900 border border-gray-300'
-                                                : 'bg-slate-600 text-neutral-200 border border-slate-500'
-                                                } focus:outline-none focus:ring-2 focus:ring-fuchsia-500`}
+                                            className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light' ? 'bg-white text-gray-900 border border-gray-300' : 'bg-slate-600 text-neutral-200 border border-slate-500'} focus:outline-none focus:ring-2 focus:ring-fuchsia-500`}
                                         />
                                         <div className="flex gap-2">
                                             <input
                                                 type="date"
                                                 value={newTaskDueDate}
                                                 onChange={(e) => setNewTaskDueDate(e.target.value)}
-                                                className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light'
-                                                    ? 'bg-white text-gray-900 border border-gray-300'
-                                                    : 'bg-slate-600 text-neutral-200 border border-slate-500'
-                                                    } focus:outline-none focus:ring-2 focus:ring-fuchsia-500`}
+                                                className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light' ? 'bg-white text-gray-900 border border-gray-300' : 'bg-slate-600 text-neutral-200 border border-slate-500'} focus:outline-none focus:ring-2 focus:ring-fuchsia-500`}
                                             />
                                             <IoMdCalendar size={20} className="text-fuchsia-600 mt-2" />
                                         </div>
                                         <select
                                             value={newTaskPriority}
                                             onChange={(e) => setNewTaskPriority(e.target.value as TaskNodeData['priority'])}
-                                            className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light'
-                                                ? 'bg-white text-gray-900 border border-gray-300'
-                                                : 'bg-slate-600 text-neutral-200 border border-slate-500'
-                                                } focus:outline-none focus:ring-2 focus:ring-fuchsia-500`}
+                                            className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light' ? 'bg-white text-gray-900 border border-gray-300' : 'bg-slate-600 text-neutral-200 border border-slate-500'} focus:outline-none focus:ring-2 focus:ring-fuchsia-500`}
                                         >
                                             <option value="Low">Low</option>
                                             <option value="Medium">Medium</option>
@@ -483,10 +468,7 @@ function TrackingPageContent() {
                                         <select
                                             value={newTaskCategory}
                                             onChange={(e) => setNewTaskCategory(e.target.value as TaskNodeData['category'])}
-                                            className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light'
-                                                ? 'bg-white text-gray-900 border border-gray-300'
-                                                : 'bg-slate-600 text-neutral-200 border border-slate-500'
-                                                } focus:outline-none focus:ring-2 focus:ring-fuchsia-500`}
+                                            className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light' ? 'bg-white text-gray-900 border border-gray-300' : 'bg-slate-600 text-neutral-200 border border-slate-500'} focus:outline-none focus:ring-2 focus:ring-fuchsia-500`}
                                         >
                                             <option value="Work">Work</option>
                                             <option value="Personal">Personal</option>
@@ -496,10 +478,7 @@ function TrackingPageContent() {
                                         <select
                                             value={newTaskCorner}
                                             onChange={(e) => setNewTaskCorner(e.target.value)}
-                                            className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light'
-                                                ? 'bg-white text-gray-900 border border-gray-300'
-                                                : 'bg-slate-600 text-neutral-200 border border-slate-500'
-                                                } focus:outline-none focus:ring-2 focus:ring-fuchsia-500`}
+                                            className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light' ? 'bg-white text-gray-900 border border-gray-300' : 'bg-slate-600 text-neutral-200 border border-slate-500'} focus:outline-none focus:ring-2 focus:ring-fuchsia-500`}
                                         >
                                             {corners.map((corner) => (
                                                 <option key={corner.id} value={corner.id}>
@@ -518,8 +497,7 @@ function TrackingPageContent() {
                                 {/* Corners */}
                                 <div className="mb-6">
                                     <h2
-                                        className={`text-lg font-semibold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
-                                            }`}
+                                        className={`text-lg font-semibold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
                                     >
                                         Corners
                                     </h2>
@@ -529,12 +507,10 @@ function TrackingPageContent() {
                                             return (
                                                 <li
                                                     key={corner.id}
-                                                    className={`p-2 rounded-md ${theme === 'light' ? 'bg-gray-50' : 'bg-slate-800'
-                                                        }`}
+                                                    className={`p-2 rounded-md ${theme === 'light' ? 'bg-gray-50' : 'bg-slate-800'}`}
                                                 >
                                                     <span
-                                                        className={`text-sm font-medium ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
-                                                            }`}
+                                                        className={`text-sm font-medium ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
                                                     >
                                                         {corner.title} ({taskCount} tasks)
                                                     </span>
@@ -545,8 +521,7 @@ function TrackingPageContent() {
                                     {corners.length > 3 && (
                                         <button
                                             onClick={() => setShowAllCorners(!showAllCorners)}
-                                            className={`mt-2 text-sm ${theme === 'light' ? 'text-fuchsia-600' : 'text-fuchsia-400'
-                                                } hover:underline`}
+                                            className={`mt-2 text-sm ${theme === 'light' ? 'text-fuchsia-600' : 'text-fuchsia-400'} hover:underline`}
                                         >
                                             {showAllCorners ? 'Show Less' : 'Show More'}
                                         </button>
@@ -555,8 +530,7 @@ function TrackingPageContent() {
                                 {/* Categories */}
                                 <div>
                                     <h2
-                                        className={`text-lg font-semibold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
-                                            }`}
+                                        className={`text-lg font-semibold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
                                     >
                                         Categories
                                     </h2>
@@ -580,14 +554,14 @@ function TrackingPageContent() {
                                                     style={{
                                                         appearance: 'none',
                                                         backgroundColor: color,
-                                                        border: 1,
+                                                        border: '1px solid',
+                                                        borderColor: theme === 'light' ? '#d1d5db' : '#4b5563',
                                                         padding: 0,
                                                         margin: 0,
                                                     }}
                                                 />
                                                 <span
-                                                    className={`text-sm ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
-                                                        }`}
+                                                    className={`text-sm ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
                                                 >
                                                     {category}
                                                 </span>
@@ -604,6 +578,8 @@ function TrackingPageContent() {
                                     onNodesChange={onNodesChange}
                                     onEdgesChange={onEdgesChange}
                                     onConnect={onConnect}
+                                    onEdgeClick={onEdgeClick}
+                                    onEdgeDoubleClick={onEdgeDoubleClick}
                                     nodeTypes={{
                                         custom: (props) => <TaskNodeComponent {...props} categoryColors={categoryColors} />,
                                     }}
