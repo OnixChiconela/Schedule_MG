@@ -3,10 +3,12 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { MoonStar, Sun } from 'lucide-react'
+import { Briefcase, BriefcaseBusiness, Calendar, Mail, MoonStar, PenBox, Sun } from 'lucide-react'
 import { IOptions, RecursivePartial } from 'node_modules/@tsparticles/engine/types/export-types'
 import Particles, { initParticlesEngine } from '@tsparticles/react'
 import { loadSlim } from '@tsparticles/slim'
+import { useTheme } from '@/app/themeContext'
+import { IconType } from 'react-icons'
 
 interface SideNavbarProps {
   theme: 'light' | 'dark'
@@ -119,30 +121,50 @@ export default function SideNavbar({ theme, toggleTheme }: SideNavbarProps) {
         </motion.button>
       </div>
 
-      <ul className="space-y-4">
+      <ul className="flex flex-col ">
         <li>
-          <Link href="/calendar">
-            <span className={`block p-2 rounded-lg hover:bg-fuchsia-800/50 hover:text-white ${theme === 'light' ? 'text-gray-900' : 'text-gray-200'}`}>
-              Calendar
-            </span>
-          </Link>
+          <SideNavButton
+            title='Tasks'
+            link='/calendar'
+            icon={PenBox}
+          />
         </li>
         <li>
-          <Link href="/business">
-            <span className={`block p-2 rounded-lg hover:bg-fuchsia-800/50 hover:text-white ${theme === 'light' ? 'text-gray-900' : 'text-gray-200'}`}>
-              Business
-            </span>
-          </Link>
+          <SideNavButton
+            title='Calendar'
+            link='/calendar'
+            icon={Calendar}
+          />
         </li>
         <li>
-          <Link href="/feedback">
-            <span className={`block p-2 rounded-lg hover:bg-fuchsia-800/50 hover:text-white ${theme === 'light' ? 'text-gray-900' : 'text-gray-200'}`}>
-              Feedback
-            </span>
-          </Link>
+          <SideNavButton
+            title='Calendar'
+            link='/business'
+            icon={BriefcaseBusiness}
+          />
         </li>
+        <li>
+          <SideNavButton
+            title='Feedback'
+            link='/feedback'
+            icon={Mail}
+          />
+        </li>
+        
       </ul>
 
     </motion.nav>
+  )
+}
+
+const SideNavButton = ({ title, link, icon: Icon }: { title: string, link?: string, icon: IconType }) => {
+  const { theme } = useTheme()
+  return (
+    <Link href={link!}>
+      <span className={`flex gap-1 p-2 rounded-lg hover:bg-fuchsia-800/50 hover:text-white ${theme === 'light' ? 'text-gray-800' : 'text-gray-200'}`}>
+        <Icon size={22} />
+        {title}
+      </span>
+    </Link>
   )
 }

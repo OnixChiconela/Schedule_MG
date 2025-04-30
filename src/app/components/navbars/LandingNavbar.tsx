@@ -1,9 +1,9 @@
 "use client"
 
 import Link from "next/link";
-import Container from "./Container";
+import Container from "../Container";
 import Image from "next/image";
-import { useTheme } from "../themeContext";
+import { useTheme } from "../../themeContext";
 import { useState } from "react";
 import { MoonStar, Sun } from "lucide-react";
 import { HiMenu, HiX } from "react-icons/hi";
@@ -92,14 +92,14 @@ const LandingNavbar = () => {
                         </div>
                         <button
                             onClick={handleRegisterOpen}
-                            className="text-sm font-semibold py-2 px-6 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition hover:scale-105"
+                            className="text-sm font-semibold py-2 px-6 rounded-full bg-fuchsia-700 text-white hover:bg-fuchsia-800 transition hover:scale-105"
                         >
                             Sign Up
                         </button>
                         <button
                             onClick={toggleTheme}
                             className={`p-2 rounded-full ${theme === 'light' ? 'bg-gray-200 text-gray-900' : 'bg-slate-600 text-neutral-200'
-                                } hover:bg-fuchsia-500 transition`}
+                                } hover:bg-fuchsia-700 transition`}
                             aria-label="Toggle theme"
                         >
                             {theme === 'light' ? <MoonStar size={20} /> : <Sun size={20} />}

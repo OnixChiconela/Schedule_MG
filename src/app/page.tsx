@@ -1,23 +1,20 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { IoLogoLinkedin, IoLogoTwitter, IoMdArrowForward } from 'react-icons/io'
-import { FaClock, FaRobot } from 'react-icons/fa'
-import { MdPeople, MdSettings, MdTrendingUp } from 'react-icons/md'
-import { BiGlobe, BiSpreadsheet, BiWorld } from 'react-icons/bi'
+import { motion } from 'framer-motion'
+import { IoMdArrowForward } from 'react-icons/io'
+import { FaCalendarAlt, FaChartLine, FaClock, FaMagic } from 'react-icons/fa'
+import { MdBusinessCenter, MdChecklist, MdLightbulbOutline, MdPeople, MdTrendingUp } from 'react-icons/md'
+import { BiGlobe } from 'react-icons/bi'
 import Container from './components/Container'
 import { useTheme } from './themeContext'
 import ClientOnly from './components/ClientOnly'
-import { MoonStar, Sun } from 'lucide-react'
 import Card from './components/cards/Card'
 import InfoCard from './components/cards/CardInfo'
-import { HiMenu, HiX } from 'react-icons/hi'
-import LandingNavbar from './components/LandingNavbar'
-
+import LandingNavbar from './components/navbars/LandingNavbar'
+import LandingFooter from './components/footers/LandingFooter'
 
 export default function LandingPage() {
   const router = useRouter()
@@ -52,14 +49,14 @@ export default function LandingPage() {
                       <Container>
                         <div className="flex flex-col ">
                           <h1 className={`text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-center  ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`}>
-                            Manage your destiny
+                            {`Design your path`}
                             <br />
                             <span className={`bg-gradient-to-r from-fuchsia-500 to-fuchsia-900 bg-clip-text text-transparent`}>
-                              Engage Your Audience
+                              {`Shape your life`}
                             </span>
                           </h1>
                           <p className={`text-lg sm:text-xl max-w-2xl mb-8 text-center ${theme == "light" ? "text-gray-600" : "text-neutral-400/90"}`}>
-                            Join Scheuor to connect with your audience, gain actionable insights, and grow your business with ease.
+                            {`Bring your goals, habits, and priorities together in one place, Scheuor helps you stay on track, and grow with intention`}
                           </p>
                           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <Link
@@ -92,25 +89,25 @@ export default function LandingPage() {
 
               <div className="text-center mb-12">
                 <h2 className={`text-3xl sm:text-4xl font-bold ${theme == "light" ? "text-gray-900" : "text-neutral-200"} `}>How Scheuor Can Help</h2>
-                <p className={`text-lg mt-4 ${theme == "light" ? "text-gray-600" : "text-neutral-300"}`}>Tools to boost your engagement</p>
+                <p className={`text-lg mt-4 ${theme == "light" ? "text-gray-600" : "text-neutral-300"}`}>Tools to boost your your clarity, focus, and progress</p>
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <InfoCard
                   icon={MdTrendingUp}
-                  title="Actionable Insights"
-                  content="Gain insights to optimize your strategy and drive growth."
+                  title="Actionable Clarity"
+                  content="Visualize your priorities clearly and take intentional steps toward your goals."
                   iconColor="fuchsia"
                 />
                 <InfoCard
                   icon={BiGlobe}
-                  title="Connect with Audiences"
-                  content="Reach and engage with your target audience effectively."
+                  title="Stay Aligned"
+                  content="Organize tasks, routines, and reflections in one place to keep your day aligned with your purpose."
                   iconColor="fuchsia"
                 />
                 <InfoCard
                   icon={MdPeople}
-                  title="Build Relationships"
-                  content="Foster trust and loyalty through meaningful interactions."
+                  title="Build Habits That Sticks"
+                  content="Track your progress and reinforce behaviors that move you forward, consistently."
                   iconColor="fuchsia"
                 />
               </div>
@@ -147,9 +144,9 @@ export default function LandingPage() {
                       text-black rounded-xl">
                       1
                     </div>
-                    <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>Create a Track</h3>
+                    <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>Set Your Intentions</h3>
                     <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                      {`Put your site url and start track your engagement`}
+                    <a className='font-semibold'>{`Define what matters to you: `}</a>{`Start by adding your goals, projects, or areas of focus, this is your personal map.`}
                     </p>
                   </div>
                 </div>
@@ -163,9 +160,9 @@ export default function LandingPage() {
                       text-black rounded-xl ">
                       2
                     </div>
-                    <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>Visualize Your Site Performance</h3>
+                    <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>Organize Your Space</h3>
                     <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                      {`!`}
+                      <a className='font-semibold'>{`Create your flow: `}</a>{`Add tasks, notes, and reflections. Use visual boards and sections to structure your day your wasy`}
                     </p>
                   </div>
                   <div className="flex-1 lg:max-w-xl">
@@ -188,10 +185,9 @@ export default function LandingPage() {
                       text-black rounded-xl">
                       3
                     </div>
-                    <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>Start Receiving Reservations</h3>
+                    <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Track & Grow`}</h3>
                     <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                      {`You're all set! Now it's time to start eaning with Fireus. Welcome your guests, create
-                        memorable experiences, and grow your business`}
+                    <a className='font-semibold'>{`Stay aligned and evolve: `}</a>{`Review progress, adjust priorities, and build habits that support your journey`}
                     </p>
                   </div>
                 </div>
@@ -214,36 +210,38 @@ export default function LandingPage() {
                   Why Choose Scheuor
                 </div>
                 <h2 className={`text-3xl sm:text-4xl font-bold ${theme == "light" ? "text-gray-900" : "text-neutral-200"} `}>
-                  Empower Your Business with Scheuor
+                  Empower Your Journey with Scheuor
                 </h2>
                 <p className={`text-lg  ${theme == "light" ? "text-gray-600" : "text-neutral-300"} mt-4 max-w-2xl mx-auto`}>
-
-                  Join a platform designed to help you connect, engage, and grow.
+                  Join a platform built to help you focus, organize, and grow - your way.
                 </p>
               </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
                 <InfoCard
                   icon={MdTrendingUp}
-                  title="Data-Driven Growth"
-                  content="Use insights to make informed decisions and grow faster."
+                  title="Clarity that drives action"
+                  content="Cut through the noise. Visualize your priorities and turn ideas into meaningful progress."
                   iconColor="fuchsia"
+                  className='h-full'
                 />
                 <InfoCard
                   icon={FaClock}
-                  title="Save Time"
-                  content="Streamline your workflow with intuitive tools."
+                  title="Time, on your side"
+                  content="Spend less time managing and more time creating. Scheuor helps you stay focused without friction."
                   iconColor="fuchsia"
+                  className='h-full'
                 />
                 <InfoCard
                   icon={BiGlobe}
-                  title="Global Reach"
-                  content="Connect with audiences worldwide effortlessly."
+                  title="Grow with intention"
+                  content="Track your habits, reflect on your journey, and make space for the things that matters most."
                   iconColor="fuchsia"
+                  className='h-full'
                 />
               </div>
               <div className="mt-12 text-center">
-                <h3 className={`text-2xl font-bold ${theme == "light" ? "text-slate-800" : "text-neutral-200"} mb-4`}>Ready to Grow with Scheuor?</h3>
-                <p className={`text-lg ${theme == "light" ? "text-slate-700" : "text-neutral-300"} mb-8`}>Start engaging your audience today.</p>
+                <h3 className={`text-2xl font-bold ${theme == "light" ? "text-slate-800" : "text-neutral-200"} mb-4`}>Build Momentum, Your Way.</h3>
+                <p className={`text-lg ${theme == "light" ? "text-slate-700" : "text-neutral-300"} mb-8`}>Start organizing with purpose, one step at a time.</p>
                 <div className='flex justify-center'>
                   <Link
                     href="/onboarding"
@@ -260,59 +258,60 @@ export default function LandingPage() {
         {/* Features */}
         <section id="features" className="py-16">
           <Container>
-            <div className="text-center mb-12">
-              <h2 className={`text-3xl sm:text-4xl font-bold  ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`}>Features to Boost Engagement</h2>
-              <p className={`text-lg  ${theme == "light" ? "text-gray-600" : "text-neutral-300"} mt-4 max-w-2xl mx-auto`}>
-                Discover tools to manage interactions and grow your business.
-              </p>
-            </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <InfoCard
-                icon={BiWorld}
-                title="Global Exposure"
-                content="Reach new audiences and expand your presence."
-                iconColor="fuchsia"
-              />
-              <InfoCard
-                icon={BiSpreadsheet}
-                title="Interaction Management"
-                content="Organize and track all your audience interactions."
-                iconColor="fuchsia"
-              />
-              <InfoCard
-                icon={MdSettings}
-                title="Customization"
-                content="Tailor experiences to suit your audience’s needs."
-                iconColor="fuchsia"
-                soon="coming soon"
-              />
-              <InfoCard
-                icon={MdTrendingUp}
-                title="Performance Tracking"
-                content="Monitor engagement with real-time insights."
-                iconColor="fuchsia"
-                soon="coming soon"
-              />
-              <InfoCard
-                icon={MdPeople}
-                title="Community Building"
-                content="Foster stronger connections with your audience."
-                iconColor="fuchsia"
-                soon="coming soon"
-              />
-              <InfoCard
-                icon={FaRobot}
-                title="AI-Powered Tools"
-                content="Enhance efficiency with smart automation."
-                iconColor="fuchsia"
-                soon="coming soon"
-              />
+            <div className="flex flex-col justify-center items-center max-w-screen-xl mx-auto">
+
+              <div className="text-center mb-12">
+                <h2 className={`text-3xl sm:text-4xl font-bold  ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`}>Tools That Keep You Moving.</h2>
+                <p className={`text-lg  ${theme == "light" ? "text-gray-600" : "text-neutral-300"} mt-4 max-w-2xl mx-auto`}>
+                  Stay in control, stay on track, stay growing.
+                </p>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <InfoCard
+                  icon={MdChecklist}
+                  title="Smart Task Management"
+                  content="Organize, prioritize, and track your tasks with clarity and ease."
+                  iconColor="fuchsia"
+                />
+                <InfoCard
+                  icon={FaCalendarAlt}
+                  title="Integrated Calendar"
+                  content="Visualize your schedule and plan your days with confidence."
+                  iconColor="fuchsia"
+                />
+                <InfoCard
+                  icon={MdLightbulbOutline}
+                  title="Personalized Suggestions"
+                  content="Get thoughtful insights based on your habits and priorities."
+                  iconColor="fuchsia"
+                />
+                <InfoCard
+                  icon={MdBusinessCenter}
+                  title="My Business"
+                  content="Manage your personal and professional projects in one place."
+                  iconColor="fuchsia"
+                />
+                <InfoCard
+                  icon={FaChartLine}
+                  title="Progress Tracking"
+                  content="Monitor your growth with visual metrics and reflection tools."
+                  iconColor="fuchsia"
+                  soon="coming soon"
+                />
+                <InfoCard
+                  icon={FaMagic}
+                  title="AI Assist"
+                  content="Let smart automation help you stay focused and organized."
+                  iconColor="fuchsia"
+                  soon="coming soon"
+                />
+              </div>
             </div>
           </Container>
         </section>
 
         {/* Testimonials */}
-        <section id="testimonials" className={`py-16 ${theme == "light" ? "bg-slate-50" : ""}`}>
+        <section id="testimonials" className={`py-16 ${theme == "light" ? "" : ""}`}>
           <Container>
             <div className="flex flex-col justify-center items-center max-w-screen-xl mx-auto">
 
@@ -323,25 +322,25 @@ export default function LandingPage() {
                 <Card>
                   <div className="p-6">
                     <p className={`${theme == "light" ? "text-gray-700" : "text-neutral-300"}`}>
-                      "Scheuor transformed how I connect with my audience, making engagement seamless."
+                      "Scheuor gave me the clarity I needed to finally stay on top of my tasks and goals."
                     </p>
-                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>— Maria, Entrepreneur</h4>
+                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>— Maria, Freelancer</h4>
                   </div>
                 </Card>
                 <Card>
                   <div className="p-6">
                     <p className={`${theme == "light" ? "text-gray-700" : "text-neutral-300"}`}>
-                      "The tools on Scheuor helped me grow my business faster than I expected."
+                      "I use Scheuor every day to organize my week, it keeps me focused without feeling overwhelmed."
                     </p>
-                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>— John, Business Owner</h4>
+                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>— John, Designer</h4>
                   </div>
                 </Card>
                 <Card>
                   <div className="p-6">
                     <p className={`${theme == "light" ? "text-gray-700" : "text-neutral-300"}`}>
-                      {`"Scheuor's insights made it easy to optimize my strategy and reach new clients."`}
+                      "The suggestions and clean interface help me reflect and stay intentional with my time."
                     </p>
-                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>— Ana, Marketer</h4>
+                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>— Ana, Creative</h4>
                   </div>
                 </Card>
               </div>
@@ -364,30 +363,34 @@ export default function LandingPage() {
                 Discover how Scheuor helps you connect with your audience and grow your business.
               </p>
             </div>
-            <div className="flex justify-center">
-              <div className="w-full max-w-4xl">
-                <video
-                  className="w-full rounded-lg shadow-lg shadow-fuchsia-300"
-                  controls
-                  poster="/demo-poster.jpg"
-                >
-                  <source src="/demo.mp4" type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-            </div>
-            <div className="mt-8 text-center">
-              <div className='flex justify-center'>
-                <Link
-                  href="/onboarding"
-                  className="text-sm font-semibold py-3 px-8 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition flex items-center justify-center mx-auto"
-                >
-                  Try Scheuor Now <IoMdArrowForward size={20} className="ml-2" />
-                </Link>
-              </div>
-            </div>
           </Container>
+
+
         </section>
+
+
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto aspect-video">
+            <video
+              className="w-full h-full object-cover rounded-lg shadow-lg shadow-fuchsia-300"
+              controls
+              poster="/demo-poster.jpg"
+            >
+              <source src="/demo.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+        <div className="mt-8 text-center">
+          <div className='flex justify-center'>
+            <Link
+              href="/onboarding"
+              className="text-sm font-semibold py-3 px-8 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition flex items-center justify-center mx-auto"
+            >
+              Try Scheuor Now <IoMdArrowForward size={20} className="ml-2" />
+            </Link>
+          </div>
+        </div>
 
         {/* Final CTA */}
         <section id="final-cta" className="py-16 text-center">
@@ -414,71 +417,7 @@ export default function LandingPage() {
         </section>
 
         {/* Footer */}
-        <footer className="bg-gray-900 py-12 w-full">
-          <Container>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="flex flex-col items-center md:items-start">
-                <Link href="/" className="flex items-center gap-2 mb-4">
-                  <Image
-                    alt="Scheuor Logo"
-                    className="h-10 w-auto"
-                    height={40}
-                    width={80}
-                    src="/scheuor.png"
-                  />
-                </Link>
-                <p className="text-gray-400 text-sm text-center md:text-left">
-                  Scheuor: Connect with your audience, gain insights, and grow your business.
-                </p>
-              </div>
-              <div className="flex flex-col items-center md:items-start">
-                <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
-                <ul className="space-y-2">
-                  <li>
-                    <Link href="/" className="text-gray-400 hover:text-fuchsia-600 transition">
-                      Home
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/onboarding" className="text-gray-400 hover:text-fuchsia-600 transition">
-                      Get Started
-                    </Link>
-                  </li>
-                  <li>
-                    <a
-                      href="mailto:contact@scheuor.com"
-                      className="text-gray-400 hover:text-fuchsia-600 transition"
-                    >
-                      Contact Us
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div className="flex flex-col items-center md:items-start">
-                <h3 className="text-lg font-semibold text-white mb-4">Follow Us</h3>
-                <div className="flex gap-4">
-                  <a
-                    href="https://x.com/scheuor"
-                    className="text-gray-400 hover:text-fuchsia-600 transition"
-                  >
-                    <IoLogoTwitter size={24} />
-                  </a>
-                  <a
-                    href="https://linkedin.com/company/scheuor"
-                    className="text-gray-400 hover:text-fuchsia-600 transition"
-                  >
-                    <IoLogoLinkedin size={24} />
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div className="mt-8 text-center">
-              <p className="text-gray-400 text-sm">
-                © 2025 Scheuor. All rights reserved.
-              </p>
-            </div>
-          </Container>
-        </footer>
+        <LandingFooter />
 
         {/* Register Modal (Simplified) */}
         {isRegisterOpen && (

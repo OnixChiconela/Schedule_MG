@@ -5,7 +5,7 @@ import { ScaleLoader } from 'react-spinners';
 
 const Loader = () => {
   const { theme } = useTheme();
-  const loaderColor = theme === 'light' ? '#ff6a00' : '#60a5fa';
+  const loaderColor = theme === 'light' ? '#a855f7' : '#7e22ce';
 
   return (
     <div

@@ -47,6 +47,11 @@ export default function EventModal({
     tags: event?.tags || [],
   })
   const [selectedBusinessId, setSelectedBusinessId] = useState<string>(event?.businessId || '')
+  function toDatetimeLocalString(date: Date) {
+    const offset = date.getTimezoneOffset()
+    const localDate = new Date(date.getTime() - offset * 60 * 1000)
+    return localDate.toISOString().slice(0, 16)
+  }
 
   useEffect(() => {
     console.log('EventModal: Updating formData', { event, slot })
@@ -67,9 +72,7 @@ export default function EventModal({
   const today = new Date()
   const minDateTime = event?.id
     ? undefined
-    : new Date(today.getFullYear(), today.getMonth(), today.getDate())
-      .toISOString()
-      .slice(0, 16)
+    : toDatetimeLocalString(new Date());
 
   const handleTagToggle = (tag: string) => {
     setFormData((prev) => ({
@@ -139,28 +142,28 @@ export default function EventModal({
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             placeholder="Event title"
             className={`w-full p-3 rounded-lg border ${theme === 'light'
-                ? 'border-gray-300 bg-white text-gray-900'
-                : 'border-slate-600 bg-slate-800 text-gray-200'
+              ? 'border-gray-300 bg-white text-gray-900'
+              : 'border-slate-600 bg-slate-800 text-gray-200'
               } focus:outline-none focus:ring-2 focus:ring-blue-500`}
           />
           <input
             type="datetime-local"
-            value={formData.start.toISOString().slice(0, 16)}
+            value={toDatetimeLocalString(formData.start)}
             onChange={(e) => setFormData({ ...formData, start: new Date(e.target.value) })}
             min={minDateTime}
             className={`w-full p-3 rounded-lg border ${theme === 'light'
-                ? 'border-gray-300 bg-white text-gray-900'
-                : 'border-slate-600 bg-slate-800 text-gray-200'
+              ? 'border-gray-300 bg-white text-gray-900'
+              : 'border-slate-600 bg-slate-800 text-gray-200'
               } focus:outline-none focus:ring-2 focus:ring-blue-500`}
           />
           <input
             type="datetime-local"
-            value={formData.end.toISOString().slice(0, 16)}
+            value={toDatetimeLocalString(formData.end)}
             onChange={(e) => setFormData({ ...formData, end: new Date(e.target.value) })}
             min={minDateTime}
             className={`w-full p-3 rounded-lg border ${theme === 'light'
-                ? 'border-gray-300 bg-white text-gray-900'
-                : 'border-slate-600 bg-slate-800 text-gray-200'
+              ? 'border-gray-300 bg-white text-gray-900'
+              : 'border-slate-600 bg-slate-800 text-gray-200'
               } focus:outline-none focus:ring-2 focus:ring-blue-500`}
           />
           <select
@@ -169,8 +172,8 @@ export default function EventModal({
               setFormData({ ...formData, priority: e.target.value as 'Low' | 'Medium' | 'High' })
             }
             className={`w-full p-3 rounded-lg border ${theme === 'light'
-                ? 'border-gray-300 bg-white text-gray-900'
-                : 'border-slate-600 bg-slate-800 text-gray-200'
+              ? 'border-gray-300 bg-white text-gray-900'
+              : 'border-slate-600 bg-slate-800 text-gray-200'
               } focus:outline-none focus:ring-2 focus:ring-blue-500`}
           >
             <option value="Low">Low</option>
@@ -187,8 +190,8 @@ export default function EventModal({
                   key={tag}
                   onClick={() => handleTagToggle(tag)}
                   className={`px-2 py-1 rounded-lg border-2 bg-transparent ${formData.tags.includes(tag)
-                      ? `border-fuchsia-600 ${theme == "light" ? 'text-gray-900' : 'text-gray-300'}`
-                      : `border-gray-200 dark:border-slate-600 ${theme == "light" ? 'text-gray-900' : 'text-gray-200'}`
+                    ? `border-fuchsia-600 ${theme == "light" ? 'text-gray-900' : 'text-gray-300'}`
+                    : `border-gray-200 dark:border-slate-600 ${theme == "light" ? 'text-gray-900' : 'text-gray-200'}`
                     }`}
                 >
                   {tag}
@@ -202,8 +205,8 @@ export default function EventModal({
             placeholder="Description"
             rows={4}
             className={`w-full p-3 rounded-lg border ${theme === 'light'
-                ? 'border-gray-300 bg-white text-gray-900'
-                : 'border-slate-600 bg-slate-800 text-gray-200'
+              ? 'border-gray-300 bg-white text-gray-900'
+              : 'border-slate-600 bg-slate-800 text-gray-200'
               } focus:outline-none focus:ring-2 focus:ring-blue-500`}
           />
           <select
@@ -213,8 +216,8 @@ export default function EventModal({
               setFormData({ ...formData, businessId: e.target.value, projectId: '' })
             }}
             className={`w-full p-3 rounded-lg border ${theme === 'light'
-                ? 'border-gray-300 bg-white text-gray-900'
-                : 'border-slate-600 bg-slate-800 text-gray-200'
+              ? 'border-gray-300 bg-white text-gray-900'
+              : 'border-slate-600 bg-slate-800 text-gray-200'
               } focus:outline-none focus:ring-2 focus:ring-blue-500`}
           >
             <option value="">Select business</option>
@@ -229,8 +232,8 @@ export default function EventModal({
               value={formData.projectId || ''}
               onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
               className={`w-full p-3 rounded-lg border ${theme === 'light'
-                  ? 'border-gray-300 bg-white text-gray-900'
-                  : 'border-slate-600 bg-slate-800 text-gray-200'
+                ? 'border-gray-300 bg-white text-gray-900'
+                : 'border-slate-600 bg-slate-800 text-gray-200'
                 } focus:outline-none focus:ring-2 focus:ring-blue-500`}
             >
               <option value="">Select project</option>
@@ -245,35 +248,35 @@ export default function EventModal({
           )}
           <div className="flex justify-between">
             <div className='flex space-x-2'>
-            <motion.button
-              onClick={handleSave}
-              className={`px-4 py-2 rounded-xl font-semibold transition-colors flex items-center gap-1 ${theme === 'light'
+              <motion.button
+                onClick={handleSave}
+                className={`px-4 py-2 rounded-xl font-semibold transition-colors flex items-center gap-1 ${theme === 'light'
                   ? 'bg-gray-700 hover:bg-gray-800 text-white'
                   : 'bg-gray-950 hover:bg-black text-gray-100'
-                }`}
-              variants={buttonVariants}
-              whileHover="hover"
-              whileTap="tap"
-              disabled={!formData.title.trim()}
-            >
-              <BiMemoryCard size={17} />
-              Save
-            </motion.button>
-            <motion.button
-              onClick={() => {
-                console.log('Clicked Cancel Event')
-                onClose()
-              }}
-              className={`px-4 py-2 rounded-xl font-semibold transition-colors ${theme === 'light'
+                  }`}
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
+                disabled={!formData.title.trim()}
+              >
+                <BiMemoryCard size={17} />
+                Save
+              </motion.button>
+              <motion.button
+                onClick={() => {
+                  console.log('Clicked Cancel Event')
+                  onClose()
+                }}
+                className={`px-4 py-2 rounded-xl font-semibold transition-colors ${theme === 'light'
                   ? 'bg-gray-200 hover:bg-gray-300 text-gray-900'
                   : 'bg-slate-600 hover:bg-slate-500 text-gray-200'
-                }`}
-              variants={buttonVariants}
-              whileHover="hover"
-              whileTap="tap"
-            >
-              Cancelar
-            </motion.button>
+                  }`}
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
+              >
+                Cancelar
+              </motion.button>
             </div>
             {formData.id && onDelete && (
               <motion.button
@@ -286,8 +289,8 @@ export default function EventModal({
                   }
                 }}
                 className={`px-4 py-2 rounded-xl font-semibold transition-colors flex items-center  gap-1 ${theme === 'light'
-                    ? 'bg-red-700 hover:bg-red-800 text-white'
-                    : 'bg-red-700 hover:bg-red-800 text-gray-100'
+                  ? 'bg-red-700 hover:bg-red-800 text-white'
+                  : 'bg-red-700 hover:bg-red-800 text-gray-100'
                   }`}
                 variants={buttonVariants}
                 whileHover="hover"

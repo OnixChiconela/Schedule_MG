@@ -4,9 +4,10 @@ import { useTheme } from "@/app/themeContext";
 
 interface Props {
     children: React.ReactNode
+    className?: string
 }
 
-const Card: React.FC<Props> = ({ children }) => {
+const Card: React.FC<Props> = ({ children, className }) => {
     const { theme } = useTheme();
 
     return (
@@ -15,7 +16,9 @@ const Card: React.FC<Props> = ({ children }) => {
             rounded-lg 
             shadow-md 
             hover:shadow-lg 
-            transition-shadow`}
+            transition-shadow
+            ${className}
+            `}
         >
             {children}
         </div>

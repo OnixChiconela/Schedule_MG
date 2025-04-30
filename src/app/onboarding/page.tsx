@@ -74,7 +74,7 @@ export default function Onboarding() {
         </motion.button>
       </div>
       <motion.div
-        className={`p-8 bg-white dark:bg-slate-800 rounded-xl shadow-lg max-w-md w-full`}
+        className={`p-8 bg-white dark:bg-slate-800 rounded-xl shadow-lg shadow-neutral-600 max-w-2xl w-full`}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -85,12 +85,12 @@ export default function Onboarding() {
         <p className="mb-6 text-gray-600 dark:text-gray-300">
           Select between 3 to 5 interest so we can give you personilized suggestions
         </p>
-        <div className="space-y-2 mb-6">
+        <div className="gap-2 grid grid-cols-3 mb-6">
           {categories.map((category) => (
             <button
               key={category}
               onClick={() => handleInterestToggle(category)}
-              className={`w-full p-2 rounded-lg text-left ${selectedInterests.includes(category)
+              className={`w-full p-4 rounded-lg text-left ${selectedInterests.includes(category)
                 ? 'bg-fuchsia-800/60 text-white'
                 : 'bg-gray-200 dark:bg-slate-600 text-gray-900 dark:text-gray-200'
                 }`}
@@ -101,8 +101,8 @@ export default function Onboarding() {
         </div>
         <motion.button
           onClick={handleStart}
-          className="w-full py-3 bg-black text-white rounded-lg font-semibold hover:bg-blue-700"
-          whileHover={{ scale: 1.05 }}
+          className="w-full py-3 bg-neutral-950 text-white rounded-lg font-semibold hover:bg-black"
+          whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.95 }}
         >
           Começar
