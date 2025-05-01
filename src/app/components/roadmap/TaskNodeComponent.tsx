@@ -23,6 +23,31 @@ const TaskNodeComponent = ({
     const [editData, setEditData] = useState<TaskNodeData>(data);
 
     const saveChanges = () => {
+        // Update localStorage
+        const saved = localStorage.getItem('corners');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            const updatedCorners = parsed.map((corner: any) => ({
+                ...corner,
+                tasks: corner.tasks.map((task: any) =>
+                    task.id.toString() === id
+                        ? {
+                              id: parseInt(id),
+                              title: editData.title,
+                              status: editData.status === 'Done' ? 'Done' : 'To Do',
+                              createdDate: editData.createdDate,
+                              dueDate: editData.dueDate || '',
+                              priority: editData.priority,
+                              isCompleted: editData.status === 'Done',
+                              category: editData.category, // Store category
+                          }
+                        : task
+                ),
+            }));
+            localStorage.setItem('corners', JSON.stringify(updatedCorners));
+        }
+
+        // Update nodes
         setNodes((nds) =>
             nds.map((node) =>
                 node.id === id ? { ...node, data: editData } : node
@@ -47,11 +72,6 @@ const TaskNodeComponent = ({
         { value: 'Personal', label: 'Personal' },
         { value: 'Study', label: 'Study' },
         { value: 'Other', label: 'Other' },
-    ];
-
-    const cornerOptions = [
-        { value: '', label: 'No Corner' },
-        // Corners will be passed dynamically in TrackingPage
     ];
 
     return (
@@ -107,6 +127,21 @@ const TaskNodeComponent = ({
                         onChange={(value) => setEditData({ ...editData, category: value as TaskNodeData['category'] })}
                         placeholder="Select Category"
                     />
+                    <div className="flex items-center gap-2">
+                        <label
+                            className={`text-sm ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
+                        >
+                            Done:
+                            <input
+                                type="checkbox"
+                                checked={editData.status === 'Done'}
+                                onChange={(e) =>
+                                    setEditData({ ...editData, status: e.target.checked ? 'Done' : 'Todo' })
+                                }
+                                className="ml-2"
+                            />
+                        </label>
+                    </div>
                     <div className="flex gap-2">
                         <button
                             onClick={saveChanges}
@@ -127,21 +162,11 @@ const TaskNodeComponent = ({
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <button
-                                onClick={() =>
-                                    setNodes((nds) =>
-                                        nds.map((node) =>
-                                            node.id === id
-                                                ? {
-                                                      ...node,
-                                                      data: {
-                                                          ...node.data,
-                                                          status: node.data.status === 'Todo' ? 'Done' : 'Todo',
-                                                      },
-                                                  }
-                                                : node
-                                        )
-                                    )
-                                }
+                                onClick={() => {
+                                    const newStatus = data.status === 'Todo' ? 'Done' : 'Todo';
+                                    setEditData({ ...editData, status: newStatus });
+                                    saveChanges();
+                                }}
                                 className={`p-1 rounded-full ${data.status === 'Done' ? 'bg-fuchsia-600 text-white' : 'bg-gray-200 text-gray-900'}`}
                             >
                                 <IoMdCheckmark size={16} />

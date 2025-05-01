@@ -17,6 +17,7 @@ type Task = {
   dueDate: string
   priority: 'Low' | 'Medium' | 'High'
   isCompleted: boolean
+  position?: { x: number; y: number };
 }
 
 type Corner = {
@@ -154,62 +155,71 @@ const TasksPage = () => {
   const selectedCorner = corners.find((corner) => corner.id === selectedCornerId)
 
   return (
-    <main className={`flex h-screen w-full ${theme === 'light' ? 'bg-white text-black' : 'bg-slate-800 text-gray-200'} transition-colors duration-300 relative`}>
-      <div className='hidden lg:flex'>
-        <SideNavbar theme={theme} toggleTheme={toggleTheme} />
-      </div>
-      <div className="flex-1 overflow-y-auto p-6 lg:ml-[260px]">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold">My Tasks</h1>
-          <button
-            onClick={() => setIsProjectModalOpen(true)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${theme === 'light' ? 'bg-black text-white hover:bg-neutral-800' : 'bg-slate-900 text-gray-200 hover:bg-slate-700'
-              }`}
-          >
-            <Plus size={16} />
-            New Corner
-          </button>
+    <main
+        className={`flex h-screen w-full ${
+            theme === 'light' ? 'bg-white text-black' : 'bg-slate-800 text-gray-200'
+        } transition-colors duration-300 relative`}
+    >
+        <div className="hidden lg:flex">
+            <SideNavbar theme={theme} toggleTheme={toggleTheme} />
+        </div>
+        <div className="flex-1 overflow-y-auto p-6 lg:ml-[260px]">
+            <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-semibold">My Tasks</h1>
+                <button
+                    onClick={() => setIsProjectModalOpen(true)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${
+                        theme === 'light'
+                            ? 'bg-black text-white hover:bg-neutral-800'
+                            : 'bg-slate-900 text-gray-200 hover:bg-slate-700'
+                    }`}
+                >
+                    <Plus size={16} />
+                    New Corner
+                </button>
+            </div>
+
+            <div className="mb-6">
+                <ProjectSelector
+                    corners={corners}
+                    selectedCornerId={selectedCornerId}
+                    onSelect={setSelectedCornerId}
+                    theme={theme}
+                />
+            </div>
+
+            <div className="grid gap-4">
+                {selectedCorner ? (
+                    <TaskCard
+                        corner={selectedCorner}
+                        onNewTaskClick={() => setIsTaskModalOpen(true)}
+                        onTaskToggle={handleTaskToggle}
+                        onTaskUpdate={handleTaskUpdate}
+                        onTaskReorder={handleTaskReorder}
+                        theme={theme}
+                    />
+                ) : (
+                    <div className={theme === 'light' ? 'text-gray-500' : 'text-gray-400'}>
+                        Select a Corner to view its tasks.
+                    </div>
+                )}
+            </div>
         </div>
 
-        <div className="mb-6">
-          <ProjectSelector
-            corners={corners}
-            selectedCornerId={selectedCornerId}
-            onSelect={setSelectedCornerId}
+        <NewProjectModal
+            isOpen={isProjectModalOpen}
+            onClose={() => setIsProjectModalOpen(false)}
+            onCreate={handleCreateCorner}
             theme={theme}
-          />
-        </div>
-
-        <div className="grid gap-4">
-          {selectedCorner ? (
-            <TaskCard
-              corner={selectedCorner}
-              onNewTaskClick={() => setIsTaskModalOpen(true)}
-              onTaskToggle={handleTaskToggle}
-              onTaskUpdate={handleTaskUpdate}
-              onTaskReorder={handleTaskReorder}
-              theme={theme}
-            />
-          ) : (
-            <div className={theme === 'light' ? 'text-gray-500' : 'text-gray-400'}>Select a Corner to view its tasks.</div>
-          )}
-        </div>
-      </div>
-
-      <NewProjectModal
-        isOpen={isProjectModalOpen}
-        onClose={() => setIsProjectModalOpen(false)}
-        onCreate={handleCreateCorner}
-        theme={theme}
-      />
-      <NewTaskModal
-        isOpen={isTaskModalOpen}
-        onClose={() => setIsTaskModalOpen(false)}
-        onCreate={handleCreateTask}
-        theme={theme}
-      />
+        />
+        <NewTaskModal
+            isOpen={isTaskModalOpen}
+            onClose={() => setIsTaskModalOpen(false)}
+            onCreate={handleCreateTask}
+            theme={theme}
+        />
     </main>
-  )
+);
 }
 
 export default TasksPage

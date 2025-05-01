@@ -13,6 +13,7 @@ import ReactFlow, {
     Connection,
     useReactFlow,
     ReactFlowProvider,
+    NodeChange,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import LandingNavbar from '../components/navbars/LandingNavbar';
@@ -46,7 +47,7 @@ function TrackingPageContent() {
     const { theme } = useTheme();
     const { setViewport } = useReactFlow();
 
-    // Initialize corners and nodes from localStorage
+    // Initialize corners from localStorage
     const [corners, setCorners] = useState<Corner[]>(() => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('corners');
@@ -67,9 +68,16 @@ function TrackingPageContent() {
             const saved = localStorage.getItem('corners');
             if (saved) {
                 const parsed = JSON.parse(saved);
+                console.log('Initial localStorage:', parsed); // Debug
                 let nodes: Node<TaskNodeData>[] = [];
                 parsed.forEach((corner: any, cornerIndex: number) => {
                     corner.tasks.forEach((task: any, taskIndex: number) => {
+                        const position = task.position && typeof task.position.x === 'number' && typeof task.position.y === 'number'
+                            ? task.position
+                            : {
+                                  x: 100 + (cornerIndex * 300) + (taskIndex * 50),
+                                  y: 100 + (taskIndex * 150),
+                              };
                         nodes.push({
                             id: task.id.toString(),
                             type: 'custom',
@@ -79,16 +87,15 @@ function TrackingPageContent() {
                                 createdDate: task.createdDate,
                                 dueDate: task.dueDate,
                                 priority: task.priority,
-                                category: 'Other', // Default, can be updated in task creation
+                                category: task.category || 'Other',
                                 cornerId: corner.id.toString(),
+                                position,
                             },
-                            position: {
-                                x: 100 + (cornerIndex * 300) + (taskIndex * 50),
-                                y: 100 + (taskIndex * 150),
-                            },
+                            position,
                         });
                     });
                 });
+                console.log('Initial Nodes:', nodes); // Debug
                 return nodes;
             }
         }
@@ -124,6 +131,7 @@ function TrackingPageContent() {
             const saved = localStorage.getItem('corners');
             if (saved) {
                 const parsed = JSON.parse(saved);
+                console.log('Storage Change localStorage:', parsed); // Debug
                 setCorners(
                     parsed.map((corner: any) => ({
                         id: corner.id.toString(),
@@ -133,6 +141,12 @@ function TrackingPageContent() {
                 let newNodes: Node<TaskNodeData>[] = [];
                 parsed.forEach((corner: any, cornerIndex: number) => {
                     corner.tasks.forEach((task: any, taskIndex: number) => {
+                        const position = task.position && typeof task.position.x === 'number' && typeof task.position.y === 'number'
+                            ? task.position
+                            : {
+                                  x: 100 + (cornerIndex * 300) + (taskIndex * 50),
+                                  y: 100 + (taskIndex * 150),
+                              };
                         newNodes.push({
                             id: task.id.toString(),
                             type: 'custom',
@@ -142,16 +156,15 @@ function TrackingPageContent() {
                                 createdDate: task.createdDate,
                                 dueDate: task.dueDate,
                                 priority: task.priority,
-                                category: 'Other',
+                                category: task.category || 'Other',
                                 cornerId: corner.id.toString(),
+                                position,
                             },
-                            position: {
-                                x: 100 + (cornerIndex * 300) + (taskIndex * 50),
-                                y: 100 + (taskIndex * 150),
-                            },
+                            position,
                         });
                     });
                 });
+                console.log('Storage Change Nodes:', newNodes); // Debug
                 setNodes(newNodes);
             }
         };
@@ -159,6 +172,39 @@ function TrackingPageContent() {
         window.addEventListener('storage', handleStorageChange);
         return () => window.removeEventListener('storage', handleStorageChange);
     }, [setNodes]);
+
+    // Save node positions to localStorage on change
+    const handleNodesChange = useCallback(
+        (changes: NodeChange[]) => {
+            onNodesChange(changes);
+            changes.forEach((change) => {
+                console.log('Node Change:', change); // Debug
+                if (change.type === 'position' && change.position) {
+                    const saved = localStorage.getItem('corners');
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        const updatedCorners = parsed.map((corner: any) => ({
+                            ...corner,
+                            tasks: corner.tasks.map((task: any) =>
+                                task.id.toString() === change.id
+                                    ? {
+                                          ...task,
+                                          position: {
+                                              x: Math.round(change.position!.x),
+                                              y: Math.round(change.position!.y),
+                                          },
+                                      }
+                                    : task
+                            ),
+                        }));
+                        console.log('Saving Positions:', updatedCorners); // Debug
+                        localStorage.setItem('corners', JSON.stringify(updatedCorners));
+                    }
+                }
+            });
+        },
+        [onNodesChange]
+    );
 
     // Calculate progress for each category
     const progress = useMemo(() => {
@@ -217,6 +263,7 @@ function TrackingPageContent() {
 
     const addTask = () => {
         if (!newTaskTitle.trim() || !newTaskCorner) return;
+        const newPosition = { x: Math.random() * 300, y: Math.random() * 300 };
         const newTask = {
             id: parseInt(generateId()),
             title: newTaskTitle,
@@ -225,6 +272,8 @@ function TrackingPageContent() {
             dueDate: newTaskDueDate || new Date().toISOString().split('T')[0],
             priority: newTaskPriority,
             isCompleted: false,
+            category: newTaskCategory,
+            position: newPosition,
         };
         const saved = localStorage.getItem('corners');
         let parsed = saved ? JSON.parse(saved) : [];
@@ -233,6 +282,7 @@ function TrackingPageContent() {
                 ? { ...corner, tasks: [...corner.tasks, newTask] }
                 : corner
         );
+        console.log('Adding Task:', newTask, 'Corners:', parsed); // Debug
         localStorage.setItem('corners', JSON.stringify(parsed));
 
         const newNode: Node<TaskNodeData> = {
@@ -246,8 +296,9 @@ function TrackingPageContent() {
                 priority: newTaskPriority,
                 category: newTaskCategory,
                 cornerId: newTaskCorner,
+                position: newPosition,
             },
-            position: { x: Math.random() * 300, y: Math.random() * 300 },
+            position: newPosition,
         };
         setNodes((nds) => [...nds, newNode]);
         setNewTaskTitle('');
@@ -437,7 +488,7 @@ function TrackingPageContent() {
                                 <ReactFlow
                                     nodes={nodes}
                                     edges={edges}
-                                    onNodesChange={onNodesChange}
+                                    onNodesChange={handleNodesChange}
                                     onEdgesChange={onEdgesChange}
                                     onConnect={onConnect}
                                     onEdgeClick={onEdgeClick}
