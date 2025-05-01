@@ -127,6 +127,7 @@ export default function SideNavbar({ theme, toggleTheme }: SideNavbarProps) {
             title='Tasks'
             link='/calendar'
             icon={PenBox}
+            theme={theme}
           />
         </li>
         <li>
@@ -134,6 +135,7 @@ export default function SideNavbar({ theme, toggleTheme }: SideNavbarProps) {
             title='Calendar'
             link='/calendar'
             icon={Calendar}
+            theme={theme}
           />
         </li>
         <li>
@@ -141,6 +143,7 @@ export default function SideNavbar({ theme, toggleTheme }: SideNavbarProps) {
             title='Calendar'
             link='/business'
             icon={BriefcaseBusiness}
+            theme={theme}
           />
         </li>
         <li>
@@ -148,6 +151,7 @@ export default function SideNavbar({ theme, toggleTheme }: SideNavbarProps) {
             title='Feedback'
             link='/feedback'
             icon={Mail}
+            theme={theme}
           />
         </li>
         <li>
@@ -155,6 +159,7 @@ export default function SideNavbar({ theme, toggleTheme }: SideNavbarProps) {
             title='Roadmap'
             link='/tracking'
             icon={Car}
+            theme={theme}
           />
         </li>
         
@@ -164,11 +169,11 @@ export default function SideNavbar({ theme, toggleTheme }: SideNavbarProps) {
   )
 }
 
-const SideNavButton = ({ title, link, icon: Icon }: { title: string, link?: string, icon: IconType }) => {
-  const { theme } = useTheme()
+const SideNavButton = ({ title, link, icon: Icon, theme }: { title: string, link?: string, icon: IconType, theme: "light" | "dark" }) => {
+  // const { theme } = useTheme()
   return (
     <Link href={link!}>
-      <span className={`flex gap-1 p-2 rounded-lg hover:bg-fuchsia-800/50 hover:text-white ${theme == 'light' ? 'text-gray-800' : 'text-gray-200'}`}>
+      <span className={`flex gap-1 p-2 rounded-lg hover:bg-fuchsia-800/50 hover:text-white ${theme === 'light' ? 'text-gray-800' : 'text-gray-200'}`}>
         <Icon size={22} />
         {title}
       </span>

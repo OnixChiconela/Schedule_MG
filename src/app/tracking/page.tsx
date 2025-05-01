@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import ReactFlow, {
     addEdge,
     Background,
@@ -12,8 +12,6 @@ import ReactFlow, {
     Edge,
     Connection,
     useReactFlow,
-    Handle,
-    Position,
     ReactFlowProvider,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
@@ -22,18 +20,9 @@ import LandingFooter from '../components/footers/LandingFooter';
 import Container from '../components/Container';
 import { useTheme } from '../themeContext';
 import { motion } from 'framer-motion';
-import { IoMdCheckmark, IoMdCreate, IoMdAdd, IoMdCalendar, IoMdMenu } from 'react-icons/io';
-
-// Type for node data
-type TaskNodeData = {
-    title: string;
-    status: 'Todo' | 'Done';
-    createdDate: string;
-    dueDate?: string;
-    priority: 'Low' | 'Medium' | 'High';
-    category: 'Work' | 'Personal' | 'Study' | 'Other';
-    cornerId?: string;
-};
+import { IoMdAdd, IoMdCalendar, IoMdMenu } from 'react-icons/io';
+import TaskNodeComponent, { TaskNodeData, CategoryColors } from '../components/roadmap/TaskNodeComponent';
+import CustomDropdown from '../components/CustomDropdown';
 
 // Type for corners
 type Corner = {
@@ -116,187 +105,8 @@ const mockEdges: Edge[] = [
     { id: 'e1-3', source: '1', target: '3', style: { stroke: '#a855f7', strokeWidth: 2 } },
 ];
 
-// Custom node component
-const TaskNodeComponent = ({
-    data,
-    id,
-    categoryColors,
-}: {
-    data: TaskNodeData;
-    id: string;
-    categoryColors: Record<TaskNodeData['category'], string>;
-}) => {
-    const { theme } = useTheme();
-    const { setNodes } = useReactFlow();
-    const [isEditing, setIsEditing] = useState(false);
-    const [editData, setEditData] = useState<TaskNodeData>(data);
-
-    const saveChanges = () => {
-        setNodes((nds) =>
-            nds.map((node) =>
-                node.id === id ? { ...node, data: editData } : node
-            )
-        );
-        setIsEditing(false);
-    };
-
-    const cancelEdit = () => {
-        setEditData(data);
-        setIsEditing(false);
-    };
-
-    return (
-        <motion.div
-            className={`p-4 rounded-lg shadow-md w-48 relative ${theme === 'light' ? 'bg-white' : 'bg-slate-700'} border-2`}
-            style={{ borderColor: categoryColors[data.category] }}
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.2 }}
-        >
-            {/* Bullet for Connections */}
-            <Handle
-                type="source"
-                position={Position.Right}
-                id="source"
-                className="w-3 h-3 bg-fuchsia-600 rounded-full"
-                style={{ top: '20px', right: '-6px' }}
-            />
-            <Handle
-                type="target"
-                position={Position.Left}
-                id="target"
-                className="w-3 h-3 bg-fuchsia-600 rounded-full"
-                style={{ top: '20px', left: '-6px' }}
-            />
-
-            {isEditing ? (
-                <div className="flex flex-col gap-2">
-                    <input
-                        value={editData.title}
-                        onChange={(e) => setEditData({ ...editData, title: e.target.value })}
-                        placeholder="Task title"
-                        className={`w-full px-2 py-1 text-sm ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-600 text-neutral-200'} border rounded focus:outline-none`}
-                    />
-                    <div className="flex gap-2">
-                        <input
-                            type="date"
-                            value={editData.dueDate || ''}
-                            onChange={(e) => setEditData({ ...editData, dueDate: e.target.value || undefined })}
-                            className={`w-full px-2 py-1 text-sm ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-600 text-neutral-200'} border rounded focus:outline-none`}
-                        />
-                        <IoMdCalendar size={16} className="text-fuchsia-600 mt-2" />
-                    </div>
-                    <select
-                        value={editData.priority}
-                        onChange={(e) => setEditData({ ...editData, priority: e.target.value as TaskNodeData['priority'] })}
-                        className={`w-full px-2 py-1 text-sm ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-600 text-neutral-200'} border rounded focus:outline-none`}
-                    >
-                        <option value="Low">Low</option>
-                        <option value="Medium">Medium</option>
-                        <option value="High">High</option>
-                    </select>
-                    <select
-                        value={editData.category}
-                        onChange={(e) => setEditData({ ...editData, category: e.target.value as TaskNodeData['category'] })}
-                        className={`w-full px-2 py-1 text-sm ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-600 text-neutral-200'} border rounded focus:outline-none`}
-                    >
-                        <option value="Work">Work</option>
-                        <option value="Personal">Personal</option>
-                        <option value="Study">Study</option>
-                        <option value="Other">Other</option>
-                    </select>
-                    <select
-                        value={editData.cornerId || ''}
-                        onChange={(e) => setEditData({ ...editData, cornerId: e.target.value || undefined })}
-                        className={`w-full px-2 py-1 text-sm ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-600 text-neutral-200'} border rounded focus:outline-none`}
-                    >
-                        <option value="">No Corner</option>
-                        {mockCorners.map((corner) => (
-                            <option key={corner.id} value={corner.id}>
-                                {corner.title}
-                            </option>
-                        ))}
-                    </select>
-                    <div className="flex items-center gap-2">
-                        <label
-                            className={`text-sm ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
-                        >
-                            Done:
-                            <input
-                                type="checkbox"
-                                checked={editData.status === 'Done'}
-                                onChange={(e) =>
-                                    setEditData({ ...editData, status: e.target.checked ? 'Done' : 'Todo' })
-                                }
-                                className="ml-2"
-                            />
-                        </label>
-                    </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={saveChanges}
-                            className="px-2 py-1 rounded-md bg-fuchsia-600 text-white hover:bg-fuchsia-700 text-sm"
-                        >
-                            Save
-                        </button>
-                        <button
-                            onClick={cancelEdit}
-                            className={`px-2 py-1 rounded-md text-sm ${theme === 'light' ? 'bg-gray-200 text-gray-900' : 'bg-slate-600 text-neutral-200'}`}
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-            ) : (
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() =>
-                                    setNodes((nds) =>
-                                        nds.map((node) =>
-                                            node.id === id
-                                                ? {
-                                                      ...node,
-                                                      data: {
-                                                          ...node.data,
-                                                          status: node.data.status === 'Todo' ? 'Done' : 'Todo',
-                                                      },
-                                                  }
-                                                : node
-                                        )
-                                    )
-                                }
-                                className={`p-1 rounded-full ${data.status === 'Done' ? 'bg-fuchsia-600 text-white' : 'bg-gray-200 text-gray-900'}`}
-                            >
-                                <IoMdCheckmark size={16} />
-                            </button>
-                            <span
-                                className={`text-sm font-medium ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'} ${data.status === 'Done' ? 'line-through' : ''}`}
-                            >
-                                {data.title}
-                            </span>
-                        </div>
-                        <button
-                            onClick={() => setIsEditing(true)}
-                            className={`p-1 rounded-md ${theme === 'light' ? 'text-gray-600' : 'text-neutral-400'} hover:text-fuchsia-600`}
-                        >
-                            <IoMdCreate size={16} />
-                        </button>
-                    </div>
-                    <div className="text-xs text-gray-500">
-                        <p>Due: {data.dueDate || 'N/A'}</p>
-                        <p>Priority: {data.priority}</p>
-                        <p>Category: {data.category}</p>
-                        <p>Corner: {mockCorners.find((c) => c.id === data.cornerId)?.title || 'None'}</p>
-                    </div>
-                </div>
-            )}
-        </motion.div>
-    );
-};
-
 // Category colors
-const defaultCategoryColors: Record<TaskNodeData['category'], string> = {
+const defaultCategoryColors: CategoryColors = {
     Work: '#3b82f6',
     Personal: '#22c55e',
     Study: '#f59e0b',
@@ -321,7 +131,7 @@ function TrackingPageContent() {
     const [newTaskPriority, setNewTaskPriority] = useState<TaskNodeData['priority']>('Medium');
     const [newTaskCategory, setNewTaskCategory] = useState<TaskNodeData['category']>('Work');
     const [newTaskCorner, setNewTaskCorner] = useState<string>('c1');
-    const [categoryColors, setCategoryColors] = useState<Record<TaskNodeData['category'], string>>(() => {
+    const [categoryColors, setCategoryColors] = useState<CategoryColors>(() => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('categoryColors');
             return saved ? JSON.parse(saved) : defaultCategoryColors;
@@ -334,10 +144,31 @@ function TrackingPageContent() {
     const [isNavbarOpen, setIsNavbarOpen] = useState(false);
     const { setViewport } = useReactFlow();
 
+    // Memoize nodeTypes
+    const nodeTypes = useMemo(
+        () => ({
+            custom: (props: any) => <TaskNodeComponent {...props} categoryColors={categoryColors} />,
+        }),
+        [categoryColors]
+    );
+
     // Persist category colors
     useEffect(() => {
         localStorage.setItem('categoryColors', JSON.stringify(categoryColors));
     }, [categoryColors]);
+
+    // Calculate progress for each category
+    const progress = useMemo(() => {
+        const categories: TaskNodeData['category'][] = ['Work', 'Personal', 'Study', 'Other'];
+        return categories.map((category) => {
+            const total = nodes.filter((node) => node.data.category === category).length;
+            const completed = nodes.filter(
+                (node) => node.data.category === category && node.data.status === 'Done'
+            ).length;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            return { category, total, completed, percentage };
+        });
+    }, [nodes]);
 
     // Generate simple ID
     const generateId = () => Date.now().toString();
@@ -404,6 +235,24 @@ function TrackingPageContent() {
         if (isNavbarOpen) setIsNavbarOpen(false); // Close navbar if open
     };
 
+    const priorityOptions = [
+        { value: 'Low', label: 'Low' },
+        { value: 'Medium', label: 'Medium' },
+        { value: 'High', label: 'High' },
+    ];
+
+    const categoryOptions = [
+        { value: 'Work', label: 'Work' },
+        { value: 'Personal', label: 'Personal' },
+        { value: 'Study', label: 'Study' },
+        { value: 'Other', label: 'Other' },
+    ];
+
+    const cornerOptions = corners.map((corner) => ({
+        value: corner.id,
+        label: corner.title,
+    }));
+
     return (
         <div
             className={`flex flex-col min-h-screen ${theme === 'light' ? 'bg-gray-100' : 'bg-slate-900'}`}
@@ -456,36 +305,24 @@ function TrackingPageContent() {
                                             />
                                             <IoMdCalendar size={20} className="text-fuchsia-600 mt-2" />
                                         </div>
-                                        <select
+                                        <CustomDropdown
+                                            options={priorityOptions}
                                             value={newTaskPriority}
-                                            onChange={(e) => setNewTaskPriority(e.target.value as TaskNodeData['priority'])}
-                                            className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light' ? 'bg-white text-gray-900 border border-gray-300' : 'bg-slate-600 text-neutral-200 border border-slate-500'} focus:outline-none focus:ring-2 focus:ring-fuchsia-500`}
-                                        >
-                                            <option value="Low">Low</option>
-                                            <option value="Medium">Medium</option>
-                                            <option value="High">High</option>
-                                        </select>
-                                        <select
+                                            onChange={(value) => setNewTaskPriority(value as TaskNodeData['priority'])}
+                                            placeholder="Select Priority"
+                                        />
+                                        <CustomDropdown
+                                            options={categoryOptions}
                                             value={newTaskCategory}
-                                            onChange={(e) => setNewTaskCategory(e.target.value as TaskNodeData['category'])}
-                                            className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light' ? 'bg-white text-gray-900 border border-gray-300' : 'bg-slate-600 text-neutral-200 border border-slate-500'} focus:outline-none focus:ring-2 focus:ring-fuchsia-500`}
-                                        >
-                                            <option value="Work">Work</option>
-                                            <option value="Personal">Personal</option>
-                                            <option value="Study">Study</option>
-                                            <option value="Other">Other</option>
-                                        </select>
-                                        <select
+                                            onChange={(value) => setNewTaskCategory(value as TaskNodeData['category'])}
+                                            placeholder="Select Category"
+                                        />
+                                        <CustomDropdown
+                                            options={cornerOptions}
                                             value={newTaskCorner}
-                                            onChange={(e) => setNewTaskCorner(e.target.value)}
-                                            className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light' ? 'bg-white text-gray-900 border border-gray-300' : 'bg-slate-600 text-neutral-200 border border-slate-500'} focus:outline-none focus:ring-2 focus:ring-fuchsia-500`}
-                                        >
-                                            {corners.map((corner) => (
-                                                <option key={corner.id} value={corner.id}>
-                                                    {corner.title}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            onChange={(value) => setNewTaskCorner(value)}
+                                            placeholder="Select Corner"
+                                        />
                                         <button
                                             onClick={addTask}
                                             className="px-3 py-1.5 rounded-md bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition flex items-center justify-center gap-2"
@@ -580,16 +417,14 @@ function TrackingPageContent() {
                                     onConnect={onConnect}
                                     onEdgeClick={onEdgeClick}
                                     onEdgeDoubleClick={onEdgeDoubleClick}
-                                    nodeTypes={{
-                                        custom: (props) => <TaskNodeComponent {...props} categoryColors={categoryColors} />,
-                                    }}
+                                    nodeTypes={nodeTypes}
                                     fitView
                                     className={`${theme === 'light' ? 'bg-gray-50' : 'bg-slate-800'}`}
                                 >
                                     <Background
-                                        gap={20}
-                                        size={2}
-                                        color={theme === 'light' ? '#d1d5db' : '#4b5563'}
+                                    gap={20}
+                                    size={2}
+                                    color={theme === 'light' ? '#d1d5db' : '#4b5563'}
                                     />
                                     <Controls />
                                     <MiniMap
@@ -602,10 +437,50 @@ function TrackingPageContent() {
                                                     ? '#d1d5db'
                                                     : '#4b5563'
                                         }
+                                        className={`rounded-lg ${theme === 'light' ? 'bg-gray-100' : 'bg-slate-700'}`}
+                                        maskColor="transparent"
+                                        style={{ background: theme === 'light' ? '#f1f1f1' : '#26304A' }}
                                     />
                                 </ReactFlow>
                             </div>
                         </div>
+                        {/* Progress Display */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className={`mt-6 p-4 rounded-lg ${theme === 'light' ? 'bg-white' : 'bg-slate-700'} shadow-md`}
+                        >
+                            <h2
+                                className={`text-lg font-semibold mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
+                            >
+                                Category Progress
+                            </h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {progress.map(({ category, total, completed, percentage }) => (
+                                    <div key={category} className="flex flex-col gap-2">
+                                        <div className="flex items-center justify-between">
+                                            <span
+                                                className={`text-sm font-medium ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
+                                            >
+                                                {category}
+                                            </span>
+                                            <span
+                                                className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-neutral-400'}`}
+                                            >
+                                                {percentage}% ({completed}/{total})
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                            <div
+                                                className="bg-fuchsia-600 h-2.5 rounded-full transition-all duration-300"
+                                                style={{ width: `${percentage}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
                     </div>
                 </Container>
             </main>
@@ -613,3 +488,36 @@ function TrackingPageContent() {
         </div>
     );
 }
+
+/* Optional: Custom Edge with Delete Button (uncomment to enable)
+// import { EdgeProps } from 'reactflow';
+// const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, style }: EdgeProps) => {
+//     const { setEdges } = useReactFlow();
+//     return (
+//         <>
+//             <path
+//                 id={id}
+//                 style={style}
+//                 d={`M${sourceX},${sourceY} L${targetX},${targetY}`}
+//             />
+//             <foreignObject
+//                 width="24"
+//                 height="24"
+//                 x={(sourceX + targetX) / 2 - 12}
+//                 y={(sourceY + targetY) / 2 - 12}
+//             >
+//                 <button
+//                     className="bg-fuchsia-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+//                     onClick={() => setEdges((eds) => eds.filter((e) => e.id !== id))}
+//                 >
+//                     ×
+//                 </button>
+//             </foreignObject>
+//         </>
+//     );
+// };
+// const edgeTypes = useMemo(() => ({ custom: CustomEdge }), []);
+// Update mockEdges: { id: 'e1-2', source: '1', target: '2', type: 'custom', style: { stroke: '#a855f7', strokeWidth: 2 } }
+// Update onConnect: { ...params, id: `e${params.source}-${params.target}`, type: 'custom', style: ... }
+// Update ReactFlow: edgeTypes={edgeTypes}
+*/
