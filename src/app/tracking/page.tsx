@@ -21,91 +21,11 @@ import Container from '../components/Container';
 import { useTheme } from '../themeContext';
 import { motion } from 'framer-motion';
 import { IoMdAdd, IoMdCalendar, IoMdMenu } from 'react-icons/io';
-import TaskNodeComponent, { TaskNodeData, CategoryColors } from '../components/roadmap/TaskNodeComponent';
+import { TaskNodeData, CategoryColors, Corner } from "@/app/types/index"
 import CustomDropdown from '../components/CustomDropdown';
+import TaskNodeComponent from '../components/roadmap/TaskNodeComponent';
 
 // Type for corners
-type Corner = {
-    id: string;
-    title: string;
-};
-
-// Mock corners
-const mockCorners: Corner[] = [
-    { id: 'c1', title: 'Onixin' },
-    { id: 'c2', title: 'Project X' },
-    { id: 'c3', title: 'Personal Goals' },
-    { id: 'c4', title: 'Study Plan' },
-];
-
-// Mock nodes
-const mockNodes: Node<TaskNodeData>[] = [
-    {
-        id: '1',
-        type: 'custom',
-        data: {
-            title: 'Get out of bed',
-            status: 'Done',
-            createdDate: '2025-04-30',
-            dueDate: '2025-04-30',
-            priority: 'Low',
-            category: 'Personal',
-            cornerId: 'c3',
-        },
-        position: { x: 100, y: 100 },
-    },
-    {
-        id: '2',
-        type: 'custom',
-        data: {
-            title: 'Write blog post',
-            status: 'Todo',
-            createdDate: '2025-04-30',
-            dueDate: '2025-05-02',
-            priority: 'Medium',
-            category: 'Work',
-            cornerId: 'c1',
-        },
-        position: { x: 300, y: 100 },
-    },
-    {
-        id: '3',
-        type: 'custom',
-        data: {
-            title: 'Attend meeting',
-            status: 'Todo',
-            createdDate: '2025-04-30',
-            dueDate: '2025-05-01',
-            priority: 'High',
-            category: 'Work',
-            cornerId: 'c1',
-        },
-        position: { x: 100, y: 300 },
-    },
-    {
-        id: '4',
-        type: 'custom',
-        data: {
-            title: 'Prepare notes',
-            status: 'Done',
-            createdDate: '2025-04-30',
-            dueDate: '2025-04-29',
-            priority: 'Medium',
-            category: 'Study',
-            cornerId: 'c4',
-        },
-        position: { x: 300, y: 300 },
-    },
-];
-
-// Mock edges
-const mockEdges: Edge[] = [
-    { id: 'e1-2', source: '1', target: '2', style: { stroke: '#a855f7', strokeWidth: 2 } },
-    { id: 'e3-4', source: '3', target: '4', style: { stroke: '#a855f7', strokeWidth: 2 } },
-    { id: 'e1-3', source: '1', target: '3', style: { stroke: '#a855f7', strokeWidth: 2 } },
-];
-
-// Category colors
 const defaultCategoryColors: CategoryColors = {
     Work: '#3b82f6',
     Personal: '#22c55e',
@@ -124,13 +44,64 @@ export default function TrackingPage() {
 
 function TrackingPageContent() {
     const { theme } = useTheme();
-    const [nodes, setNodes, onNodesChange] = useNodesState<TaskNodeData>(mockNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState(mockEdges);
+    const { setViewport } = useReactFlow();
+
+    // Initialize corners and nodes from localStorage
+    const [corners, setCorners] = useState<Corner[]>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('corners');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                return parsed.map((corner: any) => ({
+                    id: corner.id.toString(),
+                    title: corner.title,
+                }));
+            }
+        }
+        return [];
+    });
+
+    // Initialize nodes from localStorage
+    const initialNodes: Node<TaskNodeData>[] = (() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('corners');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                let nodes: Node<TaskNodeData>[] = [];
+                parsed.forEach((corner: any, cornerIndex: number) => {
+                    corner.tasks.forEach((task: any, taskIndex: number) => {
+                        nodes.push({
+                            id: task.id.toString(),
+                            type: 'custom',
+                            data: {
+                                title: task.title,
+                                status: task.status === 'Done' ? 'Done' : 'Todo',
+                                createdDate: task.createdDate,
+                                dueDate: task.dueDate,
+                                priority: task.priority,
+                                category: 'Other', // Default, can be updated in task creation
+                                cornerId: corner.id.toString(),
+                            },
+                            position: {
+                                x: 100 + (cornerIndex * 300) + (taskIndex * 50),
+                                y: 100 + (taskIndex * 150),
+                            },
+                        });
+                    });
+                });
+                return nodes;
+            }
+        }
+        return [];
+    })();
+
+    const [nodes, setNodes, onNodesChange] = useNodesState<TaskNodeData>(initialNodes);
+    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [newTaskTitle, setNewTaskTitle] = useState('');
     const [newTaskDueDate, setNewTaskDueDate] = useState('');
     const [newTaskPriority, setNewTaskPriority] = useState<TaskNodeData['priority']>('Medium');
-    const [newTaskCategory, setNewTaskCategory] = useState<TaskNodeData['category']>('Work');
-    const [newTaskCorner, setNewTaskCorner] = useState<string>('c1');
+    const [newTaskCategory, setNewTaskCategory] = useState<TaskNodeData['category']>('Other');
+    const [newTaskCorner, setNewTaskCorner] = useState<string>('');
     const [categoryColors, setCategoryColors] = useState<CategoryColors>(() => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('categoryColors');
@@ -138,24 +109,56 @@ function TrackingPageContent() {
         }
         return defaultCategoryColors;
     });
-    const [corners, setCorners] = useState<Corner[]>(mockCorners);
     const [showAllCorners, setShowAllCorners] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isNavbarOpen, setIsNavbarOpen] = useState(false);
-    const { setViewport } = useReactFlow();
-
-    // Memoize nodeTypes
-    const nodeTypes = useMemo(
-        () => ({
-            custom: (props: any) => <TaskNodeComponent {...props} categoryColors={categoryColors} />,
-        }),
-        [categoryColors]
-    );
 
     // Persist category colors
     useEffect(() => {
         localStorage.setItem('categoryColors', JSON.stringify(categoryColors));
     }, [categoryColors]);
+
+    // Sync nodes with localStorage changes
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const saved = localStorage.getItem('corners');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                setCorners(
+                    parsed.map((corner: any) => ({
+                        id: corner.id.toString(),
+                        title: corner.title,
+                    }))
+                );
+                let newNodes: Node<TaskNodeData>[] = [];
+                parsed.forEach((corner: any, cornerIndex: number) => {
+                    corner.tasks.forEach((task: any, taskIndex: number) => {
+                        newNodes.push({
+                            id: task.id.toString(),
+                            type: 'custom',
+                            data: {
+                                title: task.title,
+                                status: task.status === 'Done' ? 'Done' : 'Todo',
+                                createdDate: task.createdDate,
+                                dueDate: task.dueDate,
+                                priority: task.priority,
+                                category: 'Other',
+                                cornerId: corner.id.toString(),
+                            },
+                            position: {
+                                x: 100 + (cornerIndex * 300) + (taskIndex * 50),
+                                y: 100 + (taskIndex * 150),
+                            },
+                        });
+                    });
+                });
+                setNodes(newNodes);
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, [setNodes]);
 
     // Calculate progress for each category
     const progress = useMemo(() => {
@@ -169,6 +172,16 @@ function TrackingPageContent() {
             return { category, total, completed, percentage };
         });
     }, [nodes]);
+
+    // Memoize nodeTypes
+    const nodeTypes = useMemo(
+        () => ({
+            custom: (props: any) => (
+                <TaskNodeComponent {...props} categoryColors={categoryColors} />
+            ),
+        }),
+        [categoryColors]
+    );
 
     // Generate simple ID
     const generateId = () => Date.now().toString();
@@ -203,14 +216,32 @@ function TrackingPageContent() {
     );
 
     const addTask = () => {
-        if (!newTaskTitle.trim()) return;
+        if (!newTaskTitle.trim() || !newTaskCorner) return;
+        const newTask = {
+            id: parseInt(generateId()),
+            title: newTaskTitle,
+            status: 'To Do' as const,
+            createdDate: new Date().toISOString().split('T')[0],
+            dueDate: newTaskDueDate || new Date().toISOString().split('T')[0],
+            priority: newTaskPriority,
+            isCompleted: false,
+        };
+        const saved = localStorage.getItem('corners');
+        let parsed = saved ? JSON.parse(saved) : [];
+        parsed = parsed.map((corner: any) =>
+            corner.id.toString() === newTaskCorner
+                ? { ...corner, tasks: [...corner.tasks, newTask] }
+                : corner
+        );
+        localStorage.setItem('corners', JSON.stringify(parsed));
+
         const newNode: Node<TaskNodeData> = {
-            id: generateId(),
+            id: newTask.id.toString(),
             type: 'custom',
             data: {
                 title: newTaskTitle,
                 status: 'Todo',
-                createdDate: new Date().toISOString().split('T')[0],
+                createdDate: newTask.createdDate,
                 dueDate: newTaskDueDate || undefined,
                 priority: newTaskPriority,
                 category: newTaskCategory,
@@ -222,8 +253,8 @@ function TrackingPageContent() {
         setNewTaskTitle('');
         setNewTaskDueDate('');
         setNewTaskPriority('Medium');
-        setNewTaskCategory('Work');
-        setNewTaskCorner('c1');
+        setNewTaskCategory('Other');
+        setNewTaskCorner('');
     };
 
     const updateCategoryColor = (category: TaskNodeData['category'], color: string) => {
@@ -232,7 +263,7 @@ function TrackingPageContent() {
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
-        if (isNavbarOpen) setIsNavbarOpen(false); // Close navbar if open
+        if (isNavbarOpen) setIsNavbarOpen(false);
     };
 
     const priorityOptions = [
@@ -267,21 +298,18 @@ function TrackingPageContent() {
                             Roadmap
                         </h1>
                         <div className="flex flex-col lg:flex-row gap-6">
-                            {/* Sidebar Toggle Button (Mobile) */}
                             <button
                                 onClick={toggleSidebar}
                                 className={`lg:hidden p-2 rounded-md bg-fuchsia-600 text-white mb-4 ${isSidebarOpen ? 'hidden' : 'block'}`}
                             >
                                 <IoMdMenu size={20} />
                             </button>
-                            {/* Sidebar */}
                             <motion.div
                                 initial={{ x: -100, opacity: 0 }}
                                 animate={{ x: 0, opacity: 1 }}
                                 transition={{ duration: 0.3 }}
                                 className={`w-full lg:w-80 h-[calc(100vh-200px)] p-4 rounded-lg ${theme === 'light' ? 'bg-white' : 'bg-slate-700'} shadow-md overflow-y-auto ${isSidebarOpen ? 'block' : 'hidden lg:block'}`}
                             >
-                                {/* Add Task */}
                                 <div className="mb-6">
                                     <h2
                                         className={`text-lg font-semibold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
@@ -331,7 +359,6 @@ function TrackingPageContent() {
                                         </button>
                                     </div>
                                 </div>
-                                {/* Corners */}
                                 <div className="mb-6">
                                     <h2
                                         className={`text-lg font-semibold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
@@ -364,7 +391,6 @@ function TrackingPageContent() {
                                         </button>
                                     )}
                                 </div>
-                                {/* Categories */}
                                 <div>
                                     <h2
                                         className={`text-lg font-semibold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
@@ -407,7 +433,6 @@ function TrackingPageContent() {
                                     </div>
                                 </div>
                             </motion.div>
-                            {/* React Flow Canvas */}
                             <div className="flex-1 w-full h-[calc(100vh-200px)] rounded-lg overflow-hidden shadow-md z-0">
                                 <ReactFlow
                                     nodes={nodes}
@@ -422,9 +447,9 @@ function TrackingPageContent() {
                                     className={`${theme === 'light' ? 'bg-gray-50' : 'bg-slate-800'}`}
                                 >
                                     <Background
-                                    gap={20}
-                                    size={2}
-                                    color={theme === 'light' ? '#d1d5db' : '#4b5563'}
+                                        gap={20}
+                                        size={2}
+                                        color={theme === 'light' ? '#d1d5db' : '#4b5563'}
                                     />
                                     <Controls />
                                     <MiniMap
@@ -444,7 +469,6 @@ function TrackingPageContent() {
                                 </ReactFlow>
                             </div>
                         </div>
-                        {/* Progress Display */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -471,10 +495,10 @@ function TrackingPageContent() {
                                                 {percentage}% ({completed}/{total})
                                             </span>
                                         </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div className={`w-full ${theme === 'light' ? 'bg-gray-200' : 'bg-slate-600'} rounded-full h-2.5`}>
                                             <div
-                                                className="bg-fuchsia-600 h-2.5 rounded-full transition-all duration-300"
-                                                style={{ width: `${percentage}%` }}
+                                                className="h-2.5 rounded-full transition-all duration-300"
+                                                style={{ width: `${percentage}%`, backgroundColor: categoryColors[category] }}
                                             ></div>
                                         </div>
                                     </div>
@@ -489,7 +513,7 @@ function TrackingPageContent() {
     );
 }
 
-/* Optional: Custom Edge with Delete Button (uncomment to enable)
+// Optional: Custom Edge with Delete Button (uncomment to enable)
 // import { EdgeProps } from 'reactflow';
 // const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, style }: EdgeProps) => {
 //     const { setEdges } = useReactFlow();
@@ -520,4 +544,3 @@ function TrackingPageContent() {
 // Update mockEdges: { id: 'e1-2', source: '1', target: '2', type: 'custom', style: { stroke: '#a855f7', strokeWidth: 2 } }
 // Update onConnect: { ...params, id: `e${params.source}-${params.target}`, type: 'custom', style: ... }
 // Update ReactFlow: edgeTypes={edgeTypes}
-*/

@@ -6,22 +6,8 @@ import { motion } from 'framer-motion';
 import { IoMdCheckmark, IoMdCreate, IoMdCalendar } from 'react-icons/io';
 import { useTheme } from '@/app/themeContext';
 import CustomDropdown from '../CustomDropdown';
+import { CategoryColors, TaskNodeData } from '@/app/types';
 
-// Type for node data
-export type TaskNodeData = {
-    title: string;
-    status: 'Todo' | 'Done';
-    createdDate: string;
-    dueDate?: string;
-    priority: 'Low' | 'Medium' | 'High';
-    category: 'Work' | 'Personal' | 'Study' | 'Other';
-    cornerId?: string;
-};
-
-// Type for category colors
-export type CategoryColors = Record<TaskNodeData['category'], string>;
-
-// Custom node component
 const TaskNodeComponent = ({
     data,
     id,
@@ -65,20 +51,18 @@ const TaskNodeComponent = ({
 
     const cornerOptions = [
         { value: '', label: 'No Corner' },
-        ...mockCorners.map((corner) => ({
-            value: corner.id,
-            label: corner.title,
-        })),
+        // Corners will be passed dynamically in TrackingPage
     ];
 
     return (
         <motion.div
             className={`p-4 rounded-lg shadow-md w-48 relative ${theme === 'light' ? 'bg-white' : 'bg-slate-700'} border-2`}
-            style={{ borderColor: categoryColors[data.category] }}
+            style={{
+                borderColor: categoryColors[data.category] || '#6b7280',
+            }}
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
         >
-            {/* Bullet for Connections */}
             <Handle
                 type="source"
                 position={Position.Right}
@@ -123,27 +107,6 @@ const TaskNodeComponent = ({
                         onChange={(value) => setEditData({ ...editData, category: value as TaskNodeData['category'] })}
                         placeholder="Select Category"
                     />
-                    <CustomDropdown
-                        options={cornerOptions}
-                        value={editData.cornerId || ''}
-                        onChange={(value) => setEditData({ ...editData, cornerId: value || undefined })}
-                        placeholder="Select Corner"
-                    />
-                    <div className="flex items-center gap-2">
-                        <label
-                            className={`text-sm ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
-                        >
-                            Done:
-                            <input
-                                type="checkbox"
-                                checked={editData.status === 'Done'}
-                                onChange={(e) =>
-                                    setEditData({ ...editData, status: e.target.checked ? 'Done' : 'Todo' })
-                                }
-                                className="ml-2"
-                            />
-                        </label>
-                    </div>
                     <div className="flex gap-2">
                         <button
                             onClick={saveChanges}
@@ -200,20 +163,11 @@ const TaskNodeComponent = ({
                         <p>Due: {data.dueDate || 'N/A'}</p>
                         <p>Priority: {data.priority}</p>
                         <p>Category: {data.category}</p>
-                        <p>Corner: {mockCorners.find((c) => c.id === data.cornerId)?.title || 'None'}</p>
                     </div>
                 </div>
             )}
         </motion.div>
     );
 };
-
-// Mock corners (temporary, can be moved to a shared file if needed)
-const mockCorners: { id: string; title: string }[] = [
-    { id: 'c1', title: 'Onixin' },
-    { id: 'c2', title: 'Project X' },
-    { id: 'c3', title: 'Personal Goals' },
-    { id: 'c4', title: 'Study Plan' },
-];
 
 export default TaskNodeComponent;
