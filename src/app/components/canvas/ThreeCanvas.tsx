@@ -75,7 +75,7 @@ const ThreeCanvas = ({ theme }: ThreeCanvasProps) => {
   const router = useRouter();
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [targetRoute, setTargetRoute] = useState<string | null>(null);
+  // const [targetRoute, setTargetRoute] = useState<string | null>(null);
   const boardRefs = useRef<THREE.Mesh[]>([]);
 
   // Configuração inicial da câmera
@@ -93,7 +93,7 @@ const ThreeCanvas = ({ theme }: ThreeCanvasProps) => {
     if (isLoading) return;
 
     setIsLoading(true);
-    setTargetRoute(route);
+    // setTargetRoute(route);
 
     // Navigate after loading delay
     setTimeout(() => {

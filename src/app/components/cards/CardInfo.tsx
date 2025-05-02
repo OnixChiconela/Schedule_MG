@@ -7,7 +7,6 @@ const InfoCard = ({
   icon: Icon,
   title,
   content,
-  smallBg,
   iconColor,
   contentColor,
   soon,
@@ -17,7 +16,6 @@ const InfoCard = ({
   icon: IconType
   title: string
   content: string
-  smallBg?: string
   iconColor?: string
   contentColor?: string
   soon?: string

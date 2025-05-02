@@ -16,7 +16,6 @@ import ReactFlow, {
     NodeChange,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import LandingNavbar from '../components/navbars/LandingNavbar';
 import LandingFooter from '../components/footers/LandingFooter';
 import Container from '../components/Container';
 import { useTheme } from '../themeContext';
@@ -25,6 +24,7 @@ import { IoMdAdd, IoMdCalendar, IoMdMenu } from 'react-icons/io';
 import { TaskNodeData, CategoryColors, Corner } from "@/app/types/index"
 import CustomDropdown from '../components/CustomDropdown';
 import TaskNodeComponent from '../components/roadmap/TaskNodeComponent';
+import MainNavbar from '../components/navbars/MainNavbar';
 
 // Type for corners
 const defaultCategoryColors: CategoryColors = {
@@ -68,7 +68,7 @@ function TrackingPageContent() {
             const saved = localStorage.getItem('corners');
             if (saved) {
                 const parsed = JSON.parse(saved);
-                console.log('Initial localStorage:', parsed); // Debug
+                console.log('Initial localStorage corners:', parsed); // Debug
                 let nodes: Node<TaskNodeData>[] = [];
                 parsed.forEach((corner: any, cornerIndex: number) => {
                     corner.tasks.forEach((task: any, taskIndex: number) => {
@@ -102,8 +102,31 @@ function TrackingPageContent() {
         return [];
     })();
 
+    const initialEdges: Edge[] = (() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('edges');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                console.log('Initial localStorage edges:', parsed); // Debug
+                // Validate edges: ensure source and target nodes exist
+                const nodeIds = new Set(initialNodes.map(node => node.id));
+                return parsed.filter((edge: any) => 
+                    edge.id && edge.source && edge.target && 
+                    nodeIds.has(edge.source) && nodeIds.has(edge.target)
+                ).map((edge: any) => ({
+                    ...edge,
+                    style: {
+                        stroke: theme === 'light' ? '#a855f7' : '#7e22ce',
+                        strokeWidth: 2,
+                    },
+                }));
+            }
+        }
+        return [];
+    })();
+
     const [nodes, setNodes, onNodesChange] = useNodesState<TaskNodeData>(initialNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const [newTaskTitle, setNewTaskTitle] = useState('');
     const [newTaskDueDate, setNewTaskDueDate] = useState('');
     const [newTaskPriority, setNewTaskPriority] = useState<TaskNodeData['priority']>('Medium');
@@ -125,13 +148,24 @@ function TrackingPageContent() {
         localStorage.setItem('categoryColors', JSON.stringify(categoryColors));
     }, [categoryColors]);
 
+     // Persist edges to localStorage
+     useEffect(() => {
+        try {
+            console.log('Saving edges to localStorage:', edges); // Debug
+            localStorage.setItem('edges', JSON.stringify(edges));
+        } catch (error) {
+            console.error('Error saving edges to localStorage:', error);
+        }
+    }, [edges]);
+
     // Sync nodes with localStorage changes
     useEffect(() => {
         const handleStorageChange = () => {
-            const saved = localStorage.getItem('corners');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                console.log('Storage Change localStorage:', parsed); // Debug
+            // Sync corners and nodes
+            const savedCorners = localStorage.getItem('corners');
+            if (savedCorners) {
+                const parsed = JSON.parse(savedCorners);
+                console.log('Storage Change localStorage corners:', parsed); // Debug
                 setCorners(
                     parsed.map((corner: any) => ({
                         id: corner.id.toString(),
@@ -167,11 +201,32 @@ function TrackingPageContent() {
                 console.log('Storage Change Nodes:', newNodes); // Debug
                 setNodes(newNodes);
             }
+
+            // Sync edges
+            const savedEdges = localStorage.getItem('edges');
+            if (savedEdges) {
+                const parsedEdges = JSON.parse(savedEdges);
+                console.log('Storage Change localStorage edges:', parsedEdges); // Debug
+                // Validate edges
+                const nodeIds = new Set(nodes.map(node => node.id));
+                const validEdges = parsedEdges.filter((edge: any) => 
+                    edge.id && edge.source && edge.target && 
+                    nodeIds.has(edge.source) && nodeIds.has(edge.target)
+                ).map((edge: any) => ({
+                    ...edge,
+                    style: {
+                        stroke: theme === 'light' ? '#a855f7' : '#7e22ce',
+                        strokeWidth: 2,
+                    },
+                }));
+                console.log('Storage Change Edges:', validEdges); // Debug
+                setEdges(validEdges);
+            }
         };
 
         window.addEventListener('storage', handleStorageChange);
         return () => window.removeEventListener('storage', handleStorageChange);
-    }, [setNodes]);
+    }, [setNodes, setEdges, theme]);
 
     // Save node positions to localStorage on change
     const handleNodesChange = useCallback(
@@ -233,30 +288,37 @@ function TrackingPageContent() {
     const generateId = () => Date.now().toString();
 
     const onConnect = useCallback(
-        (params: Connection) =>
-            setEdges((eds: Edge[]) =>
-                addEdge(
-                    {
-                        ...params,
-                        id: `e${params.source}-${params.target}`,
-                        style: { stroke: theme === 'light' ? '#a855f7' : '#7e22ce', strokeWidth: 2 },
-                    },
-                    eds
-                )
-            ),
+        (params: Connection) => {
+            setEdges((eds: Edge[]) => {
+                const newEdge = {
+                    ...params,
+                    id: `e${params.source}-${params.target}`,
+                    style: { stroke: theme === 'light' ? '#a855f7' : '#7e22ce', strokeWidth: 2 },
+                };
+                const updatedEdges = addEdge(newEdge, eds);
+                return updatedEdges;
+            });
+        },
         [setEdges, theme]
     );
 
     const onEdgeClick = useCallback(
         (event: React.MouseEvent, edge: Edge) => {
-            setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+            setEdges((eds) => {
+                const updatedEdges = eds.filter((e) => e.id !== edge.id);
+                return updatedEdges;
+            });
         },
         [setEdges]
     );
 
     const onEdgeDoubleClick = useCallback(
         (event: React.MouseEvent, edge: Edge) => {
-            setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+            setEdges((eds) => {
+                const updatedEdges = eds.filter((e) => e.id !== edge.id);
+                console.log('Deleting Edge (Double Click):', edge, 'Updated Edges:', updatedEdges); // Debug
+                return updatedEdges;
+            });
         },
         [setEdges]
     );
@@ -339,16 +401,17 @@ function TrackingPageContent() {
         <div
             className={`flex flex-col min-h-screen ${theme === 'light' ? 'bg-gray-100' : 'bg-slate-900'}`}
         >
-            <LandingNavbar />
+            <MainNavbar />
+            {/* <LandingNavbar /> */}
             <main className="flex-1 py-12">
                 <Container>
                     <div className="max-w-screen-4xl mx-auto">
-                        <h1
+                        {/* <h1
                             className={`text-3xl sm:text-4xl font-bold mb-8 text-center ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
                         >
                             Roadmap
-                        </h1>
-                        <div className="flex flex-col lg:flex-row gap-6">
+                        </h1> */}
+                        <div className="flex flex-col lg:flex-row gap-6 mt-20">
                             <button
                                 onClick={toggleSidebar}
                                 className={`lg:hidden p-2 rounded-md bg-fuchsia-600 text-white mb-4 ${isSidebarOpen ? 'hidden' : 'block'}`}

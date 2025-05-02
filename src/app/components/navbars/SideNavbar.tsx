@@ -1,13 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Briefcase, BriefcaseBusiness, Calendar, Car, Mail, MoonStar, PenBox, Sun } from 'lucide-react'
-import { IOptions, RecursivePartial } from 'node_modules/@tsparticles/engine/types/export-types'
-import Particles, { initParticlesEngine } from '@tsparticles/react'
-import { loadSlim } from '@tsparticles/slim'
-import { useTheme } from '@/app/themeContext'
+import { BriefcaseBusiness, Calendar, Car, Home, Mail, MoonStar, PenBox, Sun } from 'lucide-react'
 import { IconType } from 'react-icons'
 
 interface SideNavbarProps {
@@ -16,72 +11,9 @@ interface SideNavbarProps {
 }
 
 export default function SideNavbar({ theme, toggleTheme }: SideNavbarProps) {
-  const [init, setInit] = useState(false)
   const buttonVariants = {
     hover: { scale: 1.05, transition: { duration: 0.2 } },
     tap: { scale: 0.95 },
-  }
-
-  useEffect(() => {
-    console.log('Initializing particles engine')
-    initParticlesEngine(async (engine) => {
-      try {
-        await loadSlim(engine)
-        setInit(true)
-        console.log('Particles engine initialized')
-      } catch (error) {
-        console.error('Error initializing particles:', error)
-        setInit(false)
-      }
-    })
-  }, [])
-
-  const particlesOptions: RecursivePartial<IOptions> = {
-    particles: {
-      number: {
-        value: 4,
-        density: {
-          enable: true,
-          height: 30, // Mantido conforme pedido
-        },
-      },
-      color: {
-        value: theme === 'light' ? '#000000' : '#ffffff',
-      },
-      shape: {
-        type: 'star',
-      },
-      opacity: {
-        value: 0.1,
-      },
-      size: {
-        value: { min: 1, max: 2 },
-      },
-      move: {
-        enable: true,
-        speed: 0.8,
-        direction: 'none' as const,
-        random: true,
-        straight: false,
-        outModes: {
-          default: 'split',
-        },
-      },
-    },
-    interactivity: {
-      events: {
-        onHover: {
-          enable: true,
-          mode: 'repulse',
-        },
-      },
-      modes: {
-        repulse: {
-          distance: 4,
-          duration: 0.4,
-        },
-      },
-    },
   }
 
   return (
@@ -105,27 +37,28 @@ export default function SideNavbar({ theme, toggleTheme }: SideNavbarProps) {
           {theme == "light" ?
             <Sun size={20} /> :
             <div>
-              {/* {init && (
-                <Particles
-                  id="tsparticles"
-                  options={particlesOptions}
-                  className="absolute inset-0 z-0"
-                />
-              )} */}
-              {/* <Particles 
-                id='tsparticles'
-              /> */}
               <MoonStar size={20} />
             </div>
           }
         </motion.button>
       </div>
 
+      <ul>
+        <li>
+          <SideNavButton
+            title='Home'
+            link='/dashboard'
+            icon={Home}
+            theme={theme}
+          />
+        </li>
+      </ul>
+      <div className='py-2'><hr className={`${theme == "light" ? "text-gray-300" : "text-neutral-700"}`} /></div>
       <ul className="flex flex-col ">
         <li>
           <SideNavButton
             title='Tasks'
-            link='/calendar'
+            link='/task'
             icon={PenBox}
             theme={theme}
           />
@@ -138,9 +71,11 @@ export default function SideNavbar({ theme, toggleTheme }: SideNavbarProps) {
             theme={theme}
           />
         </li>
+        <div className='py-2'><hr className={`${theme == "light" ? "text-gray-300" : "text-neutral-700"}`} /></div>
+
         <li>
           <SideNavButton
-            title='Calendar'
+            title='My business'
             link='/business'
             icon={BriefcaseBusiness}
             theme={theme}
@@ -154,6 +89,7 @@ export default function SideNavbar({ theme, toggleTheme }: SideNavbarProps) {
             theme={theme}
           />
         </li>
+        <div className='py-2'><hr className={`${theme == "light" ? "text-gray-300" : "text-neutral-700"}`} /></div>
         <li>
           <SideNavButton
             title='Roadmap'
@@ -162,7 +98,7 @@ export default function SideNavbar({ theme, toggleTheme }: SideNavbarProps) {
             theme={theme}
           />
         </li>
-        
+
       </ul>
 
     </motion.nav>

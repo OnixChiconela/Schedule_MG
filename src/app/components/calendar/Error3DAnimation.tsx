@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react'
-import { Canvas, useFrame, useLoader } from '@react-three/fiber'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { Text, RoundedBox, Sparkles, Line } from '@react-three/drei'
 import * as THREE from 'three'
 

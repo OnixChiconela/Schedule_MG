@@ -1,5 +1,4 @@
 import { Text } from '@react-three/drei'
-import * as THREE from 'three'
 
 interface PanelProps {
   position: [number, number, number]

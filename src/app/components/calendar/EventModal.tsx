@@ -69,7 +69,6 @@ export default function EventModal({
     setSelectedBusinessId(event?.businessId || '')
   }, [event, slot])
 
-  const today = new Date()
   const minDateTime = event?.id
     ? undefined
     : toDatetimeLocalString(new Date());

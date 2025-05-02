@@ -29,8 +29,7 @@ export default function AddBusinessModal({ isOpen, onClose, onSave, theme }: Add
     onClose()
   }
 
-  const handleBackgroundClick = (e: MouseEvent<HTMLDivElement>) => {
-    console.log('Clicked background of AddBusinessModal')
+  const handleBackgroundClick = () => {
     onClose()
   }
 

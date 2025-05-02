@@ -3,11 +3,12 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'react-hot-toast'
+import { useTheme } from '../themeContext'
 
 export default function FeedbackPage() {
   const [feedback, setFeedback] = useState('')
   const [suggestionsFeedback, setSuggestionsFeedback] = useState('')
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const {theme} = useTheme()
 
   const handleSubmit = () => {
     if (!feedback.trim()) {

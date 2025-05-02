@@ -2,9 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { IoLogoTwitter, IoLogoLinkedin, IoLogoInstagram, IoMdMail } from 'react-icons/io';
+import { IoLogoTwitter, IoLogoLinkedin, IoLogoInstagram } from 'react-icons/io';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
 import { useTheme } from '@/app/themeContext';
 import Container from '../Container';
 
