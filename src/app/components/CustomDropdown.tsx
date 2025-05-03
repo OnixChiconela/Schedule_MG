@@ -51,11 +51,11 @@ const CustomDropdown = ({ options, value, onChange, placeholder }: CustomDropdow
             <AnimatePresence>
                 {isOpen && (
                     <motion.ul
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        className={`absolute z-10 w-full mt-1 rounded-md shadow-lg ${theme === 'light' ? 'bg-white border border-gray-300' : 'bg-slate-600 border border-slate-500'} max-h-60 overflow-y-auto`}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className={`absolute z-10 w-full mt-1 rounded-md shadow-lg ${theme === 'light' ? 'bg-white border border-gray-300' : 'bg-slate-600 border border-slate-500'} max-h-60 overflow-y-auto scrollbar-thin scrollbar-w-1 ${theme === 'light' ? 'scrollbar-thumb-gray-400 scrollbar-track-gray-100' : 'scrollbar-thumb-gray-500 scrollbar-track-slate-700'}`}
                     >
                         {options.map((option) => (
                             <li
