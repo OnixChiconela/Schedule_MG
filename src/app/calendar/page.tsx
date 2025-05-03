@@ -18,7 +18,6 @@ export default function CalendarPage() {
   const [safeTheme, setSafeTheme] = useState(theme);
   const [events, setEvents] = useState<Event[]>([])
   const [businesses, setBusinesses] = useState<Business[]>([])
-  const [showErrorAnimation, setShowErrorAnimation] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date } | null>(null)
@@ -59,7 +58,6 @@ export default function CalendarPage() {
     } catch (error) {
       localStorage.removeItem('calendarEvents')
       localStorage.removeItem('businesses')
-      setShowErrorAnimation(true)
       toast.error('Corrupted data. Resetting storage.')
     }
   }, [])

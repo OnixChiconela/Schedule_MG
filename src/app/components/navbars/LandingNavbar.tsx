@@ -11,10 +11,9 @@ import { AnimatePresence, motion } from "framer-motion";
 
 const LandingNavbar = () => {
     const { theme, toggleTheme } = useTheme()
-    const [isRegisterOpen, setIsRegisterOpen] = useState(false)
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const handleRegisterOpen = () => setIsRegisterOpen(true)
+    const handleRegisterOpen = () => {}
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);

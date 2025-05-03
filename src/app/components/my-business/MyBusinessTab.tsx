@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useTheme } from '@/app/themeContext'
-import Particles, { initParticlesEngine } from '@tsparticles/react'
-import { loadSlim } from '@tsparticles/slim'
-import { IOptions, RecursivePartial } from '@tsparticles/engine'
+
 import { motion } from 'framer-motion'
 import ProjectSelector from './BusinessProjectSelector'
 import AddProjectModal from './AddProjectModal'
@@ -80,7 +78,6 @@ export default function MyBusinessTab() {
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState<{ open: boolean; projectId: string | null }>({ open: false, projectId: null })
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [corners, setCorners] = useState<Corner[]>([])
-  const [init, setInit] = useState(false)
 
   // Carregar localStorage no cliente
   useEffect(() => {
@@ -121,22 +118,6 @@ export default function MyBusinessTab() {
       }
     }
   }, [businesses])
-
-  // Inicializar Particles
-  useEffect(() => {
-    console.log('Initializing particles engine')
-    initParticlesEngine(async (engine) => {
-      try {
-        await loadSlim(engine)
-        setInit(true)
-        console.log('Particles engine initialized')
-      } catch (error) {
-        console.error('Error initializing particles:', error)
-        setInit(false)
-        setToastMessage('Failed to load particles, continuing without them')
-      }
-    })
-  }, [])
 
   // Gerenciar toast
   useEffect(() => {
