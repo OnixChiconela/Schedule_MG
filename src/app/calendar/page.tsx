@@ -57,6 +57,7 @@ export default function CalendarPage() {
       }
     } catch (error) {
       localStorage.removeItem('calendarEvents')
+      console.log(error)
       localStorage.removeItem('businesses')
       toast.error('Corrupted data. Resetting storage.')
     }
@@ -67,6 +68,7 @@ export default function CalendarPage() {
       try {
         localStorage.setItem('calendarEvents', JSON.stringify(events))
       } catch (error) {
+        console.log(error)
         toast.error('Error saving events.')
       }
     }
@@ -78,6 +80,7 @@ export default function CalendarPage() {
         console.log('Saving businesses to localStorage:', businesses)
         localStorage.setItem('businesses', JSON.stringify(businesses))
       } catch (error) {
+        console.log(error)
         toast.error('Error saving businesses.')
       }
     }
