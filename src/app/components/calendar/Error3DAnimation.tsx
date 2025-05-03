@@ -22,7 +22,7 @@ export default function Error3DAnimation({ theme, isVisible }: Error3DAnimationP
         timeRef.current = 3
         console.log('CalendarError: Started')
       }
-    }, [isVisible])
+    }, [])
 
     useFrame(({ clock }) => {
       if (groupRef.current && baseRef.current && textBgRef.current && timeRef.current > 0) {
