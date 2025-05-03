@@ -45,34 +45,12 @@ interface Corner {
 
 export default function MyBusinessTab() {
   const { theme } = useTheme()
-  const [businesses, setBusinesses] = useState<Business[]>([
-    // {
-    //   id: '1',
-    //   name: 'Business A',
-    //   description: 'A great business',
-    //   projects: [
-    //     {
-    //       id: 'p1',
-    //       name: 'Project business A',
-    //       description: 'Initial project for Business A',
-    //       tasks: [
-    //         {
-    //           id: 't1',
-    //           title: 'Business Task 1',
-    //           status: 'To Do',
-    //           dueDate: '2025-04-18',
-    //           description: 'Initial task for Project X',
-    //         },
-    //       ],
-    //     },
-    //   ],
-    // },
-  ])
-  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(businesses[0] || null)
+  const [businesses, setBusinesses] = useState<Business[]>([])
+  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState({ name: businesses[0]?.name || '', description: businesses[0]?.description || '' })
+  const [formData, setFormData] = useState({ name: '', description: '' }) // Valores padrão
   const [isLinkingTask, setIsLinkingTask] = useState(false)
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(businesses[0]?.projects[0]?.id || null)
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [isAddBusinessModalOpen, setIsAddBusinessModalOpen] = useState(false)
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false)
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState<{ open: boolean; projectId: string | null }>({ open: false, projectId: null })
@@ -187,7 +165,6 @@ export default function MyBusinessTab() {
           : b
       )
     )
-    // Sincronizar selectedBusiness para refletir o novo projeto
     setSelectedBusiness((prev) =>
       prev && prev.id === selectedBusiness.id
         ? { ...prev, projects: [...prev.projects, newProject] }
@@ -224,7 +201,6 @@ export default function MyBusinessTab() {
           : b
       )
     )
-    // Sincronizar selectedBusiness para refletir a nova tarefa
     setSelectedBusiness((prev) =>
       prev && prev.id === selectedBusiness.id
         ? {
@@ -276,7 +252,6 @@ export default function MyBusinessTab() {
           : b
       )
     )
-    // Sincronizar selectedBusiness para refletir a tarefa vinculada
     setSelectedBusiness((prev) =>
       prev && prev.id === selectedBusiness.id
         ? {
@@ -323,7 +298,6 @@ export default function MyBusinessTab() {
     }
   }
 
-
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -345,29 +319,57 @@ export default function MyBusinessTab() {
   return (
     <>
       <div
-        className={`min-h-screen p-6 relative ${safeTheme === 'light' ? 'bg-white' : 'bg-slate-800'}`}
+        className={`min-h-screen p-6 relative overflow-x-hidden ${safeTheme === 'light' ? 'bg-white' : 'bg-slate-800'}`}
         style={{
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
-          backgroundColor: safeTheme === 'light' ? 'bg-white' : 'rgba(30, 41, 59, 0.8)',
+          // backgroundColor: safeTheme === 'light' ? 'bg-white' : 'rgba(30, 41, 59, 0.8)',
         }}
       >
-
-        <div className="relative z-10 max-w-full mx-auto">
+        <div className="relative z-10 max-w-7xl mx-auto">
           <motion.h1
-            className={`text-4xl font-bold mb-6 ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'
-              }`}
+            className={`text-4xl font-bold mb-6 ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
             My Business
           </motion.h1>
+          <AddBusinessModal
+            isOpen={isAddBusinessModalOpen}
+            onClose={() => {
+              console.log('Closing AddBusinessModal')
+              setIsAddBusinessModalOpen(false)
+            }}
+            onSave={handleAddBusiness}
+            theme={safeTheme}
+          />
+          <AddProjectModal
+            isOpen={isAddProjectModalOpen}
+            onClose={() => {
+              console.log('Closing AddProjectModal')
+              setIsAddProjectModalOpen(false)
+            }}
+            onSave={handleAddProject}
+            theme={safeTheme}
+          />
+          <AddTaskModal
+            isOpen={isAddTaskModalOpen.open}
+            onClose={() => {
+              console.log('Closing AddTaskModal')
+              setIsAddTaskModalOpen({ open: false, projectId: null })
+            }}
+            onSave={(taskData) => {
+              console.log('Saving task from AddTaskModal:', taskData)
+              handleAddTask(isAddTaskModalOpen.projectId!, taskData)
+            }}
+            theme={safeTheme}
+          />
           {toastMessage && (
             <motion.div
-              className={`fixed bottom-4 right-4 p-4 rounded-md shadow-md ${toastMessage.includes('Error') ?
-                  (safeTheme === 'light' ? 'bg-red-500 text-white' : 'bg-red-600 text-gray-100') :
-                  (safeTheme === 'light' ? 'bg-green-500 text-white' : 'bg-green-600 text-gray-100')
+              className={`fixed bottom-4 right-4 p-4 rounded-md shadow-md z-50 ${toastMessage.includes('Error') ?
+                (safeTheme === 'light' ? 'bg-red-500 text-white' : 'bg-red-600 text-gray-100') :
+                (safeTheme === 'light' ? 'bg-green-500 text-white' : 'bg-green-600 text-gray-100')
                 }`}
               variants={toastVariants}
               initial="hidden"
@@ -385,7 +387,7 @@ export default function MyBusinessTab() {
 
           <div className="flex flex-col lg:flex-row lg:space-x-6 w-full">
             <motion.div
-              className="lg:w-64 mb-8 lg:mb-0"
+              className="w-full max-w-full lg:max-w-64 mb-8 lg:mb-0 mx-auto"
               variants={cardVariants}
               initial="hidden"
               animate="visible"
@@ -396,8 +398,8 @@ export default function MyBusinessTab() {
                   setIsAddBusinessModalOpen(true)
                 }}
                 className={`w-full mb-4 px-4 py-2 rounded-xl font-semibold transition-colors ${safeTheme === 'light'
-                    ? 'bg-gray-950 hover:bg-black text-white'
-                    : 'bg-gray-950 hover:bg-black text-gray-100'
+                  ? 'bg-gray-950 hover:bg-black text-white'
+                  : 'bg-gray-950 hover:bg-black text-gray-100'
                   } shadow-md`}
                 variants={buttonVariants}
                 whileHover="hover"
@@ -406,20 +408,19 @@ export default function MyBusinessTab() {
                 Add Business
               </motion.button>
               <div
-                className={`p-4 rounded-xl shadow-md border ${safeTheme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-gray-700'
-                  }`}
+                className={`p-4 rounded-xl shadow-md border ${safeTheme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-gray-700'}`}
               >
                 {businesses.length > 0 ? (
                   businesses.map((business, index) => (
                     <motion.div
                       key={business.id}
                       className={`p-3 mb-2 rounded-lg cursor-pointer transition-colors ${selectedBusiness?.id === business.id
-                          ? safeTheme === 'light'
-                            ? 'bg-fuchsia-100 text-fuchsia-900'
-                            : 'bg-slate-600 text-white'
-                          : safeTheme === 'light'
-                            ? 'bg-gray-100 text-gray-900'
-                            : 'bg-slate-800 text-gray-200'
+                        ? safeTheme === 'light'
+                          ? 'bg-fuchsia-100 text-fuchsia-900'
+                          : 'bg-slate-600 text-white'
+                        : safeTheme === 'light'
+                          ? 'bg-gray-100 text-gray-900'
+                          : 'bg-slate-800 text-gray-200'
                         } hover:${safeTheme === 'light'
                           ? 'bg-gradient-to-r from-gray-200 to-gray-300'
                           : 'bg-gradient-to-r from-slate-600 to-slate-700'
@@ -448,15 +449,14 @@ export default function MyBusinessTab() {
             </motion.div>
 
             <motion.div
-              className="flex-1"
+              className="flex-1 w-full max-w-full mx-auto" // Ajuste para telas menores
               variants={cardVariants}
               initial="hidden"
               animate="visible"
             >
               {selectedBusiness ? (
                 <div
-                  className={`p-6 rounded-xl shadow-md border ${safeTheme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-gray-700'
-                    }`}
+                  className={`p-6 rounded-xl shadow-md border ${safeTheme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-gray-700'}`}
                 >
                   {isEditing ? (
                     <motion.div
@@ -470,8 +470,8 @@ export default function MyBusinessTab() {
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         className={`w-full p-3 rounded-lg border ${safeTheme === 'light'
-                            ? 'border-gray-300 bg-white text-gray-900'
-                            : 'border-slate-600 bg-slate-800 text-gray-200'
+                          ? 'border-gray-300 bg-white text-gray-900'
+                          : 'border-slate-600 bg-slate-800 text-gray-200'
                           } focus:outline-none focus:ring-2 focus:ring-gray-500`}
                         placeholder="Business Name"
                       />
@@ -479,8 +479,8 @@ export default function MyBusinessTab() {
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         className={`w-full p-3 rounded-lg border ${safeTheme === 'light'
-                            ? 'border-gray-300 bg-white text-gray-900'
-                            : 'border-slate-600 bg-slate-800 text-gray-200'
+                          ? 'border-gray-300 bg-white text-gray-900'
+                          : 'border-slate-600 bg-slate-800 text-gray-200'
                           } focus:outline-none focus:ring-2 focus:ring-gray-500`}
                         placeholder="Description"
                         rows={4}
@@ -492,8 +492,8 @@ export default function MyBusinessTab() {
                             handleSave()
                           }}
                           className={`px-4 py-2 rounded-xl font-semibold transition-colors ${safeTheme === 'light'
-                              ? 'bg-gray-950 hover:bg-black text-white'
-                              : 'bg-gray-950 hover:bg-black text-gray-100'
+                            ? 'bg-gray-950 hover:bg-black text-white'
+                            : 'bg-gray-950 hover:bg-black text-gray-100'
                             }`}
                           variants={buttonVariants}
                           whileHover="hover"
@@ -507,8 +507,8 @@ export default function MyBusinessTab() {
                             setIsEditing(false)
                           }}
                           className={`px-4 py-2 rounded-xl font-semibold transition-colors ${safeTheme === 'light'
-                              ? 'bg-gray-200 hover:bg-gray-300 text-gray-900'
-                              : 'bg-slate-600 hover:bg-slate-500 text-gray-200'
+                            ? 'bg-gray-200 hover:bg-gray-300 text-gray-900'
+                            : 'bg-slate-600 hover:bg-slate-500 text-gray-200'
                             }`}
                           variants={buttonVariants}
                           whileHover="hover"
@@ -521,8 +521,7 @@ export default function MyBusinessTab() {
                   ) : (
                     <div className="space-y-4">
                       <motion.h2
-                        className={`text-2xl font-semibold ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'
-                          }`}
+                        className={`text-2xl font-semibold ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.3 }}
@@ -530,8 +529,7 @@ export default function MyBusinessTab() {
                         {selectedBusiness.name}
                       </motion.h2>
                       <motion.p
-                        className={`${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'
-                          }`}
+                        className={`${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.3, delay: 0.1 }}
@@ -550,8 +548,8 @@ export default function MyBusinessTab() {
                             setIsEditing(true)
                           }}
                           className={`px-4 py-1 rounded-xl font-semibold transition-colors bg-transparent border-2 ${safeTheme === 'light'
-                              ? 'border-fuchsia-200 hover:border-fuchsia-500 text-gray-900'
-                              : 'border-fuchsia-800 hover:border-fuchsia-700 text-gray-100'
+                            ? 'border-fuchsia-200 hover:border-fuchsia-500 text-gray-900'
+                            : 'border-fuchsia-800 hover:border-fuchsia-700 text-gray-100'
                             }`}
                           variants={buttonVariants}
                           whileHover="hover"
@@ -565,8 +563,8 @@ export default function MyBusinessTab() {
                             setIsAddProjectModalOpen(true)
                           }}
                           className={`px-4 py-1 rounded-xl font-semibold transition-colors bg-transparent border-2 ${safeTheme === 'light'
-                              ? 'border-green-200 hover:border-green-600 text-gray-900'
-                              : 'border-green-800 hover:border-green-700 text-gray-100'
+                            ? 'border-green-200 hover:border-green-600 text-gray-900'
+                            : 'border-green-800 hover:border-green-700 text-gray-100'
                             }`}
                           variants={buttonVariants}
                           whileHover="hover"
@@ -580,8 +578,8 @@ export default function MyBusinessTab() {
                             setIsLinkingTask(true)
                           }}
                           className={`px-4 py-1 rounded-xl font-semibold transition-colors bg-transparent border-2 ${safeTheme === 'light'
-                              ? 'border-yellow-200 hover:border-yellow-600 text-gray-900'
-                              : 'border-yellow-800 hover:border-yellow-700 text-gray-100'
+                            ? 'border-yellow-200 hover:border-yellow-600 text-gray-900'
+                            : 'border-yellow-800 hover:border-yellow-700 text-gray-100'
                             }`}
                           variants={buttonVariants}
                           whileHover="hover"
@@ -591,8 +589,7 @@ export default function MyBusinessTab() {
                         </motion.button>
                       </motion.div>
                       <motion.h3
-                        className={`text-xl font-semibold mt-6 ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'
-                          }`}
+                        className={`text-xl font-semibold mt-6 ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.3, delay: 0.3 }}
@@ -607,15 +604,13 @@ export default function MyBusinessTab() {
                           transition={{ duration: 0.3 }}
                         >
                           <h4
-                            className={`text-lg font-semibold ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'
-                              }`}
+                            className={`text-lg font-semibold ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}
                           >
                             Select Task to Link
                           </h4>
                           <div>
                             <label
-                              className={`block text-sm font-medium ${safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'
-                                }`}
+                              className={`block text-sm font-medium ${safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'}`}
                             >
                               Select Project
                             </label>
@@ -630,8 +625,7 @@ export default function MyBusinessTab() {
                             />
                             {!selectedProjectId && (
                               <p
-                                className={`text-sm ${safeTheme === 'light' ? 'text-red-600' : 'text-red-400'
-                                  } mt-1`}
+                                className={`text-sm ${safeTheme === 'light' ? 'text-red-600' : 'text-red-400'} mt-1`}
                               >
                                 Please select a project
                               </p>
@@ -641,16 +635,14 @@ export default function MyBusinessTab() {
                             corners.map((corner, index) => (
                               <motion.div
                                 key={corner.id}
-                                className={`p-4 rounded-lg shadow-sm border ${safeTheme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-slate-800 border-gray-700'
-                                  }`}
+                                className={`p-4 rounded-lg shadow-sm border ${safeTheme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-slate-800 border-gray-700'}`}
                                 variants={cardVariants}
                                 initial="hidden"
                                 animate="visible"
                                 transition={{ delay: index * 0.1 }}
                               >
                                 <p
-                                  className={`font-medium ${safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'
-                                    }`}
+                                  className={`font-medium ${safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'}`}
                                 >
                                   {corner.title}
                                 </p>
@@ -668,10 +660,7 @@ export default function MyBusinessTab() {
                                           console.log('Clicked Link Task:', task.title)
                                           handleLinkTask(corner.id, task.id)
                                         }}
-                                        className={`text-blue-400 hover:underline ${safeTheme === 'light'
-                                            ? 'hover:text-blue-500'
-                                            : 'hover:text-blue-300'
-                                          }`}
+                                        className={`text-blue-400 hover:underline ${safeTheme === 'light' ? 'hover:text-blue-500' : 'hover:text-blue-300'}`}
                                         disabled={!selectedProjectId}
                                       >
                                         {task.title} - {task.status}
@@ -683,8 +672,7 @@ export default function MyBusinessTab() {
                             ))
                           ) : (
                             <p
-                              className={`${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'
-                                }`}
+                              className={`${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}
                             >
                               No tasks available in Tasks.
                             </p>
@@ -694,10 +682,7 @@ export default function MyBusinessTab() {
                               console.log('Clicked Cancel (Link Task)')
                               setIsLinkingTask(false)
                             }}
-                            className={`px-4 py-2 rounded-xl font-semibold transition-colors ${safeTheme === 'light'
-                                ? 'bg-gray-200 hover:bg-gray-300 text-gray-900'
-                                : 'bg-slate-600 hover:bg-slate-500 text-gray-200'
-                              }`}
+                            className={`px-4 py-2 rounded-xl font-semibold transition-colors ${safeTheme === 'light' ? 'bg-gray-200 hover:bg-gray-300 text-gray-900' : 'bg-slate-600 hover:bg-slate-500 text-gray-200'}`}
                             variants={buttonVariants}
                             whileHover="hover"
                             whileTap="tap"
@@ -711,8 +696,7 @@ export default function MyBusinessTab() {
                             selectedBusiness.projects.map((project, index) => (
                               <motion.li
                                 key={project.id}
-                                className={`p-4 rounded-lg shadow-sm border ${safeTheme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-slate-800 border-gray-700'
-                                  }`}
+                                className={`p-4 rounded-lg shadow-sm border ${safeTheme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-slate-800 border-gray-700'}`}
                                 variants={cardVariants}
                                 initial="hidden"
                                 animate="visible"
@@ -721,8 +705,7 @@ export default function MyBusinessTab() {
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center">
                                     <svg
-                                      className={`w-5 h-5 mr-2 ${safeTheme === 'light' ? 'text-gray-600' : 'text-gray-400'
-                                        }`}
+                                      className={`w-5 h-5 mr-2 ${safeTheme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}
                                       fill="none"
                                       stroke="currentColor"
                                       viewBox="0 0 24 24"
@@ -735,8 +718,7 @@ export default function MyBusinessTab() {
                                       />
                                     </svg>
                                     <span
-                                      className={`font-medium ${safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'
-                                        }`}
+                                      className={`font-medium ${safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'}`}
                                     >
                                       {project.name}
                                     </span>
@@ -746,10 +728,7 @@ export default function MyBusinessTab() {
                                       console.log('Clicked Add Task for project:', project.id)
                                       setIsAddTaskModalOpen({ open: true, projectId: project.id })
                                     }}
-                                    className={`px-3 py-1 rounded-lg font-semibold transition-colors border-2 ${safeTheme === 'light'
-                                        ? 'bg-gray-200 text-black hover:bg-gray-300'
-                                        : 'bg-slate-600 text-gray-200 hover:bg-slate-500'
-                                      }`}
+                                    className={`px-3 py-1 rounded-lg font-semibold transition-colors border-2 ${safeTheme === 'light' ? 'bg-gray-200 text-black hover:bg-gray-300' : 'bg-slate-600 text-gray-200 hover:bg-slate-500'}`}
                                     variants={buttonVariants}
                                     whileHover="hover"
                                     whileTap="tap"
@@ -759,9 +738,7 @@ export default function MyBusinessTab() {
                                 </div>
                                 {project.description && (
                                   <p
-                                    className={`text-sm mt-2 ${safeTheme === 'light' ? 'text-gray-600' : 'text-gray-400'
-
-                                      }`}
+                                    className={`text-sm mt-2 ${safeTheme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}
                                   >
                                     {project.description}
                                   </p>
@@ -770,8 +747,7 @@ export default function MyBusinessTab() {
                                   {project.tasks.map((task, taskIndex) => (
                                     <motion.li
                                       key={task.id}
-                                      className={`p-2 rounded-md ${safeTheme === 'light' ? 'bg-white' : 'bg-slate-900'
-                                        }`}
+                                      className={`p-2 rounded-md ${safeTheme === 'light' ? 'bg-white' : 'bg-slate-900'}`}
                                       variants={cardVariants}
                                       initial="hidden"
                                       animate="visible"
@@ -780,15 +756,13 @@ export default function MyBusinessTab() {
                                       <div className="flex items-center justify-between">
                                         <div>
                                           <span
-                                            className={`${safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'
-                                              }`}
+                                            className={`${safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'}`}
                                           >
                                             {task.title} - {task.status} (Due: {task.dueDate})
                                           </span>
                                           {task.description && (
                                             <p
-                                              className={`text-sm ${safeTheme === 'light' ? 'text-gray-600' : 'text-gray-400'
-                                                }`}
+                                              className={`text-sm ${safeTheme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}
                                             >
                                               {task.description}
                                             </p>
@@ -799,10 +773,7 @@ export default function MyBusinessTab() {
                                             console.log('Clicked Add to Calendar:', task.title)
                                             handleLinkToCalendar(task, project.id)
                                           }}
-                                          className={`text-blue-400 hover:underline ${safeTheme === 'light'
-                                              ? 'hover:text-blue-500'
-                                              : 'hover:text-blue-300'
-                                            }`}
+                                          className={`text-blue-400 hover:underline ${safeTheme === 'light' ? 'hover:text-blue-500' : 'hover:text-blue-300'}`}
                                           variants={buttonVariants}
                                           whileHover="hover"
                                           whileTap="tap"
@@ -817,8 +788,7 @@ export default function MyBusinessTab() {
                             ))
                           ) : (
                             <motion.p
-                              className={`${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'
-                                }`}
+                              className={`${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}
                               variants={cardVariants}
                               initial="hidden"
                               animate="visible"
@@ -833,8 +803,7 @@ export default function MyBusinessTab() {
                 </div>
               ) : (
                 <motion.p
-                  className={`${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'
-                    }`}
+                  className={`${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}
                   variants={cardVariants}
                   initial="hidden"
                   animate="visible"
@@ -845,36 +814,6 @@ export default function MyBusinessTab() {
             </motion.div>
           </div>
         </div>
-        <AddBusinessModal
-          isOpen={isAddBusinessModalOpen}
-          onClose={() => {
-            console.log('Closing AddBusinessModal')
-            setIsAddBusinessModalOpen(false)
-          }}
-          onSave={handleAddBusiness}
-          theme={safeTheme}
-        />
-        <AddProjectModal
-          isOpen={isAddProjectModalOpen}
-          onClose={() => {
-            console.log('Closing AddProjectModal')
-            setIsAddProjectModalOpen(false)
-          }}
-          onSave={handleAddProject}
-          theme={safeTheme}
-        />
-        <AddTaskModal
-          isOpen={isAddTaskModalOpen.open}
-          onClose={() => {
-            console.log('Closing AddTaskModal')
-            setIsAddTaskModalOpen({ open: false, projectId: null })
-          }}
-          onSave={(taskData) => {
-            console.log('Saving task from AddTaskModal:', taskData)
-            handleAddTask(isAddTaskModalOpen.projectId!, taskData)
-          }}
-          theme={safeTheme}
-        />
       </div>
     </>
   )

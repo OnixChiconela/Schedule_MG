@@ -33,8 +33,8 @@ export default function Onboarding() {
     const userPreferences = { userId: 'default-user', interests: selectedInterests }
     localStorage.setItem('userPreferences', JSON.stringify(userPreferences))
     console.log('Onboarding: Saved user preferences', userPreferences)
-    toast.success('Bem-vindo! Vamos começar!')
-    router.push('/calendar')
+    toast.success(`Hi! Let's start!`)
+    router.push('/dashboard')
   }
 
   const buttonVariants = {
