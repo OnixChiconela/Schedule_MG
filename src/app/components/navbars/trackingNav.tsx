@@ -1,7 +1,6 @@
 'use client'
 
 import { useTheme } from "@/app/themeContext"
-import { useState } from "react";
 import Container from "../Container";
 import { ChevronLeft, ChevronRight, MoonStar, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -9,7 +8,6 @@ import { useRouter } from "next/navigation";
 const TrackingNav = ({ themeButton }: { themeButton?: boolean }) => {
     const router = useRouter()
     const { theme, toggleTheme } = useTheme()
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
         <div

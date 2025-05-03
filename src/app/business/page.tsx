@@ -8,7 +8,6 @@ import TrackingNav from "../components/navbars/trackingNav"
 
 export default function Business() {
     const { theme } = useTheme()
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     return (
         <>
@@ -16,7 +15,6 @@ export default function Business() {
             <TrackingNav
                 themeButton={false}
             />
-                {/* <SideNavbar theme={theme} toggleTheme={toggleTheme} /> */}
                 <div className="flex pt-24">
                     <MyBusinessTab />
                 </div>

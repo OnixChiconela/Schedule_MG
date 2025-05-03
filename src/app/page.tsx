@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { IoMdArrowForward } from 'react-icons/io'
@@ -21,7 +20,6 @@ export default function LandingPage() {
 
   const handleRegisterClose = () => setIsRegisterOpen(false)
   const { theme } = useTheme()
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <ClientOnly>

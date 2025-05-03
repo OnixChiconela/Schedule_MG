@@ -36,7 +36,7 @@ type RawEdge = {
     sourceHandle?: string | null;
     targetHandle?: string | null;
     style?: React.CSSProperties;
-    [key: string]: any;
+    // [key: string]: any;
 };
 
 
@@ -82,8 +82,7 @@ function TrackingPageContent() {
             const saved = localStorage.getItem('corners');
             if (saved) {
                 const parsed = JSON.parse(saved);
-                console.log('Initial localStorage corners:', parsed); // Debug
-                let nodes: Node<TaskNodeData>[] = [];
+                const nodes: Node<TaskNodeData>[] = [];
                 parsed.forEach((corner: Corner, cornerIndex: number) => {
                     corner.tasks.forEach((task: Task, taskIndex: number) => {
                         const position = task.position && typeof task.position.x === 'number' && typeof task.position.y === 'number'
@@ -109,7 +108,6 @@ function TrackingPageContent() {
                         });
                     });
                 });
-                console.log('Initial Nodes:', nodes); // Debug
                 return nodes;
             }
         }
@@ -121,7 +119,6 @@ function TrackingPageContent() {
             const saved = localStorage.getItem('edges');
             if (saved) {
                 const parsed: RawEdge[] = JSON.parse(saved);
-                console.log('Initial localStorage edges:', parsed); // Debug
                 // Validate edges: ensure source and target nodes exist
                 const nodeIds = new Set(initialNodes.map(node => node.id));
                 return parsed
@@ -167,7 +164,6 @@ function TrackingPageContent() {
     // Persist edges to localStorage
     useEffect(() => {
         try {
-            console.log('Saving edges to localStorage:', edges); // Debug
             localStorage.setItem('edges', JSON.stringify(edges));
         } catch (error) {
             console.error('Error saving edges to localStorage:', error);
@@ -181,14 +177,13 @@ function TrackingPageContent() {
             const savedCorners = localStorage.getItem('corners');
             if (savedCorners) {
                 const parsed = JSON.parse(savedCorners);
-                console.log('Storage Change localStorage corners:', parsed); // Debug
                 setCorners(
                     parsed.map((corner: Corner) => ({
                         id: corner.id.toString(),
                         title: corner.title,
                     }))
                 );
-                let newNodes: Node<TaskNodeData>[] = [];
+                const newNodes: Node<TaskNodeData>[] = [];
                 parsed.forEach((corner: Corner, cornerIndex: number) => {
                     corner.tasks.forEach((task: Task, taskIndex: number) => {
                         const position = task.position && typeof task.position.x === 'number' && typeof task.position.y === 'number'
@@ -214,7 +209,6 @@ function TrackingPageContent() {
                         });
                     });
                 });
-                console.log('Storage Change Nodes:', newNodes); // Debug
                 setNodes(newNodes);
             }
 
@@ -222,7 +216,6 @@ function TrackingPageContent() {
             const savedEdges = localStorage.getItem('edges');
             if (savedEdges) {
                 const parsedEdges: RawEdge[] = JSON.parse(savedEdges);
-                console.log('Storage Change localStorage edges:', parsedEdges); // Debug
                 // Validate edges
                 const nodeIds = new Set(nodes.map(node => node.id));
                 const validEdges = parsedEdges
@@ -237,7 +230,6 @@ function TrackingPageContent() {
                             strokeWidth: 2,
                         },
                     }));
-                console.log('Storage Change Edges:', validEdges); // Debug
                 setEdges(validEdges);
             }
         };
@@ -251,7 +243,6 @@ function TrackingPageContent() {
         (changes: NodeChange[]) => {
             onNodesChange(changes);
             changes.forEach((change) => {
-                console.log('Node Change:', change); // Debug
                 if (change.type === 'position' && change.position) {
                     const saved = localStorage.getItem('corners');
                     if (saved) {
@@ -270,7 +261,6 @@ function TrackingPageContent() {
                                     : task
                             ),
                         }));
-                        console.log('Saving Positions:', updatedCorners); // Debug
                         localStorage.setItem('corners', JSON.stringify(updatedCorners));
                     }
                 }
@@ -334,7 +324,6 @@ function TrackingPageContent() {
         (event: React.MouseEvent, edge: Edge) => {
             setEdges((eds) => {
                 const updatedEdges = eds.filter((e) => e.id !== edge.id);
-                console.log('Deleting Edge (Double Click):', edge, 'Updated Edges:', updatedEdges); // Debug
                 return updatedEdges;
             });
         },
@@ -362,7 +351,6 @@ function TrackingPageContent() {
                 ? { ...corner, tasks: [...corner.tasks, newTask] }
                 : corner
         );
-        console.log('Adding Task:', newTask, 'Corners:', parsed); // Debug
         localStorage.setItem('corners', JSON.stringify(parsed));
 
         const newNode: Node<TaskNodeData> = {

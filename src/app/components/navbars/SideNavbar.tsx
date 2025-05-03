@@ -12,7 +12,6 @@ import {
   MoonStar,
   PenBox,
   Sun,
-  Menu,
   X,
 } from 'lucide-react';
 import { IconType } from 'react-icons';
