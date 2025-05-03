@@ -118,8 +118,8 @@ export default function EventModal({
         WebkitBackdropFilter: 'blur(4px)',
       }}
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
     >
       <motion.div
         className={`p-6 rounded-xl shadow-md w-full max-w-md ${theme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-gray-700'

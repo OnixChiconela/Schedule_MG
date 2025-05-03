@@ -3,6 +3,7 @@
 import { Dialog } from '@headlessui/react'
 import { X } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import {motion} from "framer-motion"
 
 interface NewProjectModalProps {
   isOpen: boolean
@@ -63,11 +64,20 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onCr
     setIsPristine(false)
   }
 
+  if (!isOpen) return null
+
   return (
-    <Dialog
-      open={isOpen}
-      onClose={onClose}
+    <motion.div
+      // open={isOpen}
+      // onClose={onClose}
       className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+      }}
+      initial={{ opacity: 0 }}
+      exit={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
     >
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
       <div
@@ -85,7 +95,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onCr
           <X size={20} />
         </button>
 
-        <Dialog.Title className="text-xl font-bold mb-4">Create New Corner</Dialog.Title>
+        <motion.div className="text-xl font-bold mb-4">Create New Corner</motion.div>
 
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1">Corner Title</label>
@@ -127,7 +137,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onCr
           Create
         </button>
       </div>
-    </Dialog>
+    </motion.div>
   )
 }
 

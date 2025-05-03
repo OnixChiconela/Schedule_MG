@@ -24,7 +24,7 @@ import { IoMdAdd, IoMdCalendar, IoMdMenu } from 'react-icons/io';
 import { TaskNodeData, CategoryColors, Corner } from "@/app/types/index"
 import CustomDropdown from '../components/CustomDropdown';
 import TaskNodeComponent from '../components/roadmap/TaskNodeComponent';
-import MainNavbar from '../components/navbars/MainNavbar';
+import TrackingNav from '../components/navbars/trackingNav';
 
 // Type for corners
 const defaultCategoryColors: CategoryColors = {
@@ -401,7 +401,7 @@ function TrackingPageContent() {
         <div
             className={`flex flex-col min-h-screen ${theme === 'light' ? 'bg-gray-100' : 'bg-slate-900'}`}
         >
-            <MainNavbar />
+            <TrackingNav />
             {/* <LandingNavbar /> */}
             <main className="flex-1 py-12">
                 <Container>
@@ -538,7 +538,16 @@ function TrackingPageContent() {
                                                     }}
                                                 />
                                                 <span
-                                                    className={`text-sm ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'}`}
+                                                    className={`text-sm ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'} cursor-pointer`}
+                                                    onClick={() => {
+                                                        const node = nodes.find((n) => n.data.category === category);
+                                                        if (node) {
+                                                            setViewport(
+                                                                { x: -node.position.x + 300, y: -node.position.y + 300, zoom: 1 },
+                                                                { duration: 500 }
+                                                            );
+                                                        }
+                                                    }}
                                                 >
                                                     {category}
                                                 </span>
@@ -547,7 +556,7 @@ function TrackingPageContent() {
                                     </div>
                                 </div>
                             </motion.div>
-                            <div className="flex-1 w-full h-[calc(100vh-200px)] rounded-lg overflow-hidden shadow-md z-0">
+                            <div className="flex w-full h-[calc(100vh-200px)] rounded-lg overflow-hidden shadow-md z-0">
                                 <ReactFlow
                                     nodes={nodes}
                                     edges={edges}
@@ -565,7 +574,7 @@ function TrackingPageContent() {
                                         size={2}
                                         color={theme === 'light' ? '#d1d5db' : '#4b5563'}
                                     />
-                                    <Controls />
+                                    <Controls style={{ background: theme === 'light' ? '#f1f1f1' : '#26304A' }}/>
                                     <MiniMap
                                         nodeColor={(node) =>
                                             node.data.status === 'Done'
