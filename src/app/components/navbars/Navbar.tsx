@@ -1,7 +1,7 @@
 'use client';
 
 import { useTheme } from "@/app/themeContext";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ChevronLeft, ChevronRight, Menu, MoonStar, Sun, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -21,10 +21,8 @@ const Navbar = ({
 }: MainNavbarProps) => {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
-    console.log('MainNavbar rendered, margin-left:', 'lg:ml-sidebar', 'showToggleSidebarButton:', showToggleSidebarButton);
   }, [theme, showToggleSidebarButton]);
 
   return (

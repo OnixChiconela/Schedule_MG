@@ -30,7 +30,6 @@ interface SortableTaskProps {
 
 export default function SortableTask({
   task,
-  index,
   editingTaskId,
   editingField,
   editValues,

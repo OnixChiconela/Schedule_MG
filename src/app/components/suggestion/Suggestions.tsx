@@ -13,7 +13,6 @@ type Suggestion = {
 
 export default function Suggestions() {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const categories = ['Technology', 'Art', 'Finance', 'Education', 'Health', 'Travel', 'Music'];
 
   useEffect(() => {
     const newSuggestions: Suggestion[] = [

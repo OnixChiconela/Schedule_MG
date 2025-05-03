@@ -19,6 +19,7 @@ export type Task = {
   priority: 'Low' | 'Medium' | 'High'
   isCompleted: boolean
   position?: { x: number; y: number };
+  category?: "Work" | "Personal" | "Study" | "Other"
 }
 
 export type Corner = {

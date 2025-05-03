@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import Calendar from '../components/calendar/Calendar'
 import EventModal from '../components/calendar/EventModal'
-import Error3DAnimation from '../components/calendar/Error3DAnimation'
 import { useTheme } from '../themeContext'
 import { Event, Business, UserPreferences } from "@/app/types/events"
 import { Project } from '../types/events'
@@ -58,7 +57,6 @@ export default function CalendarPage() {
         setUserPreferences(parsedPreferences)
       }
     } catch (error) {
-      console.error('Error loading from localStorage:', error)
       localStorage.removeItem('calendarEvents')
       localStorage.removeItem('businesses')
       setShowErrorAnimation(true)
@@ -82,7 +80,6 @@ export default function CalendarPage() {
         console.log('Saving businesses to localStorage:', businesses)
         localStorage.setItem('businesses', JSON.stringify(businesses))
       } catch (error) {
-        console.error('Error saving to localStorage:', error)
         toast.error('Error saving businesses.')
       }
     }
@@ -237,10 +234,6 @@ export default function CalendarPage() {
           slot={selectedSlot}
           theme={safeTheme}
           businesses={businesses}
-        />
-        <Error3DAnimation
-          theme={safeTheme}
-          isVisible={showErrorAnimation}
         />
       </main>
     </div>

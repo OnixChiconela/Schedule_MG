@@ -15,7 +15,6 @@ const LandingNavbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const handleRegisterOpen = () => setIsRegisterOpen(true)
-    const handleRegisterClose = () => setIsRegisterOpen(false)
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);

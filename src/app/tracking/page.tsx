@@ -14,6 +14,7 @@ import ReactFlow, {
     useReactFlow,
     ReactFlowProvider,
     NodeChange,
+    NodeProps,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import LandingFooter from '../components/footers/LandingFooter';
@@ -21,12 +22,24 @@ import Container from '../components/Container';
 import { useTheme } from '../themeContext';
 import { motion } from 'framer-motion';
 import { IoMdAdd, IoMdCalendar, IoMdMenu } from 'react-icons/io';
-import { TaskNodeData, CategoryColors, Corner } from "@/app/types/index"
+import { TaskNodeData, CategoryColors } from "@/app/types/index"
 import CustomDropdown from '../components/CustomDropdown';
 import TaskNodeComponent from '../components/roadmap/TaskNodeComponent';
 import TrackingNav from '../components/navbars/trackingNav';
+import { Corner, Task } from '../tasks/page';
 
 // Type for corners
+type RawEdge = {
+    id?: string;
+    source?: string;
+    target?: string;
+    sourceHandle?: string | null;
+    targetHandle?: string | null;
+    style?: React.CSSProperties;
+    [key: string]: any;
+};
+
+
 const defaultCategoryColors: CategoryColors = {
     Work: '#3b82f6',
     Personal: '#22c55e',
@@ -53,9 +66,10 @@ function TrackingPageContent() {
             const saved = localStorage.getItem('corners');
             if (saved) {
                 const parsed = JSON.parse(saved);
-                return parsed.map((corner: any) => ({
+                return parsed.map((corner: Corner) => ({
                     id: corner.id.toString(),
                     title: corner.title,
+                    tasks: corner.tasks || [],
                 }));
             }
         }
@@ -70,14 +84,14 @@ function TrackingPageContent() {
                 const parsed = JSON.parse(saved);
                 console.log('Initial localStorage corners:', parsed); // Debug
                 let nodes: Node<TaskNodeData>[] = [];
-                parsed.forEach((corner: any, cornerIndex: number) => {
-                    corner.tasks.forEach((task: any, taskIndex: number) => {
+                parsed.forEach((corner: Corner, cornerIndex: number) => {
+                    corner.tasks.forEach((task: Task, taskIndex: number) => {
                         const position = task.position && typeof task.position.x === 'number' && typeof task.position.y === 'number'
                             ? task.position
                             : {
-                                  x: 100 + (cornerIndex * 300) + (taskIndex * 50),
-                                  y: 100 + (taskIndex * 150),
-                              };
+                                x: 100 + (cornerIndex * 300) + (taskIndex * 50),
+                                y: 100 + (taskIndex * 150),
+                            };
                         nodes.push({
                             id: task.id.toString(),
                             type: 'custom',
@@ -106,20 +120,22 @@ function TrackingPageContent() {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('edges');
             if (saved) {
-                const parsed = JSON.parse(saved);
+                const parsed: RawEdge[] = JSON.parse(saved);
                 console.log('Initial localStorage edges:', parsed); // Debug
                 // Validate edges: ensure source and target nodes exist
                 const nodeIds = new Set(initialNodes.map(node => node.id));
-                return parsed.filter((edge: any) => 
-                    edge.id && edge.source && edge.target && 
-                    nodeIds.has(edge.source) && nodeIds.has(edge.target)
-                ).map((edge: any) => ({
-                    ...edge,
-                    style: {
-                        stroke: theme === 'light' ? '#a855f7' : '#7e22ce',
-                        strokeWidth: 2,
-                    },
-                }));
+                return parsed
+                    .filter((edge): edge is Required<Pick<RawEdge, 'id' | 'source' | 'target'>> =>
+                        edge.id != null && edge.source != null && edge.target != null &&
+                        nodeIds.has(edge.source) && nodeIds.has(edge.target)
+                    )
+                    .map((edge) => ({
+                        ...edge,
+                        style: {
+                            stroke: theme === 'light' ? '#a855f7' : '#7e22ce',
+                            strokeWidth: 2,
+                        },
+                    }));
             }
         }
         return [];
@@ -148,8 +164,8 @@ function TrackingPageContent() {
         localStorage.setItem('categoryColors', JSON.stringify(categoryColors));
     }, [categoryColors]);
 
-     // Persist edges to localStorage
-     useEffect(() => {
+    // Persist edges to localStorage
+    useEffect(() => {
         try {
             console.log('Saving edges to localStorage:', edges); // Debug
             localStorage.setItem('edges', JSON.stringify(edges));
@@ -167,20 +183,20 @@ function TrackingPageContent() {
                 const parsed = JSON.parse(savedCorners);
                 console.log('Storage Change localStorage corners:', parsed); // Debug
                 setCorners(
-                    parsed.map((corner: any) => ({
+                    parsed.map((corner: Corner) => ({
                         id: corner.id.toString(),
                         title: corner.title,
                     }))
                 );
                 let newNodes: Node<TaskNodeData>[] = [];
-                parsed.forEach((corner: any, cornerIndex: number) => {
-                    corner.tasks.forEach((task: any, taskIndex: number) => {
+                parsed.forEach((corner: Corner, cornerIndex: number) => {
+                    corner.tasks.forEach((task: Task, taskIndex: number) => {
                         const position = task.position && typeof task.position.x === 'number' && typeof task.position.y === 'number'
                             ? task.position
                             : {
-                                  x: 100 + (cornerIndex * 300) + (taskIndex * 50),
-                                  y: 100 + (taskIndex * 150),
-                              };
+                                x: 100 + (cornerIndex * 300) + (taskIndex * 50),
+                                y: 100 + (taskIndex * 150),
+                            };
                         newNodes.push({
                             id: task.id.toString(),
                             type: 'custom',
@@ -205,20 +221,22 @@ function TrackingPageContent() {
             // Sync edges
             const savedEdges = localStorage.getItem('edges');
             if (savedEdges) {
-                const parsedEdges = JSON.parse(savedEdges);
+                const parsedEdges: RawEdge[] = JSON.parse(savedEdges);
                 console.log('Storage Change localStorage edges:', parsedEdges); // Debug
                 // Validate edges
                 const nodeIds = new Set(nodes.map(node => node.id));
-                const validEdges = parsedEdges.filter((edge: any) => 
-                    edge.id && edge.source && edge.target && 
-                    nodeIds.has(edge.source) && nodeIds.has(edge.target)
-                ).map((edge: any) => ({
-                    ...edge,
-                    style: {
-                        stroke: theme === 'light' ? '#a855f7' : '#7e22ce',
-                        strokeWidth: 2,
-                    },
-                }));
+                const validEdges = parsedEdges
+                    .filter((edge): edge is Required<Pick<RawEdge, 'id' | 'source' | 'target'>> =>
+                        edge.id != null && edge.source != null && edge.target != null &&
+                        nodeIds.has(edge.source) && nodeIds.has(edge.target)
+                    )
+                    .map((edge) => ({
+                        ...edge,
+                        style: {
+                            stroke: theme === 'light' ? '#a855f7' : '#7e22ce',
+                            strokeWidth: 2,
+                        },
+                    }));
                 console.log('Storage Change Edges:', validEdges); // Debug
                 setEdges(validEdges);
             }
@@ -238,17 +256,17 @@ function TrackingPageContent() {
                     const saved = localStorage.getItem('corners');
                     if (saved) {
                         const parsed = JSON.parse(saved);
-                        const updatedCorners = parsed.map((corner: any) => ({
+                        const updatedCorners = parsed.map((corner: Corner) => ({
                             ...corner,
-                            tasks: corner.tasks.map((task: any) =>
+                            tasks: corner.tasks.map((task: Task) =>
                                 task.id.toString() === change.id
                                     ? {
-                                          ...task,
-                                          position: {
-                                              x: Math.round(change.position!.x),
-                                              y: Math.round(change.position!.y),
-                                          },
-                                      }
+                                        ...task,
+                                        position: {
+                                            x: Math.round(change.position!.x),
+                                            y: Math.round(change.position!.y),
+                                        },
+                                    }
                                     : task
                             ),
                         }));
@@ -277,7 +295,7 @@ function TrackingPageContent() {
     // Memoize nodeTypes
     const nodeTypes = useMemo(
         () => ({
-            custom: (props: any) => (
+            custom: (props: NodeProps<TaskNodeData>) => (
                 <TaskNodeComponent {...props} categoryColors={categoryColors} />
             ),
         }),
@@ -339,7 +357,7 @@ function TrackingPageContent() {
         };
         const saved = localStorage.getItem('corners');
         let parsed = saved ? JSON.parse(saved) : [];
-        parsed = parsed.map((corner: any) =>
+        parsed = parsed.map((corner: Corner) =>
             corner.id.toString() === newTaskCorner
                 ? { ...corner, tasks: [...corner.tasks, newTask] }
                 : corner
@@ -393,7 +411,7 @@ function TrackingPageContent() {
     ];
 
     const cornerOptions = corners.map((corner) => ({
-        value: corner.id,
+        value: corner.id.toString(),
         label: corner.title,
     }));
 
@@ -481,7 +499,7 @@ function TrackingPageContent() {
                                     </h2>
                                     <ul className="space-y-2">
                                         {corners.slice(0, showAllCorners ? undefined : 3).map((corner) => {
-                                            const taskCount = nodes.filter((node) => node.data.cornerId === corner.id).length;
+                                            const taskCount = nodes.filter((node) => node.data.cornerId === corner.id.toString()).length;
                                             return (
                                                 <li
                                                     key={corner.id}
@@ -574,7 +592,7 @@ function TrackingPageContent() {
                                         size={2}
                                         color={theme === 'light' ? '#d1d5db' : '#4b5563'}
                                     />
-                                    <Controls style={{ background: theme === 'light' ? '#f1f1f1' : '#26304A' }}/>
+                                    <Controls style={{ background: theme === 'light' ? '#f1f1f1' : '#26304A' }} />
                                     <MiniMap
                                         nodeColor={(node) =>
                                             node.data.status === 'Done'

@@ -1,6 +1,5 @@
 'use client'
 
-import { Dialog } from '@headlessui/react'
 import { X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import {motion} from "framer-motion"

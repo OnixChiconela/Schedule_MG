@@ -6,7 +6,6 @@ import { motion } from 'framer-motion'
 import { toast } from 'react-hot-toast'
 import { useTheme } from '../themeContext'
 import { MoonStar, Sun } from 'lucide-react'
-import Card from '../components/cards/Card'
 
 const categories = ['Technology', 'Art', 'Finance', 'Education', 'Health', 'Travel', 'Music']
 

@@ -11,10 +11,6 @@ const TrackingNav = ({ themeButton }: { themeButton?: boolean }) => {
     const { theme, toggleTheme } = useTheme()
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
-    };
-
     return (
         <div
             className={`fixed w-full z-20 shadow-sm ${theme === "light" ? "bg-white" : "bg-slate-700"}

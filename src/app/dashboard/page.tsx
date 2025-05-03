@@ -7,9 +7,8 @@ import { ThemeProvider, useTheme } from "../themeContext"
 import { motion } from "framer-motion"
 import { format, getYear } from 'date-fns';
 import Navbar from "../components/navbars/Navbar";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
-import { toast } from 'react-hot-toast'
 import CustomDropdown from "../components/CustomDropdown";
 import { initialSuggestions } from "../fake/suggestions";
 
@@ -47,7 +46,7 @@ export default function DashboardPPage() {
     const { theme, toggleTheme } = useTheme();
     const router = useRouter();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [corners, setCorners] = useState<Corner[]>(() => {
+    const [corners] = useState<Corner[]>(() => {
         if (typeof window !== "undefined") {
             const saved = localStorage.getItem("corners");
             return saved ? JSON.parse(saved) : [{ id: 1, title: "", tasks: [] }, { id: 2, title: "", tasks: [] }, { id: 3, title: "", tasks: [] }];
@@ -66,14 +65,13 @@ export default function DashboardPPage() {
         }
         return [{ id: 1, title: "Something to note", content: "", emoji: "📝" }, { id: 2, title: "Quick brief", content: "", emoji: "⭐" }, { id: 3, title: "Daily thought", content: "", emoji: "✅" }];
     });
-    const [userInterests, setUserInterests] = useState<string[]>(() => {
+    const [userInterests] = useState<string[]>(() => {
         if (typeof window !== "undefined") {
             const saved = localStorage.getItem("userPreferences");
             return saved ? JSON.parse(saved).interests : ["Technology", "Art", "Music", "Travel"];
         }
         return ["Technology", "Art", "Music", "Travel"];
     });
-    const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
@@ -303,4 +301,4 @@ const categoryColors: { [key: string]: string } = {
 };
 
 // Emoji options
-const emojiOptions = ["📝", "⭐", "✅", "🎯", "💡", "📅", "🎶", "🌍"];
+// const emojiOptions = ["📝", "⭐", "✅", "🎯", "💡", "📅", "🎶", "🌍"];

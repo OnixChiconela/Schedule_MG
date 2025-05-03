@@ -17,18 +17,11 @@ import LandingNavbar from './components/navbars/LandingNavbar'
 import LandingFooter from './components/footers/LandingFooter'
 
 export default function LandingPage() {
-  const router = useRouter()
   const [isRegisterOpen, setIsRegisterOpen] = useState(false)
 
-  const handleRegisterOpen = () => setIsRegisterOpen(true)
   const handleRegisterClose = () => setIsRegisterOpen(false)
-  const { theme, toggleTheme } = useTheme()
+  const { theme } = useTheme()
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
 
   return (
     <ClientOnly>
@@ -37,7 +30,7 @@ export default function LandingPage() {
         <LandingNavbar />
         {/* Hero Section */}
         <section id="landing" className={`pt-16 pb-16 relative overflow-hidden justify-center`}>
-          <div className="">
+          <div>
             <div className="max-w-screen-xl mx-auto">
               <Container>
                 <div className="flex flex-col justify-center ">
@@ -63,13 +56,13 @@ export default function LandingPage() {
                               href="/onboarding"
                               className="text-sm font-semibold py-3 px-8 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-900 hover:gap-2 transition flex items-center justify-center"
                             >
-                              Get Started <IoMdArrowForward size={20} className="ml-2 hover:scale-120 transition" />
+                              {`Get Started`} <IoMdArrowForward size={20} className="ml-2 hover:scale-120 transition" />
                             </Link>
                             <a
                               href="mailto:contact@scheuor.com"
                               className={`text-sm font-semibold py-3 px-8 rounded-full border border-gray-300 hover:bg-gray-100 ${theme == "light" ? "text-gray-900" : "text-neutral-200 hover:text-gray-900"} transition`}
                             >
-                              Talk to Us
+                              {`Talk to Us`}
                             </a>
                           </div>
                         </div>
@@ -88,8 +81,8 @@ export default function LandingPage() {
             <div className="flex flex-col justify-center items-center max-w-screen-xl mx-auto">
 
               <div className="text-center mb-12">
-                <h2 className={`text-3xl sm:text-4xl font-bold ${theme == "light" ? "text-gray-900" : "text-neutral-200"} `}>How Scheuor Can Help</h2>
-                <p className={`text-lg mt-4 ${theme == "light" ? "text-gray-600" : "text-neutral-300"}`}>Tools to boost your your clarity, focus, and progress</p>
+                <h2 className={`text-3xl sm:text-4xl font-bold ${theme == "light" ? "text-gray-900" : "text-neutral-200"} `}>{`How Scheuor Can Help`}</h2>
+                <p className={`text-lg mt-4 ${theme == "light" ? "text-gray-600" : "text-neutral-300"}`}>{`Tools to boost your your clarity, focus, and progress`}</p>
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <InfoCard
@@ -122,9 +115,9 @@ export default function LandingPage() {
               <div className="text-center mb-12">
                 <h2 className={`mb-4 text-3xl font-bold text-center sm:text-4xl ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`} style={{
                   translate: "none", rotate: "none", scale: "none"
-                }}>How It Works</h2>
+                }}>{`How It Works`}</h2>
                 <p className={`text-lg leading-8 ${theme == "light" ? "text-gray-800" : "text-gray-300"} text-center`}>
-                  Get started with Scheuor in simple steps
+                  {`Get started with Scheuor in simple steps`}
                 </p>
               </div>
               {/* <div className="mt-16"> */}
@@ -142,9 +135,9 @@ export default function LandingPage() {
                       items-center justify-center 
                       text-xl font-bold bg-gradient-to-bl
                       text-black rounded-xl">
-                      1
+                      {`1`}
                     </div>
-                    <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>Set Your Intentions</h3>
+                    <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Set Your Intentions`}</h3>
                     <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
                     <a className='font-semibold'>{`Define what matters to you: `}</a>{`Start by adding your goals, projects, or areas of focus, this is your personal map.`}
                     </p>
@@ -158,9 +151,9 @@ export default function LandingPage() {
                       items-center justify-center 
                       text-xl font-bold bg-gradient-to-b
                       text-black rounded-xl ">
-                      2
+                      {`2`}
                     </div>
-                    <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>Organize Your Space</h3>
+                    <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Organize Your Space`}</h3>
                     <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
                       <a className='font-semibold'>{`Create your flow: `}</a>{`Add tasks, notes, and reflections. Use visual boards and sections to structure your day your wasy`}
                     </p>
@@ -183,7 +176,7 @@ export default function LandingPage() {
                       items-center justify-center 
                       bg-gradient-to-t text-xl font-bold 
                       text-black rounded-xl">
-                      3
+                      {`3`}
                     </div>
                     <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Track & Grow`}</h3>
                     <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
@@ -322,25 +315,25 @@ export default function LandingPage() {
                 <Card>
                   <div className="p-6">
                     <p className={`${theme == "light" ? "text-gray-700" : "text-neutral-300"}`}>
-                      "Scheuor gave me the clarity I needed to finally stay on top of my tasks and goals."
+                      {`"Scheuor gave me the clarity I needed to finally stay on top of my tasks and goals."`}
                     </p>
-                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>— Maria, Freelancer</h4>
+                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>{`— Maria, Freelancer`}</h4>
                   </div>
                 </Card>
                 <Card>
                   <div className="p-6">
                     <p className={`${theme == "light" ? "text-gray-700" : "text-neutral-300"}`}>
-                      "I use Scheuor every day to organize my week, it keeps me focused without feeling overwhelmed."
+                      {`"I use Scheuor every day to organize my week, it keeps me focused without feeling overwhelmed."`}
                     </p>
-                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>— John, Designer</h4>
+                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>{`— John, Designer`}</h4>
                   </div>
                 </Card>
                 <Card>
                   <div className="p-6">
                     <p className={`${theme == "light" ? "text-gray-700" : "text-neutral-300"}`}>
-                      "The suggestions and clean interface help me reflect and stay intentional with my time."
+                      {`"The suggestions and clean interface help me reflect and stay intentional with my time."`}
                     </p>
-                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>— Ana, Creative</h4>
+                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>{`— Ana, Creative`}</h4>
                   </div>
                 </Card>
               </div>

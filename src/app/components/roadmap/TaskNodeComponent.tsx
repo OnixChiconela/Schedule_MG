@@ -7,6 +7,7 @@ import { IoMdCheckmark, IoMdCreate, IoMdCalendar } from 'react-icons/io';
 import { useTheme } from '@/app/themeContext';
 import CustomDropdown from '../CustomDropdown';
 import { CategoryColors, TaskNodeData } from '@/app/types';
+import { Corner, Task } from '@/app/tasks/page';
 
 const TaskNodeComponent = ({
     data,
@@ -23,13 +24,12 @@ const TaskNodeComponent = ({
     const [editData, setEditData] = useState<TaskNodeData>(data);
 
     const saveChanges = () => {
-        // Update localStorage
         const saved = localStorage.getItem('corners');
         if (saved) {
             const parsed = JSON.parse(saved);
-            const updatedCorners = parsed.map((corner: any) => ({
+            const updatedCorners = parsed.map((corner: Corner) => ({
                 ...corner,
-                tasks: corner.tasks.map((task: any) =>
+                tasks: corner.tasks.map((task: Task) =>
                     task.id.toString() === id
                         ? {
                               id: parseInt(id),
