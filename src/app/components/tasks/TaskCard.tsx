@@ -119,46 +119,49 @@ export default function TaskCard({
         </button>
       </div>
       <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={corner.tasks.map((task) => task.id)} strategy={verticalListSortingStrategy}>
-          <div className="overflow-x-auto">
-            <div className="min-w-[1000px] ">
-              {corner.tasks.length === 0 ? (
-                <div className={theme === 'light' ? 'text-gray-400' : 'text-gray-500'}>No tasks yet.</div>
-              ) : (
-                <div
-                  className={`grid grid-cols-7 gap-2 text-sm font-semibold rounded-xl p-2 mb-2 ${theme === 'light' ? 'text-gray-600 bg-gray-50' : 'text-gray-300 bg-slate-600'
-                    }`}
-                >
-                  <div>Drag</div>
-                  <div>Completed</div>
-                  <div>Title</div>
-                  <div>Status</div>
-                  <div>Created</div>
-                  <div>Due</div>
-                  <div>Priority</div>
-                </div>
-              )}
-              {corner.tasks.map((task, index) => (
-                <div className="flex flex-col py-1">
-                  <SortableTask
-                    key={task.id}
-                    task={task}
-                    index={index}
-                    editingTaskId={editingTaskId}
-                    editingField={editingField}
-                    editValues={editValues}
-                    startEditing={startEditing}
-                    handleEditChange={handleEditChange}
-                    submitEdit={(taskId: number) => submitEdit(taskId, editValuesRef.current)}
-                    onTaskToggle={onTaskToggle}
-                    theme={theme}
-                  />
-                </div>
-              ))}
-            </div>
+  <SortableContext items={corner.tasks.map((task) => task.id)} strategy={verticalListSortingStrategy}>
+    <div className="overflow-x-auto relative z-10">
+      <div className="min-w-[1000px]">
+        {corner.tasks.length === 0 ? (
+          <div className={theme === 'light' ? 'text-gray-400' : 'text-gray-500'}>No tasks yet.</div>
+        ) : (
+          <div
+            className={`grid grid-cols-7 gap-2 text-sm font-semibold rounded-xl p-2 mb-2 ${
+              theme === 'light' ? 'text-gray-600 bg-gray-50' : 'text-gray-300 bg-slate-600'
+            }`}
+          >
+            <div>Drag</div>
+            <div>Completed</div>
+            <div>Title</div>
+            <div>Status</div>
+            <div>Created</div>
+            <div>Due</div>
+            <div>Priority</div>
           </div>
-        </SortableContext>
-      </DndContext>
+        )}
+        {corner.tasks.map((task, index) => (
+          <div
+            key={task.id}
+            className="flex flex-col py-1 max-h-[60px] overflow-hidden"
+          >
+            <SortableTask
+              task={task}
+              index={index}
+              editingTaskId={editingTaskId}
+              editingField={editingField}
+              editValues={editValues}
+              startEditing={startEditing}
+              handleEditChange={handleEditChange}
+              submitEdit={(taskId: number) => submitEdit(taskId, editValuesRef.current)}
+              onTaskToggle={onTaskToggle}
+              theme={theme}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  </SortableContext>
+</DndContext>
     </div>
   )
 }

@@ -1,9 +1,13 @@
+"use client"
+
+import { createPortal } from 'react-dom';
+
 import { format, parseISO } from 'date-fns'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical } from 'lucide-react'
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react'
-import { Fragment, useCallback, useMemo, useState } from 'react'
+import { Fragment, useCallback, useMemo, useState, useEffect, useRef } from 'react'
 
 type Task = {
   id: number
@@ -105,13 +109,47 @@ export default function SortableTask({
     [handleEditChange, submitEdit, task.id]
   )
 
+  const PortalMenuItems = ({ children, anchorRef, ...props }: { children: React.ReactNode; anchorRef: React.RefObject<HTMLButtonElement | null>; } & React.HTMLProps<HTMLDivElement>) => {
+    const [position, setPosition] = useState({ top: 0, left: 0 });
+  
+    useEffect(() => {
+      if (anchorRef.current) {
+        const rect = anchorRef.current.getBoundingClientRect();
+        setPosition({
+          top: rect.bottom + window.scrollY,
+          left: rect.left + window.scrollX,
+        });
+      }
+    }, [anchorRef]);
+  
+    return createPortal(
+      <div
+        {...props}
+        style={{
+          position: 'absolute',
+          top: `${position.top}px`,
+          left: `${position.left}px`,
+          zIndex: 9999,
+        }}
+      >
+        {children}
+      </div>,
+      document.body
+    );
+  };
+
+  // Declaração dos Hooks no nível superior
+  const statusButtonRef = useRef<HTMLButtonElement>(null);
+  const priorityButtonRef = useRef<HTMLButtonElement>(null);
+  const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
+  const [isPriorityMenuOpen, setIsPriorityMenuOpen] = useState(false);
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`grid grid-cols-7 gap-2 items-center rounded-xl p-2 text-sm ${
-        theme === 'light' ? 'bg-gray-100' : 'bg-slate-600'
-      } transition-colors duration-300`}
+      className={`grid grid-cols-7 gap-2 items-center rounded-xl p-2 text-sm ${theme === 'light' ? 'bg-gray-100' : 'bg-slate-600'
+        } transition-colors duration-300`}
     >
       <div {...attributes} {...listeners} className="cursor-grab">
         <GripVertical size={16} className={theme === 'light' ? 'text-gray-500' : 'text-gray-400'} />
@@ -121,15 +159,14 @@ export default function SortableTask({
           type="checkbox"
           checked={task.isCompleted}
           onChange={(e) => onTaskToggle(task.id, e.target.checked)}
-          className={`h-4 w-4 rounded border-gray-300 focus:ring-blue-500 ${
-            theme === 'light' ? 'text-black' : 'text-gray-200'
-          }`}
+          className={`h-4 w-4 rounded border-gray-300 focus:ring-blue-500 ${theme === 'light' ? 'text-black' : 'text-gray-200'
+            }`}
         />
       </div>
       <div
         onClick={() => {
-          console.log('SortableTask: Starting edit: title')
-          startEditing(task.id, 'title', task.title)
+          console.log('SortableTask: Starting edit: title');
+          startEditing(task.id, 'title', task.title);
         }}
         className="cursor-text"
       >
@@ -138,84 +175,90 @@ export default function SortableTask({
             type="text"
             value={editValues.title ?? task.title}
             onChange={(e) => {
-              console.log(`SortableTask: Changing title to: ${e.target.value}`)
-              handleEditChange('title', e.target.value)
+              console.log(`SortableTask: Changing title to: ${e.target.value}`);
+              handleEditChange('title', e.target.value);
             }}
             onBlur={() => {
-              console.log('SortableTask: Submitting title edit')
-              submitEdit(task.id)
+              console.log('SortableTask: Submitting title edit');
+              submitEdit(task.id);
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                console.log('SortableTask: Submitting title edit via Enter')
-                submitEdit(task.id)
+                console.log('SortableTask: Submitting title edit via Enter');
+                submitEdit(task.id);
               }
             }}
-            className={`w-full px-2 py-1 border rounded animate-pulse ${
-              theme === 'light' ? 'border-gray-300 bg-white' : 'border-slate-500 bg-slate-700 text-gray-200'
-            }`}
+            className={`w-full px-2 py-1 border rounded animate-pulse ${theme === 'light' ? 'border-gray-300 bg-white' : 'border-slate-500 bg-slate-700 text-gray-200'
+              }`}
             autoFocus
           />
         ) : (
           <span className="font-medium">{task.title}</span>
         )}
       </div>
-      <div className="cursor-pointer">
+      <div className="relative">
         {editingTaskId === task.id && editingField === 'status' ? (
-          <Menu as="div" className="relative inline-block text-left" key={`status-${task.id}`}>
-            <MenuButton
-              disabled={isSelecting}
-              className={`w-fit max-w-[280px] px-4 py-2 border rounded-md text-sm animate-pulse ${
-                isSelecting ? 'opacity-50 cursor-not-allowed' : ''
-              } ${theme === 'light' ? 'bg-white border-gray-300' : 'bg-slate-700 border-slate-500 text-gray-200'} ${
-                getStatusStyles((editValues.status ?? task.status) as Task['status'])
-              }`}
-              data-testid="status-menu-button"
-            >
-              {editValues.status ?? task.status}
-            </MenuButton>
-            <Transition
-              as={Fragment}
-              enter="transition ease-out duration-100"
-              enterFrom="transform opacity-0 scale-95"
-              enterTo="transform opacity-100 scale-100"
-              leave="transition ease-in duration-100"
-              leaveFrom="transform opacity-100 scale-100"
-              leaveTo="transform opacity-0 scale-95"
-            >
-              <MenuItems
-                className={`absolute left-0 mt-1 w-full max-w-[280px] rounded-md shadow-lg border focus:outline-none z-30 ${
-                  theme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-slate-500'
-                }`}
+          <>
+            <Menu as="div" className="relative inline-block text-left w-full">
+              <MenuButton
+                ref={statusButtonRef}
+                onClick={() => setIsStatusMenuOpen(true)}
+                disabled={isSelecting}
+                className={`w-full max-w-[280px] px-4 py-2 border rounded-md text-sm animate-pulse ${isSelecting ? 'opacity-50 cursor-not-allowed' : ''
+                  } ${theme === 'light' ? 'bg-white border-gray-300' : 'bg-slate-700 border-slate-500 text-gray-200'} ${getStatusStyles((editValues.status ?? task.status) as Task['status'])
+                  }`}
+                data-testid="status-menu-button"
               >
-                <div className="p-2 space-y-2">
-                  {['To Do', 'In Progress', 'Done'].map((option) => (
-                    <MenuItem key={option} disabled={isSelecting}>
-                      {({ active }) => (
-                        <button
-                          type="button"
-                          onClick={() => handleOptionSelect('status', option)}
-                          className={`w-full text-left px-4 py-1.5 rounded-md text-sm mx-2 ${
-                            getStatusStyles(option as Task['status'])
-                          } ${active && !isSelecting ? (theme === 'light' ? 'bg-gray-100' : 'bg-slate-600') : ''}`}
-                          data-testid={`status-option-${option}`}
-                        >
-                          {option}
-                        </button>
-                      )}
-                    </MenuItem>
-                  ))}
-                </div>
-              </MenuItems>
-            </Transition>
-          </Menu>
+                {editValues.status ?? task.status}
+              </MenuButton>
+              {isStatusMenuOpen && (
+                <Transition
+                  as={Fragment}
+                  enter="transition ease-out duration-100"
+                  enterFrom="transform opacity-0 scale-95"
+                  enterTo="transform opacity-100 scale-100"
+                  leave="transition ease-in duration-100"
+                  leaveFrom="transform opacity-100 scale-100"
+                  leaveTo="transform opacity-0 scale-95"
+                >
+                  <MenuItems
+                    as={PortalMenuItems}
+                    anchorRef={statusButtonRef}
+                    className={`w-full max-w-[280px] rounded-md shadow-lg border focus:outline-none ${theme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-slate-500'
+                      }`}
+                  >
+                    <div className="p-2 space-y-2">
+                      {['To Do', 'In Progress', 'Done'].map((option) => (
+                        <MenuItem key={option} disabled={isSelecting}>
+                          {({ active }) => (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleOptionSelect('status', option);
+                                setIsStatusMenuOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-1.5 rounded-md text-sm mx-2 ${getStatusStyles(option as Task['status'])
+                                } ${active && !isSelecting ? (theme === 'light' ? 'bg-gray-100' : 'bg-slate-600') : ''}`}
+                              data-testid={`status-option-${option}`}
+                            >
+                              {option}
+                            </button>
+                          )}
+                        </MenuItem>
+                      ))}
+                    </div>
+                  </MenuItems>
+                </Transition>
+              )}
+            </Menu>
+          </>
         ) : (
           <span
             onClick={(e) => {
-              e.stopPropagation()
-              console.log('SortableTask: Starting edit: status')
-              console.log(`SortableTask: Opened status dropdown for task ID: ${task.id}`)
-              startEditing(task.id, 'status', task.status)
+              e.stopPropagation();
+              console.log('SortableTask: Starting edit: status');
+              console.log(`SortableTask: Opened status dropdown for task ID: ${task.id}`);
+              startEditing(task.id, 'status', task.status);
             }}
             className={`inline-block px-3 py-1.5 rounded-md text-sm mx-2 ${getStatusStyles(task.status)}`}
           >
@@ -226,8 +269,8 @@ export default function SortableTask({
       <div>{formatDate(task.createdDate)}</div>
       <div
         onClick={() => {
-          console.log('SortableTask: Starting edit: dueDate')
-          startEditing(task.id, 'dueDate', task.dueDate)
+          console.log('SortableTask: Starting edit: dueDate');
+          startEditing(task.id, 'dueDate', task.dueDate);
         }}
         className="cursor-pointer"
       >
@@ -236,84 +279,90 @@ export default function SortableTask({
             type="date"
             value={editValues.dueDate ?? task.dueDate}
             onChange={(e) => {
-              console.log(`SortableTask: Changing dueDate to: ${e.target.value}`)
-              handleEditChange('dueDate', e.target.value)
+              console.log(`SortableTask: Changing dueDate to: ${e.target.value}`);
+              handleEditChange('dueDate', e.target.value);
             }}
             onBlur={() => {
-              console.log('SortableTask: Submitting dueDate edit')
-              submitEdit(task.id)
+              console.log('SortableTask: Submitting dueDate edit');
+              submitEdit(task.id);
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                console.log('SortableTask: Submitting dueDate edit via Enter')
-                submitEdit(task.id)
+                console.log('SortableTask: Submitting dueDate edit via Enter');
+                submitEdit(task.id);
               }
             }}
-            className={`w-full px-2 py-1 border rounded animate-pulse ${
-              theme === 'light' ? 'border-gray-300 bg-white' : 'border-slate-500 bg-slate-700 text-gray-200'
-            }`}
+            className={`w-full px-2 py-1 border rounded animate-pulse ${theme === 'light' ? 'border-gray-300 bg-white' : 'border-slate-500 bg-slate-700 text-gray-200'
+              }`}
             autoFocus
           />
         ) : (
           formatDate(task.dueDate)
         )}
       </div>
-      <div className="cursor-pointer">
+      <div className="relative">
         {editingTaskId === task.id && editingField === 'priority' ? (
-          <Menu as="div" className="relative inline-block text-left" key={`priority-${task.id}`}>
-            <MenuButton
-              disabled={isSelecting}
-              className={`w-fit max-w-[280px] px-4 py-2 border rounded-md text-sm animate-pulse ${
-                isSelecting ? 'opacity-50 cursor-not-allowed' : ''
-              } ${theme === 'light' ? 'bg-white border-gray-300' : 'bg-slate-700 border-slate-500 text-gray-200'} ${
-                getPriorityStyles((editValues.priority ?? task.priority) as Task['priority'])
-              }`}
-              data-testid="priority-menu-button"
-            >
-              {editValues.priority ?? task.priority}
-            </MenuButton>
-            <Transition
-              as={Fragment}
-              enter="transition ease-out duration-100"
-              enterFrom="transform opacity-0 scale-95"
-              enterTo="transform opacity-100 scale-100"
-              leave="transition ease-in duration-100"
-              leaveFrom="transform opacity-100 scale-100"
-              leaveTo="transform opacity-0 scale-95"
-            >
-              <MenuItems
-                className={`absolute left-0 mt-1 w-full max-w-[280px] rounded-md shadow-lg border focus:outline-none z-30 ${
-                  theme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-slate-500'
-                }`}
+          <>
+            <Menu as="div" className="relative inline-block text-left w-full">
+              <MenuButton
+                ref={priorityButtonRef}
+                onClick={() => setIsPriorityMenuOpen(true)}
+                disabled={isSelecting}
+                className={`w-full max-w-[280px] px-4 py-2 border rounded-md text-sm animate-pulse ${isSelecting ? 'opacity-50 cursor-not-allowed' : ''
+                  } ${theme === 'light' ? 'bg-white border-gray-300' : 'bg-slate-700 border-slate-500 text-gray-200'} ${getPriorityStyles((editValues.priority ?? task.priority) as Task['priority'])
+                  }`}
+                data-testid="priority-menu-button"
               >
-                <div className="p-2 space-y-2">
-                  {['Low', 'Medium', 'High'].map((option) => (
-                    <MenuItem key={option} disabled={isSelecting}>
-                      {({ active }) => (
-                        <button
-                          type="button"
-                          onClick={() => handleOptionSelect('priority', option)}
-                          className={`w-full text-left px-4 py-1.5 rounded-md text-sm mx-2 ${
-                            getPriorityStyles(option as Task['priority'])
-                          } ${active && !isSelecting ? (theme === 'light' ? 'bg-gray-100' : 'bg-slate-600') : ''}`}
-                          data-testid={`priority-option-${option}`}
-                        >
-                          {option}
-                        </button>
-                      )}
-                    </MenuItem>
-                  ))}
-                </div>
-              </MenuItems>
-            </Transition>
-          </Menu>
+                {editValues.priority ?? task.priority}
+              </MenuButton>
+              {isPriorityMenuOpen && (
+                <Transition
+                  as={Fragment}
+                  enter="transition ease-out duration-100"
+                  enterFrom="transform opacity-0 scale-95"
+                  enterTo="transform opacity-100 scale-100"
+                  leave="transition ease-in duration-100"
+                  leaveFrom="transform opacity-100 scale-100"
+                  leaveTo="transform opacity-0 scale-95"
+                >
+                  <MenuItems
+                    as={PortalMenuItems}
+                    anchorRef={priorityButtonRef}
+                    className={`w-full max-w-[280px] rounded-md shadow-lg border focus:outline-none ${theme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-slate-500'
+                      }`}
+                  >
+                    <div className="p-2 space-y-2">
+                      {['Low', 'Medium', 'High'].map((option) => (
+                        <MenuItem key={option} disabled={isSelecting}>
+                          {({ active }) => (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleOptionSelect('priority', option);
+                                setIsPriorityMenuOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-1.5 rounded-md text-sm mx-2 ${getPriorityStyles(option as Task['priority'])
+                                } ${active && !isSelecting ? (theme === 'light' ? 'bg-gray-100' : 'bg-slate-600') : ''}`}
+                              data-testid={`priority-option-${option}`}
+                            >
+                              {option}
+                            </button>
+                          )}
+                        </MenuItem>
+                      ))}
+                    </div>
+                  </MenuItems>
+                </Transition>
+              )}
+            </Menu>
+          </>
         ) : (
           <span
             onClick={(e) => {
-              e.stopPropagation()
-              console.log('SortableTask: Starting edit: priority')
-              console.log(`SortableTask: Opened priority dropdown for task ID: ${task.id}`)
-              startEditing(task.id, 'priority', task.priority)
+              e.stopPropagation();
+              console.log('SortableTask: Starting edit: priority');
+              console.log(`SortableTask: Opened priority dropdown for task ID: ${task.id}`);
+              startEditing(task.id, 'priority', task.priority);
             }}
             className={`inline-block px-3 py-1.5 rounded-md text-sm mx-2 ${getPriorityStyles(task.priority)}`}
           >
