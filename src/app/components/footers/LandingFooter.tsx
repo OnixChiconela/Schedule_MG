@@ -86,7 +86,7 @@ const LandingFooter = () => {
                             </li>
                             <li>
                                 <a
-                                    href="mailto:contact@scheuor.com"
+                                    href="mailto:josechiconela@icloud.com"
                                     className={`${theme === 'light'
                                         ? 'text-gray-600 hover:text-fuchsia-600'
                                         : 'text-neutral-400 hover:text-fuchsia-400'

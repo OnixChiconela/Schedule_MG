@@ -52,7 +52,7 @@ const LandingNavbar = () => {
                     >
                         <div className="flex gap-4 text-sm font-medium">
                             <Link
-                                href="/features"
+                                href="/#"
                                 className={`px-3 py-2 rounded-md ${theme === 'light'
                                     ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                     : 'hover:bg-slate-600 hover:text-fuchsia-400'
@@ -61,7 +61,7 @@ const LandingNavbar = () => {
                                 Features
                             </Link>
                             <Link
-                                href="/demo"
+                                href="/onboarding"
                                 className={`px-3 py-2 rounded-md ${theme === 'light'
                                     ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                     : 'hover:bg-slate-600 hover:text-fuchsia-400'
@@ -70,7 +70,7 @@ const LandingNavbar = () => {
                                 Try Demo
                             </Link>
                             <a
-                                href="mailto:contact@scheuor.com"
+                                href="mailto:josechiconela@icloud.com"
                                 className={`px-3 py-2 rounded-md ${theme === 'light'
                                     ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                     : 'hover:bg-slate-600 hover:text-fuchsia-400'
@@ -79,7 +79,7 @@ const LandingNavbar = () => {
                                 Contact
                             </a>
                             <Link
-                                href="/login"
+                                href="/#"
                                 className={`px-3 py-2 rounded-md ${theme === 'light'
                                     ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                     : 'hover:bg-slate-600 hover:text-fuchsia-400'

@@ -63,7 +63,7 @@ export default function LandingPage() {
                               {`Get Started`} <IoMdArrowForward size={20} className="ml-2 hover:scale-120 transition" />
                             </Link>
                             <a
-                              href="mailto:contact@scheuor.com"
+                              href="mailto:josechiconela@icloud.com"
                               className={`text-sm font-semibold py-3 px-8 rounded-full border border-gray-300 hover:bg-gray-100 ${theme == "light" ? "text-gray-900" : "text-neutral-200 hover:text-gray-900"} transition`}
                             >
                               {`Talk to Us`}
