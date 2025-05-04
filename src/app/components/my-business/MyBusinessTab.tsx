@@ -385,7 +385,7 @@ export default function MyBusinessTab() {
             </motion.div>
           )}
 
-          <div className="flex flex-col lg:flex-row lg:space-x-6 w-full">
+          <div className="flex flex-col lg:flex-row lg:gap-6 w-full">
             <motion.div
               className="w-full max-w-full lg:max-w-64 mb-8 lg:mb-0 mx-auto"
               variants={cardVariants}

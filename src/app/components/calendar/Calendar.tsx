@@ -62,6 +62,18 @@ const CustomToolbar = ({ label, onNavigate, onView, view, date }:
         boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
       }}
     >
+      <style jsx global>{`
+        .rbc-toolbar {
+          left: 0;
+          right: 0;
+        }
+        @media (min-width: 1024px) {
+          .rbc-toolbar {
+            left: 260px !important;
+            width: calc(100% - 260px);
+          }
+        }
+      `}</style>
       <span className="rbc-btn-group">
         <button type="button" onClick={() => handleButtonClick('TODAY')}>Today</button>
         <button type="button" onClick={() => handleButtonClick('PREV')}>Back</button>

@@ -7,7 +7,6 @@ import EventModal from '../components/calendar/EventModal'
 import { useTheme } from '../themeContext'
 import { Event, Business, UserPreferences } from "@/app/types/events"
 import { Project } from '../types/events'
-import SuggestedEvents from '../components/SuggestedEvents'
 import SideNavbar from '../components/navbars/SideNavbar'
 import Navbar from '../components/navbars/Navbar'
 
