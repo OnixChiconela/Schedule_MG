@@ -111,7 +111,7 @@ export default function SortableTask({
       style={style}
       className={`grid grid-cols-7 gap-2 items-center rounded-xl p-2 text-sm ${
         theme === 'light' ? 'bg-gray-100' : 'bg-slate-600'
-      } transition-colors duration-300 `}
+      } transition-colors duration-300`}
     >
       <div {...attributes} {...listeners} className="cursor-grab">
         <GripVertical size={16} className={theme === 'light' ? 'text-gray-500' : 'text-gray-400'} />

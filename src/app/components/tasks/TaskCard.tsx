@@ -126,7 +126,7 @@ export default function TaskCard({
                 <div className={theme === 'light' ? 'text-gray-400' : 'text-gray-500'}>No tasks yet.</div>
               ) : (
                 <div
-                  className={`grid grid-cols-7 gap-2 text-sm font-semibold rounded-xl p-2 ${theme === 'light' ? 'text-gray-600 bg-gray-50' : 'text-gray-300 bg-slate-600'
+                  className={`grid grid-cols-7 gap-2 text-sm font-semibold rounded-xl p-2 mb-2 ${theme === 'light' ? 'text-gray-600 bg-gray-50' : 'text-gray-300 bg-slate-600'
                     }`}
                 >
                   <div>Drag</div>
@@ -139,19 +139,21 @@ export default function TaskCard({
                 </div>
               )}
               {corner.tasks.map((task, index) => (
-                <SortableTask
-                  key={task.id}
-                  task={task}
-                  index={index}
-                  editingTaskId={editingTaskId}
-                  editingField={editingField}
-                  editValues={editValues}
-                  startEditing={startEditing}
-                  handleEditChange={handleEditChange}
-                  submitEdit={(taskId: number) => submitEdit(taskId, editValuesRef.current)}
-                  onTaskToggle={onTaskToggle}
-                  theme={theme}
-                />
+                <div className="flex flex-col py-1">
+                  <SortableTask
+                    key={task.id}
+                    task={task}
+                    index={index}
+                    editingTaskId={editingTaskId}
+                    editingField={editingField}
+                    editValues={editValues}
+                    startEditing={startEditing}
+                    handleEditChange={handleEditChange}
+                    submitEdit={(taskId: number) => submitEdit(taskId, editValuesRef.current)}
+                    onTaskToggle={onTaskToggle}
+                    theme={theme}
+                  />
+                </div>
               ))}
             </div>
           </div>
