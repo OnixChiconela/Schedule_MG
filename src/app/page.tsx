@@ -42,8 +42,14 @@ export default function LandingPage() {
                           <h1 className={`text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-center  ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`}>
                             {`Design your path`}
                             <br />
-                            <span className={`bg-gradient-to-r from-fuchsia-500 to-fuchsia-900 bg-clip-text text-transparent`}>
-                              {`Shape your life`}
+                            <span
+                              style={{
+                                backgroundImage: 'linear-gradient(to right, #d946ef, #701a75)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                              }}
+                              className="bg-gradient-to-r from-fuchsia-500 to-fuchsia-900 text-transparent"
+                            >                              {`Shape your life`}
                             </span>
                           </h1>
                           <p className={`text-lg sm:text-xl max-w-2xl mb-8 text-center ${theme == "light" ? "text-gray-600" : "text-neutral-400/90"}`}>
@@ -137,7 +143,7 @@ export default function LandingPage() {
                     </div>
                     <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Set Your Intentions`}</h3>
                     <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                    <a className='font-semibold'>{`Define what matters to you: `}</a>{`Start by adding your goals, projects, or areas of focus, this is your personal map.`}
+                      <a className='font-semibold'>{`Define what matters to you: `}</a>{`Start by adding your goals, projects, or areas of focus, this is your personal map.`}
                     </p>
                   </div>
                 </div>
@@ -178,7 +184,7 @@ export default function LandingPage() {
                     </div>
                     <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Track & Grow`}</h3>
                     <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                    <a className='font-semibold'>{`Stay aligned and evolve: `}</a>{`Review progress, adjust priorities, and build habits that support your journey`}
+                      <a className='font-semibold'>{`Stay aligned and evolve: `}</a>{`Review progress, adjust priorities, and build habits that support your journey`}
                     </p>
                   </div>
                 </div>
