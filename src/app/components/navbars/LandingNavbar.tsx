@@ -136,7 +136,7 @@ const LandingNavbar = () => {
                                     <HiX size={24} />
                                 </button>
                                 <Link
-                                    href="/features"
+                                    href="/#"
                                     className={`text-base font-medium py-2 px-4 rounded-md ${theme === 'light'
                                         ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                         : 'hover:bg-slate-600 hover:text-fuchsia-400 text-neutral-200'
@@ -146,7 +146,7 @@ const LandingNavbar = () => {
                                     Features
                                 </Link>
                                 <Link
-                                    href="/demo"
+                                    href="/onboarding"
                                     className={`text-base font-medium py-2 px-4 rounded-md ${theme === 'light'
                                         ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                         : 'hover:bg-slate-600 hover:text-fuchsia-400 text-neutral-200'
@@ -156,7 +156,7 @@ const LandingNavbar = () => {
                                     Try Demo
                                 </Link>
                                 <a
-                                    href="mailto:contact@scheuor.com"
+                                    href="mailto:josechiconela@icloud.com"
                                     className={`text-base font-medium py-2 px-4 rounded-md ${theme === 'light'
                                         ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                         : 'hover:bg-slate-600 hover:text-fuchsia-400 text-neutral-200'
@@ -166,7 +166,7 @@ const LandingNavbar = () => {
                                     Contact
                                 </a>
                                 <Link
-                                    href="/login"
+                                    href="/#"
                                     className={`text-base font-medium py-2 px-4 rounded-md ${theme === 'light'
                                         ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                         : 'hover:bg-slate-600 hover:text-fuchsia-400 text-neutral-200'
