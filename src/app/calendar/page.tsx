@@ -12,7 +12,6 @@ import SideNavbar from '../components/navbars/SideNavbar'
 import Navbar from '../components/navbars/Navbar'
 
 export default function CalendarPage() {
-  // const { theme } = useTheme()
   const { theme, toggleTheme } = useTheme();
 
   const [safeTheme, setSafeTheme] = useState(theme);
@@ -21,7 +20,7 @@ export default function CalendarPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date } | null>(null)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({
     userId: 'default-user',
@@ -207,7 +206,7 @@ export default function CalendarPage() {
         setIsOpen={setIsSidebarOpen}
         isVisible={isSidebarOpen}
       />
-      <main className="flex-1 p-6 pt-20 lg:ml-[260px]">
+      <main className="flex-1 px-6 pt-20 lg:ml-[260px] relative">
         <h1
           className={`text-2xl font-semibold mb-4 ${
             safeTheme === 'light' ? 'text-gray-900' : 'text-white'
@@ -215,13 +214,15 @@ export default function CalendarPage() {
         >
           Calendar
         </h1>
-        <Calendar
-          events={events}
-          onSelectSlot={handleSelectSlot}
-          onSelectEvent={handleSelectEvent}
-          theme={safeTheme}
-        />
-        <SuggestedEvents userPreferences={userPreferences} />
+        <div className="overflow-x-scroll">
+          <Calendar
+            events={events}
+            onSelectSlot={handleSelectSlot}
+            onSelectEvent={handleSelectEvent}
+            theme={safeTheme}
+          />
+        </div>
+        {/* <SuggestedEvents userPreferences={userPreferences} /> */}
         <EventModal
           isOpen={isModalOpen}
           onClose={() => {

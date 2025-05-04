@@ -6,6 +6,8 @@ import { toast } from 'react-hot-toast'
 import { Event, Business } from "@/app/types/events"
 import { BiMemoryCard } from 'react-icons/bi'
 import { Trash } from 'lucide-react'
+import CustomDropdown from '../CustomDropdown'
+import { TaskNodeData } from '@/app/types'
 
 interface EventModalProps {
   isOpen: boolean
@@ -109,6 +111,12 @@ export default function EventModal({
 
   if (!isOpen) return null
 
+  const priorityOptions = [
+    { value: 'Low', label: 'Low' },
+    { value: 'Medium', label: 'Medium' },
+    { value: 'High', label: 'High' },
+  ];
+
   return (
     <motion.div
       className={`fixed inset-0 flex items-center justify-center z-50 ${theme === 'light' ? 'bg-gray-100/50' : 'bg-slate-800/50'
@@ -153,7 +161,7 @@ export default function EventModal({
             className={`w-full p-3 rounded-lg border ${theme === 'light'
               ? 'border-gray-300 bg-white text-gray-900'
               : 'border-slate-600 bg-slate-800 text-gray-200'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              } focus:outline-none focus:ring-2 focus:ring-fuchsia-700`}
           />
           <input
             type="datetime-local"
@@ -163,22 +171,15 @@ export default function EventModal({
             className={`w-full p-3 rounded-lg border ${theme === 'light'
               ? 'border-gray-300 bg-white text-gray-900'
               : 'border-slate-600 bg-slate-800 text-gray-200'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              } focus:outline-none focus:ring-2 focus:ring-fuchsia-700`}
           />
-          <select
+          <CustomDropdown
+            options={priorityOptions}
             value={formData.priority}
-            onChange={(e) =>
-              setFormData({ ...formData, priority: e.target.value as 'Low' | 'Medium' | 'High' })
-            }
-            className={`w-full p-3 rounded-lg border ${theme === 'light'
-              ? 'border-gray-300 bg-white text-gray-900'
-              : 'border-slate-600 bg-slate-800 text-gray-200'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-          >
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-          </select>
+            onChange={(value: string) => setFormData({ ...formData, priority: value as 'Low' | 'Medium' | 'High' })}
+            placeholder="Select Priority"
+          />
+    
           <div className="space-y-2">
             <label className={`text-sm ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
               Categories:
@@ -208,42 +209,48 @@ export default function EventModal({
               : 'border-slate-600 bg-slate-800 text-gray-200'
               } focus:outline-none focus:ring-2 focus:ring-blue-500`}
           />
-          <select
-            value={selectedBusinessId}
-            onChange={(e) => {
-              setSelectedBusinessId(e.target.value)
-              setFormData({ ...formData, businessId: e.target.value, projectId: '' })
+          <CustomDropdown
+            options={businesses.map((b) => ({
+              value: b.id.toString(),
+              label: b.name,
+            }))}
+            value={selectedBusinessId || ""}
+            onChange={(value: string) => {
+              setSelectedBusinessId(value);
+              setFormData({ ...formData, businessId: value, projectId: '' });
             }}
-            className={`w-full p-3 rounded-lg border ${theme === 'light'
-              ? 'border-gray-300 bg-white text-gray-900'
-              : 'border-slate-600 bg-slate-800 text-gray-200'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-          >
-            <option value="">Select business</option>
-            {businesses.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
+          />
+
           {selectedBusinessId && (
-            <select
-              value={formData.projectId || ''}
-              onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-              className={`w-full p-3 rounded-lg border ${theme === 'light'
-                ? 'border-gray-300 bg-white text-gray-900'
-                : 'border-slate-600 bg-slate-800 text-gray-200'
-                } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-            >
-              <option value="">Select project</option>
-              {businesses
-                .find((b) => b.id === selectedBusinessId)
-                ?.projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-            </select>
+            <CustomDropdown
+              options={
+                businesses
+                  .find((b) => b.id === selectedBusinessId)
+                  ?.projects.map((p) => ({
+                    value: p.id.toString(),
+                    label: p.name,
+                  })) || []
+              }
+              value={formData.projectId || ""}
+              onChange={(value: string) => setFormData({ ...formData, projectId: value })}
+            />
+            // <select
+            //   value={formData.projectId || ''}
+            //   onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
+            //   className={`w-full p-3 rounded-lg border ${theme === 'light'
+            //     ? 'border-gray-300 bg-white text-gray-900'
+            //     : 'border-slate-600 bg-slate-800 text-gray-200'
+            //     } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            // >
+            //   <option value="">Select project</option>
+            //   {businesses
+            //     .find((b) => b.id === selectedBusinessId)
+            //     ?.projects.map((p) => (
+            //       <option key={p.id} value={p.id}>
+            //         {p.name}
+            //       </option>
+            //     ))}
+            // </select>
           )}
           <div className="flex justify-between">
             <div className='flex space-x-2'>

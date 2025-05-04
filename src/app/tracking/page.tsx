@@ -442,14 +442,14 @@ function TrackingPageContent() {
                                             value={newTaskTitle}
                                             onChange={(e) => setNewTaskTitle(e.target.value)}
                                             placeholder="Task title"
-                                            className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light' ? 'bg-white text-gray-900 border border-gray-300' : 'bg-slate-600 text-neutral-200 border border-slate-500'} focus:outline-none focus:ring-2 focus:ring-fuchsia-500`}
+                                            className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light' ? 'bg-white text-gray-900 border border-gray-300' : 'bg-slate-600 text-neutral-200 border border-slate-500'} focus:outline-none focus:ring-2 focus:ring-fuchsia-700`}
                                         />
                                         <div className="flex gap-2">
                                             <input
                                                 type="date"
                                                 value={newTaskDueDate}
                                                 onChange={(e) => setNewTaskDueDate(e.target.value)}
-                                                className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light' ? 'bg-white text-gray-900 border border-gray-300' : 'bg-slate-600 text-neutral-200 border border-slate-500'} focus:outline-none focus:ring-2 focus:ring-fuchsia-500`}
+                                                className={`w-full px-3 py-1.5 rounded-md text-sm ${theme === 'light' ? 'bg-white text-gray-900 border border-gray-300' : 'bg-slate-600 text-neutral-200 border border-slate-500'} focus:outline-none focus:ring-2 focus:ring-fuchsia-700`}
                                             />
                                             <IoMdCalendar size={20} className="text-fuchsia-600 mt-2" />
                                         </div>
