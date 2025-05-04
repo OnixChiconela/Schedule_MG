@@ -105,14 +105,13 @@ export default function TaskCard({
   }, [corner.tasks, onTaskReorder])
 
   return (
-    <div className={`w-full max-w-full rounded-2xl shadow-md p-4 ${theme === 'light' ? 'bg-white' : 'bg-slate-700'} transition-colors duration-300`}>
+    <div className={`w-full rounded-2xl shadow-md p-4 ${theme === 'light' ? 'bg-white' : 'bg-slate-700'} transition-colors duration-300`}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold">{corner.title}</h2>
         <button
           onClick={onNewTaskClick}
-          className={`flex items-center gap-2 px-3 py-1 rounded-xl transition ${
-            theme === 'light' ? 'bg-gray-200 text-black hover:bg-gray-300' : 'bg-slate-600 text-gray-200 hover:bg-slate-500'
-          }`}
+          className={`flex items-center gap-2 px-3 py-1 rounded-xl transition ${theme === 'light' ? 'bg-gray-200 text-black hover:bg-gray-300' : 'bg-slate-600 text-gray-200 hover:bg-slate-500'
+            }`}
           data-testid="new-task"
         >
           <Plus size={14} />
@@ -122,14 +121,13 @@ export default function TaskCard({
       <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={corner.tasks.map((task) => task.id)} strategy={verticalListSortingStrategy}>
           <div className="overflow-x-auto">
-            <div className="w-full">
+            <div className="min-w-[1000px] ">
               {corner.tasks.length === 0 ? (
                 <div className={theme === 'light' ? 'text-gray-400' : 'text-gray-500'}>No tasks yet.</div>
               ) : (
                 <div
-                  className={`grid grid-cols-7 gap-2 text-sm font-semibold rounded-xl p-2 ${
-                    theme === 'light' ? 'text-gray-600 bg-gray-50' : 'text-gray-300 bg-slate-600'
-                  }`}
+                  className={`grid grid-cols-7 gap-2 text-sm font-semibold rounded-xl p-2 ${theme === 'light' ? 'text-gray-600 bg-gray-50' : 'text-gray-300 bg-slate-600'
+                    }`}
                 >
                   <div>Drag</div>
                   <div>Completed</div>
