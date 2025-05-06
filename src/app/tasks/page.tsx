@@ -185,7 +185,7 @@ const TasksPage = () => {
           />
         </div>
 
-        <div className=" gap-4">
+        <div className="gap-4">
           {selectedCorner ? (
             <TaskCard
               corner={selectedCorner}

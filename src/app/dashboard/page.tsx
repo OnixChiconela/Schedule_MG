@@ -130,7 +130,7 @@ export default function DashboardPPage() {
                 isSidebarOpen={isSidebarOpen}
                 toggleSidebar={toggleSidebar}
             />
-            <div 
+            <div
                 className={`min-h-screen flex ${theme === 'light' ? 'bg-white' : 'bg-slate-900'} transition-colors duration-300`}
                 style={{
                     paddingTop: 'env(safe-area-inset-top, 0px)', // Adiciona padding superior seguro
@@ -143,7 +143,7 @@ export default function DashboardPPage() {
                     setIsOpen={setIsSidebarOpen}
                     isVisible={isSidebarOpen}
                 />
-                <main 
+                <main
                     className="flex-1 p-4 sm:p-6 lg:ml-[260px] sm:pt-20 max-w-screen-xl mx-auto"
                     style={{
                         paddingTop: `calc(5rem + env(safe-area-inset-top, 0px))`, // Combina pt-20 com safe-area-inset-top
@@ -255,7 +255,7 @@ export default function DashboardPPage() {
                                     .map((item) => (
                                         <motion.div
                                             key={item.id}
-                                            className={`p-3 sm:p-5 rounded-xl shadow-lg border-l-4 ${categoryColors[item.category]} bg-gradient-to-br ${theme === 'light' ? 'from-white to-gray-50' : 'from-slate-800 to-slate-700'} min-h-[120px]`}
+                                            className={`p-3 sm:p-5 rounded-xl shadow-lg border-l-4 ${categoryColors[item.category]} bg-gradient-to-br ${theme === 'light' ? 'from-white to-gray-50' : 'from-slate-800 to-slate-700'} min-h-[120px] relative`} // Adicionado 'relative'
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.3 }}
@@ -266,11 +266,13 @@ export default function DashboardPPage() {
                                             <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
                                                 {formatEventDate(item.date)} - {item.category}
                                             </p>
-                                            <div className={`absolute top-2 right-2 w-6 cursor-pointer h-6 transition-colors items-center justify-center ${theme === 'light' ? 'text-neutral-700 hover:text-neutral-950' : 'text-neutral-300 hover:text-neutral-100'}`}
+                                            <div
+                                                className={`absolute top-2 right-2 w-6 h-6 cursor-pointer transition-all flex items-center justify-center rounded-full ${theme === 'light' ? 'text-neutral-700 hover:bg-red-100 hover:text-neutral-950' : 'text-neutral-300 hover:bg-red-800 hover:text-neutral-100'} z-10`} // Adicionado 'z-10' e fundo no hover
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     removeSuggestion(item.id);
-                                                }}
+                                                  }}
+                                                aria-label="Remove suggestion"
                                             >
                                                 <X size={16} />
                                             </div>

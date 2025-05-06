@@ -1,10 +1,11 @@
 'use client'
 
-import { Plus } from 'lucide-react'
-import { useState, useCallback, useRef } from 'react'
-import { DndContext, closestCenter } from '@dnd-kit/core'
+import { GripVertical, Plus } from 'lucide-react'
+import { useState, useCallback, useRef, useMemo } from 'react'
+import { DndContext, DragOverlay, closestCenter } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import SortableTask from './SortableTask'
+import { format, parseISO } from 'date-fns'
 
 type Task = {
   id: number
@@ -44,6 +45,7 @@ export default function TaskCard({
   const [editingField, setEditingField] = useState<keyof Task | null>(null)
   const [editValues, setEditValues] = useState<Partial<Task>>({})
   const editValuesRef = useRef<Partial<Task>>(editValues)
+  const [activeTask, setActiveTask] = useState<Task | null>(null)
 
   const startEditing = useCallback((taskId: number, field: keyof Task, value: string) => {
     console.log(`TaskCard: Starting edit for task ${taskId}, field ${field}`)
@@ -91,9 +93,18 @@ export default function TaskCard({
     editValuesRef.current = {}
   }, [onTaskUpdate])
 
+  const handleDragStart = useCallback((event: any) => {
+    console.log('TaskCard: Drag started', event.active.id)
+    const task = corner.tasks.find((t) => t.id === event.active.id)
+    setActiveTask(task || null)
+  }, [corner.tasks])
+
   const handleDragEnd = useCallback((event: any) => {
     const { active, over } = event
-    if (!over || active.id === over.id) return
+    if (!over || active.id === over.id) {
+      setActiveTask(null)
+      return
+    }
 
     const tasks = corner.tasks
     const sourceIndex = tasks.findIndex((task) => task.id === active.id)
@@ -102,7 +113,49 @@ export default function TaskCard({
     if (sourceIndex !== destinationIndex) {
       onTaskReorder(corner.id, sourceIndex, destinationIndex)
     }
+    setActiveTask(null)
   }, [corner.tasks, onTaskReorder])
+
+  //-------------------------
+  const formatDate = (date: string) => {
+    try {
+      return format(parseISO(date), 'dd MMM, yyyy')
+    } catch {
+      return date
+    }
+  }
+
+  const getStatusStyles = useMemo(
+    () => (status: Task['status']) => {
+      switch (status) {
+        case 'To Do':
+          return theme === 'light' ? 'bg-blue-100 text-blue-700' : 'bg-blue-900 text-blue-200'
+        case 'In Progress':
+          return theme === 'light' ? 'bg-yellow-100 text-yellow-700' : 'bg-yellow-900 text-yellow-200'
+        case 'Done':
+          return theme === 'light' ? 'bg-green-100 text-green-700' : 'bg-green-900 text-green-200'
+        default:
+          return ''
+      }
+    },
+    [theme]
+  )
+
+  const getPriorityStyles = useMemo(
+    () => (priority: Task['priority']) => {
+      switch (priority) {
+        case 'High':
+          return theme === 'light' ? 'bg-red-100 text-red-700' : 'bg-red-900 text-red-200'
+        case 'Medium':
+          return theme === 'light' ? 'bg-yellow-100 text-yellow-700' : 'bg-yellow-900 text-yellow-200'
+        case 'Low':
+          return theme === 'light' ? 'bg-green-100 text-green-700' : 'bg-green-900 text-green-200'
+        default:
+          return ''
+      }
+    },
+    [theme]
+  )
 
   return (
     <div className={`w-full rounded-2xl shadow-md p-4 ${theme === 'light' ? 'bg-white' : 'bg-slate-700'} transition-colors duration-300`}>
@@ -110,58 +163,89 @@ export default function TaskCard({
         <h2 className="text-lg font-bold">{corner.title}</h2>
         <button
           onClick={onNewTaskClick}
-          className={`flex items-center gap-2 px-3 py-1 rounded-xl transition ${theme === 'light' ? 'bg-gray-200 text-black hover:bg-gray-300' : 'bg-slate-600 text-gray-200 hover:bg-slate-500'
-            }`}
+          className={`flex items-center gap-2 px-3 py-1 rounded-xl transition ${theme === 'light' ? 'bg-gray-200 text-black hover:bg-gray-300' : 'bg-slate-600 text-gray-200 hover:bg-slate-500'}`}
           data-testid="new-task"
         >
           <Plus size={14} />
           New Task
         </button>
       </div>
-      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-  <SortableContext items={corner.tasks.map((task) => task.id)} strategy={verticalListSortingStrategy}>
-    <div className="overflow-x-auto relative z-10">
-      <div className="min-w-[1000px]">
-        {corner.tasks.length === 0 ? (
-          <div className={theme === 'light' ? 'text-gray-400' : 'text-gray-500'}>No tasks yet.</div>
-        ) : (
-          <div
-            className={`grid grid-cols-7 gap-2 text-sm font-semibold rounded-xl p-2 mb-2 ${
-              theme === 'light' ? 'text-gray-600 bg-gray-50' : 'text-gray-300 bg-slate-600'
-            }`}
-          >
-            <div>Drag</div>
-            <div>Completed</div>
-            <div>Title</div>
-            <div>Status</div>
-            <div>Created</div>
-            <div>Due</div>
-            <div>Priority</div>
+      <DndContext collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <SortableContext items={corner.tasks.map((task) => task.id)} strategy={verticalListSortingStrategy}>
+          <div className="overflow-x-auto relative z-10">
+            <div className="min-w-[1000px]">
+              {corner.tasks.length === 0 ? (
+                <div className={theme === 'light' ? 'text-gray-400' : 'text-gray-500'}>No tasks yet.</div>
+              ) : (
+                <div
+                  className={`grid grid-cols-7 gap-2 text-sm font-semibold rounded-xl p-2 mb-2 ${theme === 'light' ? 'text-gray-600 bg-gray-50' : 'text-gray-300 bg-slate-600'}`}
+                >
+                  <div>Drag</div>
+                  <div>Completed</div>
+                  <div>Title</div>
+                  <div>Status</div>
+                  <div>Created</div>
+                  <div>Due</div>
+                  <div>Priority</div>
+                </div>
+              )}
+              {corner.tasks.map((task, index) => (
+                <div
+                  key={task.id}
+                  className="flex flex-col py-1 max-h-[60px]" // Removido overflow-hidden temporariamente
+                >
+                  <SortableTask
+                    task={task}
+                    index={index}
+                    editingTaskId={editingTaskId}
+                    editingField={editingField}
+                    editValues={editValues}
+                    startEditing={startEditing}
+                    handleEditChange={handleEditChange}
+                    submitEdit={(taskId: number) => submitEdit(taskId, editValuesRef.current)}
+                    onTaskToggle={onTaskToggle}
+                    theme={theme}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        )}
-        {corner.tasks.map((task, index) => (
-          <div
-            key={task.id}
-            className="flex flex-col py-1 max-h-[60px] overflow-hidden"
-          >
-            <SortableTask
-              task={task}
-              index={index}
-              editingTaskId={editingTaskId}
-              editingField={editingField}
-              editValues={editValues}
-              startEditing={startEditing}
-              handleEditChange={handleEditChange}
-              submitEdit={(taskId: number) => submitEdit(taskId, editValuesRef.current)}
-              onTaskToggle={onTaskToggle}
-              theme={theme}
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  </SortableContext>
-</DndContext>
+        </SortableContext>
+        <DragOverlay>
+          {activeTask ? (
+            <div
+              className={`grid grid-cols-7 gap-2 items-center rounded-xl p-2 text-sm ${theme === 'light' ? 'bg-gray-100' : 'bg-slate-600'} opacity-80`}
+            >
+              <div className="cursor-grab">
+                <GripVertical size={16} className={theme === 'light' ? 'text-gray-500' : 'text-gray-400'} />
+              </div>
+              <div>
+                <input
+                  type="checkbox"
+                  checked={activeTask.isCompleted}
+                  disabled
+                  className={`h-4 w-4 rounded border-gray-300 ${theme === 'light' ? 'text-black' : 'text-gray-200'}`}
+                />
+              </div>
+              <div>
+                <span className="font-medium">{activeTask.title}</span>
+              </div>
+              <div>
+                <span className={`inline-block px-3 py-1.5 rounded-md text-sm mx-2 ${getStatusStyles(activeTask.status)}`}>
+                  {activeTask.status}
+                </span>
+              </div>
+              <div>{formatDate(activeTask.createdDate)}</div>
+              <div>{formatDate(activeTask.dueDate)}</div>
+              <div>
+                <span className={`inline-block px-3 py-1.5 rounded-md text-sm mx-2 ${getPriorityStyles(activeTask.priority)}`}>
+                  {activeTask.priority}
+                </span>
+              </div>
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   )
 }
