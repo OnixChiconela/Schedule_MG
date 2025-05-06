@@ -104,7 +104,7 @@ export default function Onboarding() {
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.95 }}
         >
-          Começar
+          Start
         </motion.button>
       </motion.div>
     </div>
