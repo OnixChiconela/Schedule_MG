@@ -4,7 +4,7 @@ export type TaskNodeData = {
     createdDate: string;
     dueDate?: string;
     priority: 'Low' | 'Medium' | 'High';
-    category: 'Work' | 'Personal' | 'Study' | 'Other';
+    category: string;
     cornerId?: string;
     position?: { x: number; y: number }; // Added for node position
 };

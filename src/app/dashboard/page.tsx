@@ -7,10 +7,11 @@ import { ThemeProvider, useTheme } from "../themeContext"
 import { motion } from "framer-motion"
 import { format, getYear } from 'date-fns';
 import Navbar from "../components/navbars/Navbar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import CustomDropdown from "../components/CustomDropdown";
 import { initialSuggestions } from "../fake/suggestions";
+import { emojiOptions } from "../components/emojiOptions";
 
 type Task = {
     id: number;
@@ -40,6 +41,7 @@ type Note = {
     content: string;
     title?: string;
     emoji?: string;
+    createdAt?: number
 };
 
 export default function DashboardPPage() {
@@ -89,7 +91,7 @@ export default function DashboardPPage() {
 
     const addNote = () => {
         if (notes.length < 3) {
-            const newNote: Note = { id: Date.now(), title: `Note ${notes.length + 1}`, content: "", emoji: "📝" };
+            const newNote: Note = { id: Date.now(), title: `Note ${notes.length + 1}`, content: "", emoji: "📝", createdAt: Date.now() };
             setNotes([...notes, newNote]);
             localStorage.setItem("notes", JSON.stringify([...notes, newNote]));
         }
@@ -107,6 +109,22 @@ export default function DashboardPPage() {
         localStorage.setItem("notes", JSON.stringify(updatedNotes));
     };
 
+    const checkExpiredNotes = () => {
+        const twentyFourHours = 24 * 60 * 60 * 1000; // 24 horas em milissegundos
+        const now = Date.now();
+        const updatedNotes = notes.filter((note) => now - note.createdAt! < twentyFourHours);
+        if (updatedNotes.length !== notes.length) {
+            setNotes(updatedNotes);
+            localStorage.setItem("notes", JSON.stringify(updatedNotes));
+        }
+    };
+
+    useEffect(() => {
+        checkExpiredNotes(); // Verifica ao carregar
+        const interval = setInterval(checkExpiredNotes, 60000); // Verifica a cada minuto
+        return () => clearInterval(interval); // Limpa o intervalo ao desmontar
+    }, [notes]);
+
     const updateEmoji = (id: number, emoji: string) => {
         const updatedNotes = notes.map((note) => (note.id === id ? { ...note, emoji } : note));
         setNotes(updatedNotes);
@@ -119,8 +137,6 @@ export default function DashboardPPage() {
         if (hour < 17) return "Good afternoon";
         return "Good evening";
     };
-
-    const emojiOptions = ["📝", "⭐", "✅", "🎯", "💡", "📅", "🎶", "🌍"];
 
     return (
         <ClientOnly>
@@ -150,14 +166,6 @@ export default function DashboardPPage() {
                     }}
                 >
                     <section className="mb-6">
-                        <motion.h1
-                            className={`text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 ${theme === 'light' ? 'text-gray-900' : 'text-gray-100'}`}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            {`${getGreeting()}, how's your day going?`}
-                        </motion.h1>
                         <motion.div
                             className={`text-lg sm:text-xl font-medium mb-3 sm:mb-4 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}
                             initial={{ opacity: 0, y: 10 }}
@@ -177,7 +185,7 @@ export default function DashboardPPage() {
                                 >
                                     <div className="absolute left-3 sm:left-4 top-2">
                                         <CustomDropdown
-                                            options={emojiOptions.map(emoji => ({ value: emoji, label: emoji }))}
+                                            options={emojiOptions.map((emoji) => ({ value: emoji, label: emoji }))}
                                             value={note.emoji || ""}
                                             onChange={(value) => updateEmoji(note.id, value)}
                                         />
@@ -271,7 +279,7 @@ export default function DashboardPPage() {
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     removeSuggestion(item.id);
-                                                  }}
+                                                }}
                                                 aria-label="Remove suggestion"
                                             >
                                                 <X size={16} />
