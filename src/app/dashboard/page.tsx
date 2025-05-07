@@ -133,9 +133,9 @@ export default function DashboardPPage() {
 
     const getGreeting = () => {
         const hour = new Date().getHours();
-        if (hour < 12) return "Good morning";
-        if (hour < 17) return "Good afternoon";
-        return "Good evening";
+        if (hour < 12) return "Good morning, ready for a great day?";
+        if (hour < 17) return "Good afternoon, how's it going?";
+        return "Good evening, how was your day?";
     };
 
     return (
@@ -166,6 +166,14 @@ export default function DashboardPPage() {
                     }}
                 >
                     <section className="mb-6">
+                        <motion.h1
+                            className={`text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 ${theme === 'light' ? 'text-gray-900' : 'text-gray-100'}`}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            {`${getGreeting()}`}
+                        </motion.h1>
                         <motion.div
                             className={`text-lg sm:text-xl font-medium mb-3 sm:mb-4 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}
                             initial={{ opacity: 0, y: 10 }}
