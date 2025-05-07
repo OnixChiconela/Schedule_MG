@@ -218,7 +218,7 @@ export default function DashboardPPage() {
                             {corners.slice(0, 3).map((corner) => (
                                 <motion.div
                                     key={corner.id}
-                                    className={`p-3 sm:p-5 rounded-xl shadow-lg border-l-4 border-fuchsia-800 bg-gradient-to-br ${theme === 'light' ? 'from-white to-gray-50' : 'from-slate-800 to-slate-700'} min-h-[120px]`}
+                                    className={`p-3 sm:p-5 rounded-xl shadow-lg border-l-4 border-fuchsia-800 bg-gradient-to-br ${theme === 'light' ? 'from-white to-gray-50' : 'from-slate-800 to-slate-700'} min-h-[120px] cursor-pointer`}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
@@ -267,7 +267,7 @@ export default function DashboardPPage() {
                                                 {formatEventDate(item.date)} - {item.category}
                                             </p>
                                             <div
-                                                className={`absolute top-2 right-2 w-6 h-6 cursor-pointer transition-all flex items-center justify-center rounded-full ${theme === 'light' ? 'text-neutral-700 hover:bg-red-100 hover:text-neutral-950' : 'text-neutral-300 hover:bg-red-800 hover:text-neutral-100'} z-10`} // Adicionado 'z-10' e fundo no hover
+                                                className={`absolute top-2 right-2 w-6 h-6 cursor-pointer transition-all flex items-center justify-center rounded-full ${theme === 'light' ? 'text-neutral-700 hover:bg-red-100 hover:text-neutral-950' : 'text-neutral-300 hover:bg-red-900/20 hover:text-neutral-100'} z-10`} // Adicionado 'z-10' e fundo no hover
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     removeSuggestion(item.id);

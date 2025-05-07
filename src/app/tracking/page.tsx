@@ -420,7 +420,7 @@ function TrackingPageContent() {
                         <div className="flex flex-col lg:flex-row gap-6 mt-20">
                             <button
                                 onClick={toggleSidebar}
-                                className={`lg:hidden p-2 rounded-md bg-fuchsia-600 text-white mb-4 ${isSidebarOpen ? 'hidden' : 'block'}`}
+                                className={`lg:hidden p-2 rounded-md  text-white mb-4 ${isSidebarOpen ? 'block bg-fuchsia-600' : 'block bg-fuchsia-900'} transition-colors`}
                             >
                                 <IoMdMenu size={20} />
                             </button>
