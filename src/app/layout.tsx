@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const gaTrackingId = process.env.NEXT_PUBLIC_GA_TRACKING_ID;
 
-  console.log('GA Tracking ID:', gaTrackingId, 'Track it')
+  console.log('GA Tracking ID:', gaTrackingId, 'Track it, layout')
   return (
     <html lang="en">
       <head>
