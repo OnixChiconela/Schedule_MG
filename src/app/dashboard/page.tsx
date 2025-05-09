@@ -110,7 +110,7 @@ export default function DashboardPPage() {
     };
 
     const checkExpiredNotes = () => {
-        const twentyFourHours = 24 * 60 * 60 * 1000; // 24 horas em milissegundos
+        const twentyFourHours = 24 * 60 * 60 * 1000;
         const now = Date.now();
         const updatedNotes = notes.filter((note) => now - note.createdAt! < twentyFourHours);
         if (updatedNotes.length !== notes.length) {

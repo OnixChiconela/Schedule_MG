@@ -27,7 +27,7 @@ import CustomDropdown from "../components/CustomDropdown";
 import TaskNodeComponent from "../components/roadmap/TaskNodeComponent";
 import TrackingNav from "../components/navbars/trackingNav";
 import { Corner, Task } from "../tasks/page";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 type RawEdge = {
     id?: string;
@@ -380,12 +380,12 @@ function TrackingPageContent() {
             updateCategoryColor(newCategory, newCategoryColor);
             setNewCategory("");
             setNewCategoryColor("#000000");
-            // Atualizar categoryOptions dinamicamente
-            setCategoryOptions((prev) => [
-                ...prev.filter((opt) => opt.value.toLowerCase() !== "other"),
-                { value: newCategory, label: newCategory },
-                { value: "Other", label: "Other" },
-            ]);
+            // Remover esta parte:
+            // setCategoryOptions((prev) => [
+            //     ...prev.filter((opt) => opt.value.toLowerCase() !== "other"),
+            //     { value: newCategory, label: newCategory },
+            //     { value: "Other", label: "Other" },
+            // ]);
         }
     };
 
@@ -394,12 +394,11 @@ function TrackingPageContent() {
         if (isNavbarOpen) setIsNavbarOpen(false);
     };
 
-    const [categoryOptions, setCategoryOptions] = useState([
-        { value: "Work", label: "Work" },
-        { value: "Personal", label: "Personal" },
-        { value: "Study", label: "Study" },
-        { value: "Other", label: "Other" },
-    ]);
+    const categoryOptions = useMemo(() => {
+        return Object.keys(categoryColors)
+            .map((category) => ({ value: category, label: category }))
+            .sort((a, b) => (a.value.toLowerCase() === "other" ? 1 : b.value.toLowerCase() === "other" ? -1 : 0));
+    }, [categoryColors]);
 
     const priorityOptions = [
         { value: "Low", label: "Low" },
@@ -411,6 +410,47 @@ function TrackingPageContent() {
         value: corner.id.toString(),
         label: corner.title,
     }));
+
+    const removeCategory = (categoryToRemove: string) => {
+        if (categoryToRemove.toLowerCase() === "other") return;
+    
+        const updatedCategoryColors = { ...categoryColors };
+        delete updatedCategoryColors[categoryToRemove];
+        setCategoryColors(updatedCategoryColors);
+        localStorage.setItem("categoryColors", JSON.stringify(updatedCategoryColors));
+    
+        // setCategoryOptions((prev) =>
+        //     prev
+        //         .filter((opt) => opt.value !== categoryToRemove)
+        //         .filter((opt) => opt.value.toLowerCase() !== "other")
+        //         .concat({ value: "Other", label: "Other" })
+        // );
+    
+        const updatedNodes = nodes.map((node) => {
+            if (node.data.category === categoryToRemove) {
+                return {
+                    ...node,
+                    data: { ...node.data, category: "Other" },
+                };
+            }
+            return node;
+        });
+        setNodes(updatedNodes);
+    
+        const savedCorners = localStorage.getItem("corners");
+        if (savedCorners) {
+            const parsed = JSON.parse(savedCorners);
+            const updatedCorners = parsed.map((corner: Corner) => ({
+                ...corner,
+                tasks: corner.tasks.map((task: Task) =>
+                    task.category === categoryToRemove
+                        ? { ...task, category: "Other" }
+                        : task
+                ),
+            }));
+            localStorage.setItem("corners", JSON.stringify(updatedCorners));
+        }
+    };
 
     return (
         <div className={`flex flex-col min-h-screen ${theme === "light" ? "bg-gray-100" : "bg-slate-900"}`}>
@@ -511,13 +551,69 @@ function TrackingPageContent() {
                                         {Object.entries(categoryColors)
                                             .filter(([category]) => category.toLowerCase() !== "other")
                                             .map(([category, color]) => (
-                                                <div key={category} className={`flex items-center gap-2 rounded-md ${theme == "light" ? "hover:bg-gray-100" : "hover:bg-slate-600"} transition-all duration-150`}>
+                                                <div
+                                                    key={category}
+                                                    className={`flex items-center justify-between gap-2 rounded-md p-2 ${theme === "light" ? "hover:bg-gray-100" : "hover:bg-slate-600"} transition-all duration-150`}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="color"
+                                                            value={color}
+                                                            onChange={(e) => updateCategoryColor(category, e.target.value)}
+                                                            onClick={() => {
+                                                                const node = nodes.find((n) => n.data.category === category);
+                                                                if (node) {
+                                                                    setViewport(
+                                                                        { x: -node.position.x + 300, y: -node.position.y + 300, zoom: 1 },
+                                                                        { duration: 500 }
+                                                                    );
+                                                                }
+                                                            }}
+                                                            className="w-5 h-5 rounded cursor-pointer"
+                                                            style={{
+                                                                appearance: "none",
+                                                                backgroundColor: color,
+                                                                border: "1px solid",
+                                                                borderColor: theme === "light" ? "#d1d5db" : "#4b5563",
+                                                                padding: 0,
+                                                                margin: 0,
+                                                            }}
+                                                        />
+                                                        <span
+                                                            className={`text-sm font-medium ${theme === "light" ? "text-gray-900" : "text-neutral-200"} cursor-pointer hover:underline`}
+                                                            onClick={() => {
+                                                                const node = nodes.find((n) => n.data.category === category);
+                                                                if (node) {
+                                                                    setViewport(
+                                                                        { x: -node.position.x + 300, y: -node.position.y + 300, zoom: 1 },
+                                                                        { duration: 500 }
+                                                                    );
+                                                                }
+                                                            }}
+                                                        >
+                                                            {category}
+                                                        </span>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => removeCategory(category)}
+                                                        className={`p-1 rounded-full ${theme === "light" ? "text-gray-500 hover:bg-gray-200" : "text-neutral-400 hover:bg-slate-500"} transition-all duration-150`}
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        {Object.keys(categoryColors).some((key) => key.toLowerCase() === "other") && (
+                                            <div
+                                                key="other"
+                                                className={`flex items-center justify-between gap-2 rounded-md p-2 ${theme === "light" ? "hover:bg-gray-100" : "hover:bg-slate-600"} transition-all duration-150`}
+                                            >
+                                                <div className="flex items-center gap-2">
                                                     <input
                                                         type="color"
-                                                        value={color}
-                                                        onChange={(e) => updateCategoryColor(category, e.target.value)}
+                                                        value={categoryColors["Other"] || categoryColors["other"]}
+                                                        onChange={(e) => updateCategoryColor("Other", e.target.value)}
                                                         onClick={() => {
-                                                            const node = nodes.find((n) => n.data.category === category);
+                                                            const node = nodes.find((n) => n.data.category === "Other" || n.data.category === "other");
                                                             if (node) {
                                                                 setViewport(
                                                                     { x: -node.position.x + 300, y: -node.position.y + 300, zoom: 1 },
@@ -528,7 +624,7 @@ function TrackingPageContent() {
                                                         className="w-5 h-5 rounded cursor-pointer"
                                                         style={{
                                                             appearance: "none",
-                                                            backgroundColor: color,
+                                                            backgroundColor: categoryColors["Other"] || categoryColors["other"],
                                                             border: "1px solid",
                                                             borderColor: theme === "light" ? "#d1d5db" : "#4b5563",
                                                             padding: 0,
@@ -538,7 +634,7 @@ function TrackingPageContent() {
                                                     <span
                                                         className={`text-sm font-medium ${theme === "light" ? "text-gray-900" : "text-neutral-200"} cursor-pointer hover:underline`}
                                                         onClick={() => {
-                                                            const node = nodes.find((n) => n.data.category === category);
+                                                            const node = nodes.find((n) => n.data.category === "Other" || n.data.category === "other");
                                                             if (node) {
                                                                 setViewport(
                                                                     { x: -node.position.x + 300, y: -node.position.y + 300, zoom: 1 },
@@ -547,52 +643,18 @@ function TrackingPageContent() {
                                                             }
                                                         }}
                                                     >
-                                                        {category}
+                                                        Other
                                                     </span>
                                                 </div>
-                                            ))}
-                                        {Object.keys(categoryColors).some((key) => key.toLowerCase() === "other") && (
-                                            <div key="other" className="flex items-center gap-2 rounded-md hover:bg-gray-100 dark:hover:bg-slate-600 transition-all duration-150">
-                                                <input
-                                                    type="color"
-                                                    value={categoryColors["Other"] || categoryColors["other"]}
-                                                    onChange={(e) => updateCategoryColor("Other", e.target.value)}
-                                                    onClick={() => {
-                                                        const node = nodes.find((n) => n.data.category === "Other" || n.data.category === "other");
-                                                        if (node) {
-                                                            setViewport(
-                                                                { x: -node.position.x + 300, y: -node.position.y + 300, zoom: 1 },
-                                                                { duration: 500 }
-                                                            );
-                                                        }
-                                                    }}
-                                                    className="w-5 h-5 rounded cursor-pointer"
-                                                    style={{
-                                                        appearance: "none",
-                                                        backgroundColor: categoryColors["Other"] || categoryColors["other"],
-                                                        border: "1px solid",
-                                                        borderColor: theme === "light" ? "#d1d5db" : "#4b5563",
-                                                        padding: 0,
-                                                        margin: 0,
-                                                    }}
-                                                />
-                                                <span
-                                                    className={`text-sm font-medium ${theme === "light" ? "text-gray-900" : "text-neutral-200"} cursor-pointer hover:underline`}
-                                                    onClick={() => {
-                                                        const node = nodes.find((n) => n.data.category === "Other" || n.data.category === "other");
-                                                        if (node) {
-                                                            setViewport(
-                                                                { x: -node.position.x + 300, y: -node.position.y + 300, zoom: 1 },
-                                                                { duration: 500 }
-                                                            );
-                                                        }
-                                                    }}
+                                                <button
+                                                    disabled
+                                                    className={`p-1 rounded-full ${theme === "light" ? "text-gray-300" : "text-neutral-600"} cursor-not-allowed`}
+                                                    title="Cannot delete the default category"
                                                 >
-                                                    Other
-                                                </span>
+                                                    <Trash2 size={16} />
+                                                </button>
                                             </div>
                                         )}
-                                        
                                     </div>
                                     <div className="pt-2 text-neutral-500"> <hr /></div>
                                     <div className="flex flex-col justify-start  gap-2 mt-2">
@@ -604,19 +666,19 @@ function TrackingPageContent() {
                                             className={`p-1 rounded-md border text-sm ${theme === "light" ? "bg-gray-50 text-gray-900 border-gray-300" : "bg-slate-700 text-gray-200 border-slate-600"} focus:outline-none focus:ring-2 focus:ring-neutral-800 transition-all duration-200`}
                                         />
                                         <div className="flex gap-3">
-                                        <input
-                                            type="color"
-                                            value={newCategoryColor}
-                                            onChange={(e) => setNewCategoryColor(e.target.value)}
-                                            className={`w-6 h-7 rounded-md cursor-pointer border-1 ${theme == "light" ? "border-gray-300" : "border-slate-600"}`}
-                                            style={{ padding: 0, margin: 0 }}
-                                        />
-                                        <button
-                                            onClick={addCategory}
-                                            className={`px-2 flex gap-1  py-1 items-center rounded-lg text-sm font-medium ${theme === "light" ? "bg-fuchsia-700 text-white hover:bg-fuchsia-800" : "bg-fuchsia-700 text-white hover:bg-fuchsia-800"} transition-all duration-200 shadow-md hover:shadow-lg`}
-                                        >
-                                            add <Plus size={16} />
-                                        </button>
+                                            <input
+                                                type="color"
+                                                value={newCategoryColor}
+                                                onChange={(e) => setNewCategoryColor(e.target.value)}
+                                                className={`w-6 h-7 rounded-md cursor-pointer border-1 ${theme == "light" ? "border-gray-300" : "border-slate-600"}`}
+                                                style={{ padding: 0, margin: 0 }}
+                                            />
+                                            <button
+                                                onClick={addCategory}
+                                                className={`px-2 flex gap-1  py-1 items-center rounded-lg text-sm font-medium ${theme === "light" ? "bg-neutral-950 text-white hover:bg-black" : "bg-neutral-950 text-white hover:bg-black"} transition-all duration-200 shadow-md hover:shadow-lg`}
+                                            >
+                                                add <Plus size={16} />
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -667,7 +729,7 @@ function TrackingPageContent() {
                             className={`mt-6 p-4 rounded-lg ${theme === "light" ? "bg-white" : "bg-slate-700"} shadow-md`}
                         >
                             <h2 className={`text-lg font-semibold mb-4 ${theme === "light" ? "text-gray-900" : "text-neutral-200"}`}>
-                                Category Progress
+                                Spaces Progress
                             </h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {progress.map(({ category, total, completed, percentage }) => (

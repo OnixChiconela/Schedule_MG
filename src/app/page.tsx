@@ -14,12 +14,19 @@ import Card from './components/cards/Card'
 import InfoCard from './components/cards/CardInfo'
 import LandingNavbar from './components/navbars/LandingNavbar'
 import LandingFooter from './components/footers/LandingFooter'
+import { useRouter } from 'next/navigation'
 
 export default function LandingPage() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false)
+  const router = useRouter()
 
   const handleRegisterClose = () => setIsRegisterOpen(false)
   const { theme } = useTheme()
+
+  const getStart = () => {
+    if (!localStorage.getItem("userPreferences")) return router.push("/onboarding")
+      router.push("/dashboard")
+  }
 
   return (
     <ClientOnly>
@@ -56,12 +63,12 @@ export default function LandingPage() {
                             {`Bring your goals, habits, and priorities together in one place, Scheuor helps you stay on track, and grow with intention`}
                           </p>
                           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <Link
-                              href="/onboarding"
-                              className="text-sm font-semibold py-3 px-8 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-900 hover:gap-2 transition flex items-center justify-center"
+                            <div
+                              onClick={() => getStart()}
+                              className="text-sm font-semibold py-3 px-8 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-900 hover:gap-2 transition flex items-center justify-center cursor-pointer"
                             >
                               {`Get Started`} <IoMdArrowForward size={20} className="ml-2 hover:scale-120 transition" />
-                            </Link>
+                            </div>
                             <a
                               href="mailto:josechiconela@icloud.com"
                               className={`text-sm font-semibold py-3 px-8 rounded-full border border-gray-300 hover:bg-gray-100 ${theme == "light" ? "text-gray-900" : "text-neutral-200 hover:text-gray-900"} transition`}

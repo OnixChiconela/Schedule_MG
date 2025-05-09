@@ -6,10 +6,17 @@ import { IoLogoTwitter, IoLogoLinkedin, IoLogoInstagram } from 'react-icons/io';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/app/themeContext';
 import Container from '../Container';
+import { useRouter } from 'next/navigation';
 
 const LandingFooter = () => {
     const { theme } = useTheme()
+    const router = useRouter()
     const currentYear = new Date().getFullYear();
+
+    const tryDemo = () => {
+        if (!localStorage.getItem("userPreferences")) return router.push("/onboarding")
+          router.push("/dashboard")
+      }
 
     return (
         <footer
@@ -44,7 +51,7 @@ const LandingFooter = () => {
                             className={`text-sm text-center md:text-left ${theme === 'light' ? 'text-gray-600' : 'text-neutral-400'
                                 } max-w-xs`}
                         >
-                            Connect with your audience, gain actionable insights, and grow your business with Scheuor.
+                            Connect with Scheuor.
                         </p>
                     </motion.div>
 
@@ -53,7 +60,7 @@ const LandingFooter = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.1 }}
-                        className="flex flex-col items-center md:items-start"
+                        className="flex flex-col items-center md:items-start text-center"
                     >
                         <h3
                             className={`text-lg font-semibold mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
@@ -64,7 +71,7 @@ const LandingFooter = () => {
                         <ul className="space-y-2 text-sm">
                             <li>
                                 <Link
-                                    href="/features"
+                                    href="/#"
                                     className={`${theme === 'light'
                                         ? 'text-gray-600 hover:text-fuchsia-600'
                                         : 'text-neutral-400 hover:text-fuchsia-400'
@@ -74,15 +81,15 @@ const LandingFooter = () => {
                                 </Link>
                             </li>
                             <li>
-                                <Link
-                                    href="/demo"
+                                <div
+                                    onClick={() => tryDemo()}
                                     className={`${theme === 'light'
                                         ? 'text-gray-600 hover:text-fuchsia-600'
                                         : 'text-neutral-400 hover:text-fuchsia-400'
-                                        } transition`}
+                                        } transition cursor-pointer`}
                                 >
                                     Try Demo
-                                </Link>
+                                </div>
                             </li>
                             <li>
                                 <a
@@ -97,7 +104,7 @@ const LandingFooter = () => {
                             </li>
                             <li>
                                 <Link
-                                    href="/about"
+                                    href="/#"
                                     className={`${theme === 'light'
                                         ? 'text-gray-600 hover:text-fuchsia-600'
                                         : 'text-neutral-400 hover:text-fuchsia-400'
@@ -114,7 +121,7 @@ const LandingFooter = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
-                        className="flex flex-col items-center md:items-start"
+                        className="flex flex-col items-center md:items-start text-center"
                     >
                         <h3
                             className={`text-lg font-semibold mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
@@ -125,7 +132,7 @@ const LandingFooter = () => {
                         <ul className="space-y-2 text-sm">
                             <li>
                                 <Link
-                                    href="/privacy"
+                                    href="/#"
                                     className={`${theme === 'light'
                                         ? 'text-gray-600 hover:text-fuchsia-600'
                                         : 'text-neutral-400 hover:text-fuchsia-400'
