@@ -1,6 +1,6 @@
 'use client'
 
-import { GripVertical, Plus } from 'lucide-react'
+import { GripVertical, MoreHorizontal, Plus, Trash2 } from 'lucide-react'
 import { useState, useCallback, useRef, useMemo } from 'react'
 import { DndContext, DragOverlay, closestCenter } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -29,6 +29,7 @@ interface TaskCardProps {
   onTaskToggle: (taskId: number, isCompleted: boolean) => void
   onTaskUpdate: (taskId: number, updates: Partial<Task>) => void
   onTaskReorder: (cornerId: number, sourceIndex: number, destinationIndex: number) => void
+  onTaskDelete: (taskIds: number[]) => void;
   theme: 'light' | 'dark'
 }
 
@@ -38,17 +39,18 @@ export default function TaskCard({
   onTaskToggle,
   onTaskUpdate,
   onTaskReorder,
+  onTaskDelete,
   theme,
 }: TaskCardProps) {
-  console.log(`TaskCard: Received theme ${theme}`)
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
   const [editingField, setEditingField] = useState<keyof Task | null>(null)
   const [editValues, setEditValues] = useState<Partial<Task>>({})
   const editValuesRef = useRef<Partial<Task>>(editValues)
   const [activeTask, setActiveTask] = useState<Task | null>(null)
+  const [selectedTasks, setSelectedTasks] = useState<number[]>([])
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const startEditing = useCallback((taskId: number, field: keyof Task, value: string) => {
-    console.log(`TaskCard: Starting edit for task ${taskId}, field ${field}`)
     setEditingTaskId(taskId)
     setEditingField(field)
     setEditValues({ [field]: value })
@@ -56,7 +58,6 @@ export default function TaskCard({
   }, [])
 
   const handleEditChange = useCallback((field: keyof Task, value: string) => {
-    console.log(`TaskCard: Before change, editValues=${JSON.stringify(editValuesRef.current)}`)
     setEditValues((prev) => {
       const newValues = { ...prev, [field]: value }
       editValuesRef.current = newValues
@@ -66,7 +67,6 @@ export default function TaskCard({
   }, [])
 
   const submitEdit = useCallback((taskId: number, currentEditValues: Partial<Task>) => {
-    console.log(`TaskCard: Submitting edit for task ${taskId}, editValues=${JSON.stringify(currentEditValues)}`)
     const updates: Partial<Task> = {}
     if (currentEditValues.title && currentEditValues.title.trim()) {
       updates.title = currentEditValues.title.trim()
@@ -83,7 +83,6 @@ export default function TaskCard({
     }
 
     if (Object.keys(updates).length > 0) {
-      console.log(`TaskCard: Updating task ${taskId} with ${JSON.stringify(updates)}`)
       onTaskUpdate(taskId, updates)
     }
 
@@ -94,7 +93,6 @@ export default function TaskCard({
   }, [onTaskUpdate])
 
   const handleDragStart = useCallback((event: any) => {
-    console.log('TaskCard: Drag started', event.active.id)
     const task = corner.tasks.find((t) => t.id === event.active.id)
     setActiveTask(task || null)
   }, [corner.tasks])
@@ -161,14 +159,47 @@ export default function TaskCard({
     <div className={`w-full rounded-2xl shadow-md p-4 ${theme === 'light' ? 'bg-white' : 'bg-slate-700'} transition-colors duration-300`}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold">{corner.title}</h2>
-        <button
-          onClick={onNewTaskClick}
-          className={`flex items-center gap-2 px-3 py-1 rounded-xl transition ${theme === 'light' ? 'bg-gray-200 text-black hover:bg-gray-300' : 'bg-slate-600 text-gray-200 hover:bg-slate-500'}`}
-          data-testid="new-task"
-        >
-          <Plus size={14} />
-          New Task
-        </button>
+        <div className='flex gap-2'>
+
+          <button
+            onClick={onNewTaskClick}
+            className={`flex items-center gap-2 px-3 py-1 rounded-xl transition ${theme === 'light' ? 'bg-gray-200 text-black hover:bg-gray-300' : 'bg-slate-600 text-gray-200 hover:bg-slate-500'}`}
+            data-testid="new-task"
+          >
+            <Plus size={14} />
+            New Task
+          </button>
+          <button
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            className={`p-1 rounded-full ${theme === 'light' ? 'text-gray-600 hover:bg-gray-200' : 'text-gray-300 hover:bg-slate-500'} transition-all duration-150`}
+          >
+            <MoreHorizontal size={16} />
+          </button>
+          {/*Menu */}
+          {isMenuOpen && (
+            <div className={`absolute top-64 right-10 p-2 rounded-lg shadow-md ${theme === "light" ? "bg-white" : "bg-slate-700"} z-20`}>
+              <button
+                onClick={() => {
+                  if (selectedTasks.length > 0) {
+                    onTaskDelete(selectedTasks);
+                    setSelectedTasks([]);
+                    setIsMenuOpen(false);
+                  }
+                }}
+                disabled={selectedTasks.length === 0}
+                className={`flex items-center gap-1 px-2 py-1 rounded-md text-sm ${selectedTasks.length === 0
+                  ? "text-gray-400 cursor-not-allowed"
+                  : theme === "light"
+                    ? "text-red-600 hover:bg-gray-100"
+                    : "text-red-400 hover:bg-slate-600"
+                  }`}
+              >
+                <Trash2 size={14} />
+                Remove
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       <DndContext collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <SortableContext items={corner.tasks.map((task) => task.id)} strategy={verticalListSortingStrategy}>
@@ -178,7 +209,8 @@ export default function TaskCard({
                 <div className={theme === 'light' ? 'text-gray-400' : 'text-gray-500'}>No tasks yet.</div>
               ) : (
                 <div
-                  className={`grid grid-cols-7 gap-2 text-sm font-semibold rounded-xl p-2 mb-2 ${theme === 'light' ? 'text-gray-600 bg-gray-50' : 'text-gray-300 bg-slate-600'}`}
+                  className={`grid grid-cols-7 gap-2 text-sm font-semibold rounded-xl p-2 mb-2 ${theme === "light" ? "text-gray-600 bg-gray-50" : "text-gray-300 bg-slate-600"
+                    }`}
                 >
                   <div>Drag</div>
                   <div>Completed</div>
@@ -204,6 +236,15 @@ export default function TaskCard({
                     handleEditChange={handleEditChange}
                     submitEdit={(taskId: number) => submitEdit(taskId, editValuesRef.current)}
                     onTaskToggle={onTaskToggle}
+                    isMenuOpen={isMenuOpen} // Passa se o menu está aberto
+                    selectedTasks={selectedTasks} // Passa as tarefas selecionadas
+                    onTaskSelect={(taskId: number) =>
+                      setSelectedTasks((prev) =>
+                        prev.includes(taskId)
+                          ? prev.filter((id) => id !== taskId)
+                          : [...prev, taskId]
+                      )
+                    }
                     theme={theme}
                   />
                 </div>

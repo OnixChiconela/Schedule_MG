@@ -29,6 +29,9 @@ interface SortableTaskProps {
   handleEditChange: (field: keyof Task, value: string) => void
   submitEdit: (taskId: number) => void
   onTaskToggle: (taskId: number, isCompleted: boolean) => void
+  isMenuOpen: boolean
+  selectedTasks: number[]
+  onTaskSelect: (taskId: number) => void
   theme: 'light' | 'dark'
 }
 
@@ -41,6 +44,9 @@ export default function SortableTask({
   handleEditChange,
   submitEdit,
   onTaskToggle,
+  isMenuOpen,
+  selectedTasks,
+  onTaskSelect,
   theme,
 }: SortableTaskProps) {
   const {
@@ -50,13 +56,16 @@ export default function SortableTask({
     transform,
     transition,
   } = useSortable({ id: task.id })
+  const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
+  const [isPriorityMenuOpen, setIsPriorityMenuOpen] = useState(false);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const statusButtonRef = useRef<HTMLButtonElement>(null);
+  const priorityButtonRef = useRef<HTMLButtonElement>(null);
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   }
-
-  const [isSelecting, setIsSelecting] = useState(false)
 
   const formatDate = (date: string) => {
     try {
@@ -111,7 +120,7 @@ export default function SortableTask({
 
   const PortalMenuItems = ({ children, anchorRef, ...props }: { children: React.ReactNode; anchorRef: React.RefObject<HTMLButtonElement | null>; } & React.HTMLProps<HTMLDivElement>) => {
     const [position, setPosition] = useState({ top: 0, left: 0 });
-  
+
     useEffect(() => {
       if (anchorRef.current) {
         const rect = anchorRef.current.getBoundingClientRect();
@@ -121,7 +130,7 @@ export default function SortableTask({
         });
       }
     }, [anchorRef]);
-  
+
     return createPortal(
       <div
         {...props}
@@ -138,57 +147,63 @@ export default function SortableTask({
     );
   };
 
-  // Declaração dos Hooks no nível superior
-  const statusButtonRef = useRef<HTMLButtonElement>(null);
-  const priorityButtonRef = useRef<HTMLButtonElement>(null);
-  const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
-  const [isPriorityMenuOpen, setIsPriorityMenuOpen] = useState(false);
-
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`grid grid-cols-7 gap-2 items-center rounded-xl p-2 text-sm ${theme === 'light' ? 'bg-gray-100' : 'bg-slate-600'
+      className={`grid grid-cols-7 gap-2 items-center rounded-xl p-2 text-sm ${theme === "light" ? "bg-gray-100" : "bg-slate-600"
         } transition-colors duration-300`}
     >
-      <div {...attributes} {...listeners} className="cursor-grab">
-        <GripVertical size={16} className={theme === 'light' ? 'text-gray-500' : 'text-gray-400'} />
-      </div>
+      {/* Checkbox condicional para seleção */}
+      {isMenuOpen ? (
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            checked={selectedTasks.includes(task.id)}
+            onChange={() => onTaskSelect(task.id)}
+            className="h-4 w-4"
+          />
+        </div>
+      ) : (
+        <div {...attributes} {...listeners} className="cursor-grab">
+          <GripVertical size={16} className={theme === "light" ? "text-gray-500" : "text-gray-400"} />
+        </div>
+      )}
       <div>
         <input
           type="checkbox"
           checked={task.isCompleted}
           onChange={(e) => onTaskToggle(task.id, e.target.checked)}
-          className={`h-4 w-4 rounded border-gray-300 focus:ring-blue-500 ${theme === 'light' ? 'text-black' : 'text-gray-200'
+          className={`h-4 w-4 rounded border-gray-300 focus:ring-blue-500 ${theme === "light" ? "text-black" : "text-gray-200"
             }`}
         />
       </div>
       <div
         onClick={() => {
-          console.log('SortableTask: Starting edit: title');
-          startEditing(task.id, 'title', task.title);
+          console.log("SortableTask: Starting edit: title");
+          startEditing(task.id, "title", task.title);
         }}
         className="cursor-text"
       >
-        {editingTaskId === task.id && editingField === 'title' ? (
+        {editingTaskId === task.id && editingField === "title" ? (
           <input
             type="text"
             value={editValues.title ?? task.title}
             onChange={(e) => {
               console.log(`SortableTask: Changing title to: ${e.target.value}`);
-              handleEditChange('title', e.target.value);
+              handleEditChange("title", e.target.value);
             }}
             onBlur={() => {
-              console.log('SortableTask: Submitting title edit');
+              console.log("SortableTask: Submitting title edit");
               submitEdit(task.id);
             }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                console.log('SortableTask: Submitting title edit via Enter');
+              if (e.key === "Enter") {
+                console.log("SortableTask: Submitting title edit via Enter");
                 submitEdit(task.id);
               }
             }}
-            className={`w-full px-2 py-1 border rounded animate-pulse ${theme === 'light' ? 'border-gray-300 bg-white' : 'border-slate-500 bg-slate-700 text-gray-200'
+            className={`w-full px-2 py-1 border rounded animate-pulse ${theme === "light" ? "border-gray-300 bg-white" : "border-slate-500 bg-slate-700 text-gray-200"
               }`}
             autoFocus
           />
@@ -197,16 +212,16 @@ export default function SortableTask({
         )}
       </div>
       <div className="relative">
-        {editingTaskId === task.id && editingField === 'status' ? (
+        {editingTaskId === task.id && editingField === "status" ? (
           <>
             <Menu as="div" className="relative inline-block text-left w-full">
               <MenuButton
                 ref={statusButtonRef}
                 onClick={() => setIsStatusMenuOpen(true)}
                 disabled={isSelecting}
-                className={`w-full max-w-[280px] px-4 py-2 border rounded-md text-sm animate-pulse ${isSelecting ? 'opacity-50 cursor-not-allowed' : ''
-                  } ${theme === 'light' ? 'bg-white border-gray-300' : 'bg-slate-700 border-slate-500 text-gray-200'} ${getStatusStyles((editValues.status ?? task.status) as Task['status'])
-                  }`}
+                className={`w-full max-w-[280px] px-4 py-2 border rounded-md text-sm animate-pulse ${isSelecting ? "opacity-50 cursor-not-allowed" : ""
+                  } ${theme === "light" ? "bg-white border-gray-300" : "bg-slate-700 border-slate-500 text-gray-200"
+                  } ${getStatusStyles((editValues.status ?? task.status) as Task["status"])}`}
                 data-testid="status-menu-button"
               >
                 {editValues.status ?? task.status}
@@ -224,21 +239,22 @@ export default function SortableTask({
                   <MenuItems
                     as={PortalMenuItems}
                     anchorRef={statusButtonRef}
-                    className={`w-full max-w-[280px] rounded-md shadow-lg border focus:outline-none ${theme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-slate-500'
+                    className={`w-full max-w-[280px] rounded-md shadow-lg border focus:outline-none ${theme === "light" ? "bg-white border-gray-200" : "bg-slate-700 border-slate-500"
                       }`}
                   >
                     <div className="p-2 space-y-2">
-                      {['To Do', 'In Progress', 'Done'].map((option) => (
+                      {["To Do", "In Progress", "Done"].map((option) => (
                         <MenuItem key={option} disabled={isSelecting}>
                           {({ active }) => (
                             <button
                               type="button"
                               onClick={() => {
-                                handleOptionSelect('status', option);
+                                handleOptionSelect("status", option);
                                 setIsStatusMenuOpen(false);
                               }}
-                              className={`w-full text-left px-4 py-1.5 rounded-md text-sm mx-2 ${getStatusStyles(option as Task['status'])
-                                } ${active && !isSelecting ? (theme === 'light' ? 'bg-gray-100' : 'bg-slate-600') : ''}`}
+                              className={`w-full text-left px-4 py-1.5 rounded-md text-sm mx-2 ${getStatusStyles(
+                                option as Task["status"]
+                              )} ${active && !isSelecting ? (theme === "light" ? "bg-gray-100" : "bg-slate-600") : ""}`}
                               data-testid={`status-option-${option}`}
                             >
                               {option}
@@ -256,9 +272,9 @@ export default function SortableTask({
           <span
             onClick={(e) => {
               e.stopPropagation();
-              console.log('SortableTask: Starting edit: status');
+              console.log("SortableTask: Starting edit: status");
               console.log(`SortableTask: Opened status dropdown for task ID: ${task.id}`);
-              startEditing(task.id, 'status', task.status);
+              startEditing(task.id, "status", task.status);
             }}
             className={`inline-block px-3 py-1.5 rounded-md text-sm mx-2 ${getStatusStyles(task.status)}`}
           >
@@ -269,30 +285,30 @@ export default function SortableTask({
       <div>{formatDate(task.createdDate)}</div>
       <div
         onClick={() => {
-          console.log('SortableTask: Starting edit: dueDate');
-          startEditing(task.id, 'dueDate', task.dueDate);
+          console.log("SortableTask: Starting edit: dueDate");
+          startEditing(task.id, "dueDate", task.dueDate);
         }}
         className="cursor-pointer"
       >
-        {editingTaskId === task.id && editingField === 'dueDate' ? (
+        {editingTaskId === task.id && editingField === "dueDate" ? (
           <input
             type="date"
             value={editValues.dueDate ?? task.dueDate}
             onChange={(e) => {
               console.log(`SortableTask: Changing dueDate to: ${e.target.value}`);
-              handleEditChange('dueDate', e.target.value);
+              handleEditChange("dueDate", e.target.value);
             }}
             onBlur={() => {
-              console.log('SortableTask: Submitting dueDate edit');
+              console.log("SortableTask: Submitting dueDate edit");
               submitEdit(task.id);
             }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                console.log('SortableTask: Submitting dueDate edit via Enter');
+              if (e.key === "Enter") {
+                console.log("SortableTask: Submitting dueDate edit via Enter");
                 submitEdit(task.id);
               }
             }}
-            className={`w-full px-2 py-1 border rounded animate-pulse ${theme === 'light' ? 'border-gray-300 bg-white' : 'border-slate-500 bg-slate-700 text-gray-200'
+            className={`w-full px-2 py-1 border rounded animate-pulse ${theme === "light" ? "border-gray-300 bg-white" : "border-slate-500 bg-slate-700 text-gray-200"
               }`}
             autoFocus
           />
@@ -301,16 +317,16 @@ export default function SortableTask({
         )}
       </div>
       <div className="relative">
-        {editingTaskId === task.id && editingField === 'priority' ? (
+        {editingTaskId === task.id && editingField === "priority" ? (
           <>
             <Menu as="div" className="relative inline-block text-left w-full">
               <MenuButton
                 ref={priorityButtonRef}
                 onClick={() => setIsPriorityMenuOpen(true)}
                 disabled={isSelecting}
-                className={`w-full max-w-[280px] px-4 py-2 border rounded-md text-sm animate-pulse ${isSelecting ? 'opacity-50 cursor-not-allowed' : ''
-                  } ${theme === 'light' ? 'bg-white border-gray-300' : 'bg-slate-700 border-slate-500 text-gray-200'} ${getPriorityStyles((editValues.priority ?? task.priority) as Task['priority'])
-                  }`}
+                className={`w-full max-w-[280px] px-4 py-2 border rounded-md text-sm animate-pulse ${isSelecting ? "opacity-50 cursor-not-allowed" : ""
+                  } ${theme === "light" ? "bg-white border-gray-300" : "bg-slate-700 border-slate-500 text-gray-200"
+                  } ${getPriorityStyles((editValues.priority ?? task.priority) as Task["priority"])}`}
                 data-testid="priority-menu-button"
               >
                 {editValues.priority ?? task.priority}
@@ -328,21 +344,22 @@ export default function SortableTask({
                   <MenuItems
                     as={PortalMenuItems}
                     anchorRef={priorityButtonRef}
-                    className={`w-full max-w-[280px] rounded-md shadow-lg border focus:outline-none ${theme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-slate-500'
+                    className={`w-full max-w-[280px] rounded-md shadow-lg border focus:outline-none ${theme === "light" ? "bg-white border-gray-200" : "bg-slate-700 border-slate-500"
                       }`}
                   >
                     <div className="p-2 space-y-2">
-                      {['Low', 'Medium', 'High'].map((option) => (
+                      {["Low", "Medium", "High"].map((option) => (
                         <MenuItem key={option} disabled={isSelecting}>
                           {({ active }) => (
                             <button
                               type="button"
                               onClick={() => {
-                                handleOptionSelect('priority', option);
+                                handleOptionSelect("priority", option);
                                 setIsPriorityMenuOpen(false);
                               }}
-                              className={`w-full text-left px-4 py-1.5 rounded-md text-sm mx-2 ${getPriorityStyles(option as Task['priority'])
-                                } ${active && !isSelecting ? (theme === 'light' ? 'bg-gray-100' : 'bg-slate-600') : ''}`}
+                              className={`w-full text-left px-4 py-1.5 rounded-md text-sm mx-2 ${getPriorityStyles(
+                                option as Task["priority"]
+                              )} ${active && !isSelecting ? (theme === "light" ? "bg-gray-100" : "bg-slate-600") : ""}`}
                               data-testid={`priority-option-${option}`}
                             >
                               {option}
@@ -360,9 +377,9 @@ export default function SortableTask({
           <span
             onClick={(e) => {
               e.stopPropagation();
-              console.log('SortableTask: Starting edit: priority');
+              console.log("SortableTask: Starting edit: priority");
               console.log(`SortableTask: Opened priority dropdown for task ID: ${task.id}`);
-              startEditing(task.id, 'priority', task.priority);
+              startEditing(task.id, "priority", task.priority);
             }}
             className={`inline-block px-3 py-1.5 rounded-md text-sm mx-2 ${getPriorityStyles(task.priority)}`}
           >
@@ -371,5 +388,5 @@ export default function SortableTask({
         )}
       </div>
     </div>
-  )
+  );
 }

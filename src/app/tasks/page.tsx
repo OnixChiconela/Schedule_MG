@@ -1,151 +1,173 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Plus } from 'lucide-react'
-import { useTheme } from '../themeContext'
-import SideNavbar from '../components/navbars/SideNavbar'
-import ProjectSelector from '../components/tasks/ProjectSelector'
-import TaskCard from '../components/tasks/TaskCard'
-import NewProjectModal from '../components/tasks/NewProjectModal'
-import NewTaskModal from '../components/tasks/NewTaskModal'
-import Navbar from '../components/navbars/Navbar'
+import { useState, useEffect } from "react";
+import { Plus } from "lucide-react";
+import { useTheme } from "../themeContext";
+import SideNavbar from "../components/navbars/SideNavbar";
+import ProjectSelector from "../components/tasks/ProjectSelector";
+import TaskCard from "../components/tasks/TaskCard";
+import NewProjectModal from "../components/tasks/NewProjectModal";
+import NewTaskModal from "../components/tasks/NewTaskModal";
+import Navbar from "../components/navbars/Navbar";
 
 export type Task = {
-  id: number
-  title: string
-  status: 'To Do' | 'In Progress' | 'Done'
-  createdDate: string
-  dueDate: string
-  priority: 'Low' | 'Medium' | 'High'
-  isCompleted: boolean
+  id: number;
+  title: string;
+  status: "To Do" | "In Progress" | "Done";
+  createdDate: string;
+  dueDate: string;
+  priority: "Low" | "Medium" | "High";
+  isCompleted: boolean;
   position?: { x: number; y: number };
-  category?: "Work" | "Personal" | "Study" | "Other"
-}
+  category?: "Work" | "Personal" | "Study" | "Other";
+};
 
 export type Corner = {
-  id: number
-  title: string
-  tasks: Task[]
-}
+  id: number;
+  title: string;
+  tasks: Task[];
+};
 
 const TasksPage = () => {
-  const { theme, toggleTheme } = useTheme()
+  const { theme, toggleTheme } = useTheme();
 
   const [corners, setCorners] = useState<Corner[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('corners')
-      return saved
-        ? JSON.parse(saved)
-        : []
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("corners");
+      return saved ? JSON.parse(saved) : [];
     }
-    return []
-  })
-  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false)
-  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
-  const [selectedCornerId, setSelectedCornerId] = useState<number | null>(corners[0]?.id || null)
+    return [];
+  });
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [selectedCornerId, setSelectedCornerId] = useState<number | null>(
+    corners[0]?.id || null
+  );
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('corners', JSON.stringify(corners))
+    if (typeof window !== "undefined") {
+      localStorage.setItem("corners", JSON.stringify(corners));
       if (corners.length > 0 && !selectedCornerId) {
-        setSelectedCornerId(corners[0].id)
+        setSelectedCornerId(corners[0].id);
       }
     }
-  }, [corners, selectedCornerId])
+  }, [corners, selectedCornerId]);
 
   const handleCreateCorner = (title: string, tasks: string[]) => {
-    const newId = corners.length + 1
+    const newId = corners.length + 1;
     const newCorner = {
       id: newId,
       title,
       tasks: tasks.map((title, index) => ({
         id: Date.now() + index,
         title,
-        status: 'To Do' as const,
-        createdDate: new Date().toISOString().split('T')[0],
-        dueDate: new Date().toISOString().split('T')[0],
-        priority: 'Medium' as const,
+        status: "To Do" as const,
+        createdDate: new Date().toISOString().split("T")[0],
+        dueDate: new Date().toISOString().split("T")[0],
+        priority: "Medium" as const,
         isCompleted: false,
       })),
-    }
-    setCorners([...corners, newCorner])
-    setSelectedCornerId(newId)
-  }
+    };
+    setCorners([...corners, newCorner]);
+    setSelectedCornerId(newId);
+  };
 
   const handleCreateTask = (task: Task) => {
-    if (!selectedCornerId) return
+    if (!selectedCornerId) return;
     setCorners((prev) =>
       prev.map((corner) =>
         corner.id === selectedCornerId
           ? { ...corner, tasks: [...corner.tasks, task] }
           : corner
       )
-    )
-  }
+    );
+  };
 
   const handleTaskToggle = (taskId: number, isCompleted: boolean) => {
-    if (!selectedCornerId) return
+    if (!selectedCornerId) return;
     setCorners((prev) =>
       prev.map((corner) =>
         corner.id === selectedCornerId
           ? {
-            ...corner,
-            tasks: corner.tasks.map((task) =>
-              task.id === taskId
-                ? { ...task, isCompleted, status: isCompleted ? 'Done' : 'To Do' }
-                : task
-            ),
-          }
+              ...corner,
+              tasks: corner.tasks.map((task) =>
+                task.id === taskId
+                  ? { ...task, isCompleted, status: isCompleted ? "Done" : "To Do" }
+                  : task
+              ),
+            }
           : corner
       )
-    )
-  }
+    );
+  };
 
   const handleTaskUpdate = (taskId: number, updates: Partial<Task>) => {
-    if (!selectedCornerId) return
+    if (!selectedCornerId) return;
     setCorners((prev) =>
       prev.map((corner) =>
         corner.id === selectedCornerId
           ? {
-            ...corner,
-            tasks: corner.tasks.map((task) =>
-              task.id === taskId ? { ...task, ...updates } : task
-            ),
-          }
+              ...corner,
+              tasks: corner.tasks.map((task) =>
+                task.id === taskId ? { ...task, ...updates } : task
+              ),
+            }
           : corner
       )
-    )
-  }
+    );
+  };
 
-  const handleTaskReorder = (cornerId: number, sourceIndex: number, destinationIndex: number) => {
+  const handleTaskReorder = (
+    cornerId: number,
+    sourceIndex: number,
+    destinationIndex: number
+  ) => {
     setCorners((prev) =>
       prev.map((corner) =>
         corner.id === cornerId
           ? {
-            ...corner,
-            tasks: reorderTasks(corner.tasks, sourceIndex, destinationIndex),
-          }
+              ...corner,
+              tasks: reorderTasks(corner.tasks, sourceIndex, destinationIndex),
+            }
           : corner
       )
-    )
-  }
+    );
+  };
 
-  const reorderTasks = (tasks: Task[], sourceIndex: number, destinationIndex: number) => {
-    const result = Array.from(tasks)
-    const [removed] = result.splice(sourceIndex, 1)
-    result.splice(destinationIndex, 0, removed)
-    return result
-  }
+  const handleTaskDelete = (taskIds: number[]) => {
+    if (!selectedCornerId) return;
+    setCorners((prev) =>
+      prev.map((corner) =>
+        corner.id === selectedCornerId
+          ? {
+              ...corner,
+              tasks: corner.tasks.filter((task) => !taskIds.includes(task.id)),
+            }
+          : corner
+      )
+    );
+  };
 
-  const selectedCorner = corners.find((corner) => corner.id === selectedCornerId)
+  const reorderTasks = (
+    tasks: Task[],
+    sourceIndex: number,
+    destinationIndex: number
+  ) => {
+    const result = Array.from(tasks);
+    const [removed] = result.splice(sourceIndex, 1);
+    result.splice(destinationIndex, 0, removed);
+    return result;
+  };
+
+  const selectedCorner = corners.find((corner) => corner.id === selectedCornerId);
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
   return (
     <main
-      className={`flex h-screen w-full ${theme === 'light' ? 'bg-white text-black' : 'bg-slate-800 text-gray-200'
+      className={`flex h-screen w-full ${theme === "light" ? "bg-white text-black" : "bg-slate-800 text-gray-200"
         } transition-colors duration-300 relative`}
     >
       <Navbar
@@ -166,9 +188,9 @@ const TasksPage = () => {
           <h1 className="text-2xl font-semibold">My Tasks</h1>
           <button
             onClick={() => setIsProjectModalOpen(true)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${theme === 'light'
-              ? 'bg-black text-white hover:bg-neutral-800'
-              : 'bg-slate-900 text-gray-200 hover:bg-slate-700'
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${theme === "light"
+              ? "bg-black text-white hover:bg-neutral-800"
+              : "bg-slate-900 text-gray-200 hover:bg-slate-700"
               }`}
           >
             <Plus size={16} />
@@ -193,10 +215,11 @@ const TasksPage = () => {
               onTaskToggle={handleTaskToggle}
               onTaskUpdate={handleTaskUpdate}
               onTaskReorder={handleTaskReorder}
+              onTaskDelete={handleTaskDelete} // Passa a nova função
               theme={theme}
             />
           ) : (
-            <div className={theme === 'light' ? 'text-gray-500' : 'text-gray-400'}>
+            <div className={theme === "light" ? "text-gray-500" : "text-gray-400"}>
               Select a Corner to view its tasks.
             </div>
           )}
@@ -217,6 +240,6 @@ const TasksPage = () => {
       />
     </main>
   );
-}
+};
 
-export default TasksPage
+export default TasksPage;
