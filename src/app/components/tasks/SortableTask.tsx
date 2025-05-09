@@ -191,16 +191,13 @@ export default function SortableTask({
             type="text"
             value={editValues.title ?? task.title}
             onChange={(e) => {
-              console.log(`SortableTask: Changing title to: ${e.target.value}`);
               handleEditChange("title", e.target.value);
             }}
             onBlur={() => {
-              console.log("SortableTask: Submitting title edit");
               submitEdit(task.id);
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                console.log("SortableTask: Submitting title edit via Enter");
                 submitEdit(task.id);
               }
             }}
@@ -212,7 +209,7 @@ export default function SortableTask({
           <span className="font-medium">{task.title}</span>
         )}
       </div>
-      <div className="relative">
+      <div className="relative cursor-pointer">
         {editingTaskId === task.id && editingField === "status" ? (
           <>
             <Menu as="div" className="relative inline-block text-left w-full">
@@ -220,7 +217,7 @@ export default function SortableTask({
                 ref={statusButtonRef}
                 onClick={() => setIsStatusMenuOpen(true)}
                 disabled={isSelecting}
-                className={`w-full max-w-[280px] px-4 py-2 border rounded-md text-sm animate-pulse ${isSelecting ? "opacity-50 cursor-not-allowed" : ""
+                className={`w-full cursor-pointer max-w-[280px] px-4 py-2 border rounded-md text-sm animate-pulse ${isSelecting ? "opacity-50 cursor-not-allowed" : ""
                   } ${theme === "light" ? "bg-white border-gray-300" : "bg-slate-700 border-slate-500 text-gray-200"
                   } ${getStatusStyles((editValues.status ?? task.status) as Task["status"])}`}
                 data-testid="status-menu-button"
@@ -253,7 +250,7 @@ export default function SortableTask({
                                 handleOptionSelect("status", option);
                                 setIsStatusMenuOpen(false);
                               }}
-                              className={`w-full text-left px-4 py-1.5 rounded-md text-sm mx-2 ${getStatusStyles(
+                              className={`w-[93%] text-left px-4 py-1.5 rounded-md text-sm mx-2 ${getStatusStyles(
                                 option as Task["status"]
                               )} ${active && !isSelecting ? (theme === "light" ? "bg-gray-100" : "bg-slate-600") : ""}`}
                               data-testid={`status-option-${option}`}
@@ -317,7 +314,7 @@ export default function SortableTask({
           formatDate(task.dueDate)
         )}
       </div>
-      <div className="relative">
+      <div className="relative cursor-pointer">
         {editingTaskId === task.id && editingField === "priority" ? (
           <>
             <Menu as="div" className="relative inline-block text-left w-full">
@@ -325,7 +322,7 @@ export default function SortableTask({
                 ref={priorityButtonRef}
                 onClick={() => setIsPriorityMenuOpen(true)}
                 disabled={isSelecting}
-                className={`w-full max-w-[280px] px-4 py-2 border rounded-md text-sm animate-pulse ${isSelecting ? "opacity-50 cursor-not-allowed" : ""
+                className={`w-full cursor-pointer max-w-[280px] px-4 py-2 border rounded-md text-sm animate-pulse ${isSelecting ? "opacity-50 cursor-not-allowed" : ""
                   } ${theme === "light" ? "bg-white border-gray-300" : "bg-slate-700 border-slate-500 text-gray-200"
                   } ${getPriorityStyles((editValues.priority ?? task.priority) as Task["priority"])}`}
                 data-testid="priority-menu-button"
@@ -358,7 +355,7 @@ export default function SortableTask({
                                 handleOptionSelect("priority", option);
                                 setIsPriorityMenuOpen(false);
                               }}
-                              className={`w-full text-left px-4 py-1.5 rounded-md text-sm mx-2 ${getPriorityStyles(
+                              className={`w-[93%] text-left px-4 py-1.5 rounded-md text-sm mx-2 ${getPriorityStyles(
                                 option as Task["priority"]
                               )} ${active && !isSelecting ? (theme === "light" ? "bg-gray-100" : "bg-slate-600") : ""}`}
                               data-testid={`priority-option-${option}`}

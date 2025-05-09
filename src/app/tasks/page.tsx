@@ -192,7 +192,7 @@ const TasksPage = () => {
       />
       <div className="flex-1 overflow-y-auto p-6 pt-20 lg:ml-[260px]">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold">My Tasks</h1>
+          <h1 className="text-2xl font-semibold">My Corners</h1>
           <button
             onClick={() => setIsProjectModalOpen(true)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${theme === "light"
