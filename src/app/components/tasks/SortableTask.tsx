@@ -154,21 +154,22 @@ export default function SortableTask({
       className={`grid grid-cols-7 gap-2 items-center rounded-xl p-2 text-sm ${theme === "light" ? "bg-gray-100" : "bg-slate-600"
         } transition-colors duration-300`}
     >
-      {/* Checkbox condicional para seleção */}
-      {isMenuOpen ? (
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={selectedTasks.includes(task.id)}
-            onChange={() => onTaskSelect(task.id)}
-            className="h-4 w-4"
-          />
-        </div>
-      ) : (
-        <div {...attributes} {...listeners} className="cursor-grab">
-          <GripVertical size={16} className={theme === "light" ? "text-gray-500" : "text-gray-400"} />
-        </div>
-      )}
+      <div className='transition-discrete'>
+        {isMenuOpen ? (
+          <div className="flex items-center transition-normal duration-200">
+            <input
+              type="checkbox"
+              checked={selectedTasks.includes(task.id)}
+              onChange={() => onTaskSelect(task.id)}
+              className="h-4 w-4"
+            />
+          </div>
+        ) : (
+          <div {...attributes} {...listeners} className="cursor-grab transition-normal duration-200">
+            <GripVertical size={16} className={theme === "light" ? "text-gray-500" : "text-gray-400"} />
+          </div>
+        )}
+      </div>
       <div>
         <input
           type="checkbox"

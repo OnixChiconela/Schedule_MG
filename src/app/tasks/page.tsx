@@ -73,6 +73,13 @@ const TasksPage = () => {
     setSelectedCornerId(newId);
   };
 
+  const handleCornerDelete = (cornerId: number) => {
+    setCorners((prev) => prev.filter((corner) => corner.id !== cornerId));
+    if (selectedCornerId === cornerId) {
+      setSelectedCornerId(corners.length > 1 ? corners[0].id : null);
+    }
+  };
+
   const handleCreateTask = (task: Task) => {
     if (!selectedCornerId) return;
     setCorners((prev) =>
@@ -90,13 +97,13 @@ const TasksPage = () => {
       prev.map((corner) =>
         corner.id === selectedCornerId
           ? {
-              ...corner,
-              tasks: corner.tasks.map((task) =>
-                task.id === taskId
-                  ? { ...task, isCompleted, status: isCompleted ? "Done" : "To Do" }
-                  : task
-              ),
-            }
+            ...corner,
+            tasks: corner.tasks.map((task) =>
+              task.id === taskId
+                ? { ...task, isCompleted, status: isCompleted ? "Done" : "To Do" }
+                : task
+            ),
+          }
           : corner
       )
     );
@@ -108,11 +115,11 @@ const TasksPage = () => {
       prev.map((corner) =>
         corner.id === selectedCornerId
           ? {
-              ...corner,
-              tasks: corner.tasks.map((task) =>
-                task.id === taskId ? { ...task, ...updates } : task
-              ),
-            }
+            ...corner,
+            tasks: corner.tasks.map((task) =>
+              task.id === taskId ? { ...task, ...updates } : task
+            ),
+          }
           : corner
       )
     );
@@ -127,9 +134,9 @@ const TasksPage = () => {
       prev.map((corner) =>
         corner.id === cornerId
           ? {
-              ...corner,
-              tasks: reorderTasks(corner.tasks, sourceIndex, destinationIndex),
-            }
+            ...corner,
+            tasks: reorderTasks(corner.tasks, sourceIndex, destinationIndex),
+          }
           : corner
       )
     );
@@ -141,9 +148,9 @@ const TasksPage = () => {
       prev.map((corner) =>
         corner.id === selectedCornerId
           ? {
-              ...corner,
-              tasks: corner.tasks.filter((task) => !taskIds.includes(task.id)),
-            }
+            ...corner,
+            tasks: corner.tasks.filter((task) => !taskIds.includes(task.id)),
+          }
           : corner
       )
     );
@@ -203,6 +210,7 @@ const TasksPage = () => {
             corners={corners}
             selectedCornerId={selectedCornerId}
             onSelect={setSelectedCornerId}
+            onCornerDelete={handleCornerDelete} // Nova prop para deletar Corner
             theme={theme}
           />
         </div>
