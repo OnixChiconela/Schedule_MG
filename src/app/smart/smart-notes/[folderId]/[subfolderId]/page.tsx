@@ -502,7 +502,6 @@ const SubfolderNote = () => {
                             ? "border-gray-300 bg-white"
                             : "border-slate-600 bg-slate-800"
                             } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                        onFocus={() => console.log("Canvas focused")} // Depuração
                     />
                 </main>
             </div>

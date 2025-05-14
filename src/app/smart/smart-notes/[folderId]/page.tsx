@@ -294,12 +294,12 @@ const FolderPage = () => {
                                 <h2
                                     className={`text-xl font-semibold mb-6 ${theme === "light" ? "text-gray-900" : "text-white"}`}
                                 >
-                                    {editingSubfolderId !== null ? "Edit Subfolder" : "Create Subfolder"}
+                                    {editingSubfolderId !== null ? "Edit fragment" : "Create fragment"}
                                 </h2>
                                 <div className="space-y-6">
                                     <div>
                                         <label className={`block text-sm font-medium mb-2 ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
-                                            Subfolder Title
+                                            Fragment title
                                         </label>
                                         <input
                                             type="text"
@@ -313,7 +313,7 @@ const FolderPage = () => {
                                     </div>
                                     <div>
                                         <label className={`block text-sm font-medium mb-2 ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
-                                            Description (max 150 characters)
+                                            Description
                                         </label>
                                         <textarea
                                             value={subfolderDescription}

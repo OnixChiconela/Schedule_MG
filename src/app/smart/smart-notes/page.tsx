@@ -321,7 +321,7 @@ const SmartNotes = () => {
                       </motion.div>
                       <div className="py-1 flex items-center justify-between px-2 relative">
                         <div className={`${theme === "light" ? "text-neutral-700" : "text-neutral-300"}`}>
-                          {folder.subfolders.length} subfolders
+                          {folder.subfolders.length} fragments
                         </div>
                         <div
                           className={`p-1 ${theme === "light" ? "text-neutral-700 hover:bg-neutral-200" : "text-neutral-300 hover:bg-slate-700"} rounded-full cursor-pointer`}
@@ -360,6 +360,12 @@ const SmartNotes = () => {
                                   }}
                                 >
                                   Duplicate
+                                </button>
+                                <button
+                                  className={`block w-full text-left px-4 py-2 text-sm ${theme === "light" ? "text-gray-700 hover:bg-gray-100" : "text-gray-200 hover:bg-slate-700"}`}
+                                  onClick={(e) => toast.success("Share your thoughts, may be good for someone else!")}
+                                >
+                                  Share
                                 </button>
                                 <button
                                   className={`block w-full text-left px-4 py-2 text-sm ${theme === "light" ? "text-red-600 hover:bg-gray-100" : "text-red-500 hover:bg-slate-700"}`}

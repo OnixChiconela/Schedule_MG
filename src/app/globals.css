@@ -24,15 +24,3 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
-
-/* @media (max-width: 768px) {
-  canvas {
-    width: 100% !important;
-    height: auto !important;
-    min-height: 200px;
-  }
-  main {
-    padding-left: 0 !important;
-    padding-top: calc(3rem + env(safe-area-inset-top, 0px));
-  }
-} */
