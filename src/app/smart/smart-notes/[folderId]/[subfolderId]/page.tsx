@@ -142,6 +142,20 @@ const SubfolderNote = () => {
         const ctx = canvas?.getContext("2d");
         if (!canvas || !ctx) return;
 
+        let maxY = 0;
+        canvasState.textLines.forEach((line) => {
+            if (line.y + 20 > maxY) maxY = line.y + 20; // 20 é a altura aproximada de uma linha
+        });
+        canvasState.lines.forEach((line) => {
+            line.points.forEach((point) => {
+                if (point.y > maxY) maxY = point.y;
+            });
+        });
+        const newHeight = Math.max(maxY + 50, window.innerHeight - 100); // Mínimo de altura
+        canvas.height = newHeight;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // Margem e largura máxima
@@ -335,7 +349,6 @@ const SubfolderNote = () => {
         const clickX = e.clientX - rect.left;
         const clickY = e.clientY - rect.top;
 
-        // Verificar se clicou em um texto existente
         const clickedTextIndex = canvasState.textLines.findIndex((line) => {
             const yRange = clickY >= line.y - 20 && clickY <= line.y + 20;
             const xRange = clickX >= line.x && clickX <= line.x + line.width;
@@ -355,10 +368,10 @@ const SubfolderNote = () => {
             setEditingTextIndex(null);
         }
         setIsTyping(true);
-        // Garantir que o canvas tenha foco para capturar eventos de teclado
+        e.preventDefault();
+        window.scrollTo(0, 0);
         canvasRef.current?.focus();
     };
-
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (!isTyping) return;
 
@@ -429,7 +442,7 @@ const SubfolderNote = () => {
                     }}
                 >
                     <div className="flex items-center justify-between mb-6 mt-3">
-                        <h1 className={`text-2xl font-semibold ${theme === "light" ? "text-gray-900" : "text-white"}`}>
+                        <h1 className={`text-lg font-semibold ${theme === "light" ? "text-neutral-700" : "text-neutral-300"}`}>
                             {folder.title} / {subfolder.title}
                         </h1>
                         <motion.button
@@ -453,8 +466,35 @@ const SubfolderNote = () => {
                             startDrawing(e);
                             startTyping(e);
                         }}
+                        onTouchStart={(e) => {
+                            e.preventDefault(); // Evita comportamento padrão de scroll
+                            const touch = e.touches[0];
+                            const rect = canvasRef.current?.getBoundingClientRect();
+                            if (rect) {
+                                startTyping({
+                                    clientX: touch.clientX - rect.left,
+                                    clientY: touch.clientY - rect.top,
+                                    preventDefault: () => { },
+                                    currentTarget: canvasRef.current as HTMLCanvasElement,
+                                } as React.MouseEvent<HTMLCanvasElement>);
+                            }
+                            canvasRef.current?.focus(); // Força o foco para ativar o teclado
+                        }}
                         onMouseMove={draw}
+                        onTouchMove={(e) => {
+                            e.preventDefault();
+                            const touch = e.touches[0];
+                            const rect = canvasRef.current?.getBoundingClientRect();
+                            if (rect) {
+                                draw({
+                                    clientX: touch.clientX - rect.left,
+                                    clientY: touch.clientY - rect.top,
+                                    preventDefault: () => { },
+                                } as React.MouseEvent<HTMLCanvasElement>);
+                            }
+                        }}
                         onMouseUp={stopDrawing}
+                        onTouchEnd={stopDrawing}
                         onMouseOut={stopDrawing}
                         onKeyDown={handleKeyDown}
                         tabIndex={0}
@@ -462,6 +502,7 @@ const SubfolderNote = () => {
                             ? "border-gray-300 bg-white"
                             : "border-slate-600 bg-slate-800"
                             } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                        onFocus={() => console.log("Canvas focused")} // Depuração
                     />
                 </main>
             </div>
