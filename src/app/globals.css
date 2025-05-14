@@ -25,7 +25,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
   canvas {
     width: 100% !important;
     height: auto !important;
@@ -35,4 +35,4 @@ body {
     padding-left: 0 !important;
     padding-top: calc(3rem + env(safe-area-inset-top, 0px));
   }
-}
+} */
