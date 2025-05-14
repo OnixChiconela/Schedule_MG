@@ -178,7 +178,7 @@ const TasksPage = () => {
         } transition-colors duration-300 relative`}
     >
       <Navbar
-        themeButton={true}
+        themeButton={false}
         showToggleSidebarButton={true}
         isSidebarOpen={isSidebarOpen}
         toggleSidebar={toggleSidebar}

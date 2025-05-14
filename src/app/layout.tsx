@@ -4,6 +4,7 @@ import './globals.css'
 import ClientOnly from './components/ClientOnly'
 import ToasterProvider from './providers/ToasterProvider'
 import { Metadata } from 'next';
+import { SubfolderProvider } from './context/SubfolderContext';
 
 export const metadata: Metadata = {
   title: 'Scheuor',
@@ -13,7 +14,6 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const gaTrackingId = process.env.NEXT_PUBLIC_GA_TRACKING_ID;
 
-  console.log('GA Tracking ID:', gaTrackingId, 'Track it, layout')
   return (
     <html lang="en">
       <head>
@@ -37,7 +37,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ClientOnly>
           <ToasterProvider />
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            <SubfolderProvider>
+              {children}
+            </SubfolderProvider>
+          </ThemeProvider>
         </ClientOnly>
       </body>
     </html>

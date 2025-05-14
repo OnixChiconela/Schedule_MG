@@ -10,7 +10,9 @@ import {
   Home,
   Mail,
   MoonStar,
+  Notebook,
   PenBox,
+  Sparkles,
   Sun,
   X,
 } from 'lucide-react';
@@ -187,6 +189,14 @@ export default function SideNavbar({
                   <SideNavButton title="Roadmap" link="/tracking" icon={Car} theme={theme} />
                 </li>
                 <Divider theme={theme} />
+                  <li>
+                    <div className={`flex items-center gap-2 mb-2 ${theme == "light" ? "text-neutral-900" : "text-neutral-200"} font-semibold`}>
+                      AI Partner
+                      <Sparkles size={16}/>
+                    </div>
+                    <SideNavButton title='Smart notes' link='/smart/smart-notes' icon={Notebook} theme={theme}/>
+                  </li>
+                <Divider theme={theme}/>
                 <li>
                   <SideNavButton title="Feedback" link="/feedback" icon={Mail} theme={theme} />
                 </li>

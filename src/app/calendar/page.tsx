@@ -193,7 +193,7 @@ export default function CalendarPage() {
       } transition-colors duration-300`}
     >
       <Navbar
-        themeButton={true}
+        themeButton={false}
         showToggleSidebarButton={true}
         isSidebarOpen={isSidebarOpen}
         toggleSidebar={toggleSidebar}

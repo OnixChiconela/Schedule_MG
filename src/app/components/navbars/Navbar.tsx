@@ -14,7 +14,7 @@ interface MainNavbarProps {
   }
 
 const Navbar = ({
-  themeButton = false,
+  themeButton = true,
   showToggleSidebarButton = false,
   isSidebarOpen = false,
   toggleSidebar,
@@ -49,7 +49,7 @@ const Navbar = ({
                 {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
               </motion.button>
             )}
-            {!themeButton && (
+            {themeButton && (
               <motion.button
                 onClick={() => {
                   console.log('MainNavbar theme toggle clicked');

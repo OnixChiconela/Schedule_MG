@@ -132,16 +132,17 @@ export default function DashboardPPage() {
     };
 
     const getGreeting = () => {
-        const hour = new Date().getHours();
-        if (hour < 12) return "Good morning, ready for a great day?";
-        if (hour < 17) return "Good afternoon, how's it going?";
-        return "Good evening, how was your day?";
-    };
+    const hour = new Date().getHours();
+    if (hour < 5) return "Work while others sleep, but remember to rest!";
+    if (hour < 12) return "Good morning, ready for a great day?";
+    if (hour < 17) return "Good afternoon, how's it going?";
+    return "Good evening, how was your day?";
+};
 
     return (
         <ClientOnly>
             <Navbar
-                themeButton={true}
+                themeButton={false}
                 showToggleSidebarButton={true}
                 isSidebarOpen={isSidebarOpen}
                 toggleSidebar={toggleSidebar}

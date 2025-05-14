@@ -24,7 +24,7 @@ const LandingFooter = () => {
                 } transition-colors duration-300`}
         >
             <Container>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div className="grid grid-cols-1 md:flex md:justify-between gap-12">
                     {/* Brand */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -60,7 +60,7 @@ const LandingFooter = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.1 }}
-                        className="flex flex-col items-center md:items-start text-center"
+                        className="flex flex-col items-center text-center md:text-start"
                     >
                         <h3
                             className={`text-lg font-semibold mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
@@ -121,7 +121,7 @@ const LandingFooter = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
-                        className="flex flex-col items-center md:items-start text-center"
+                        className="flex flex-col items-center md:items-start text-center md:text-start"
                     >
                         <h3
                             className={`text-lg font-semibold mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
@@ -160,7 +160,7 @@ const LandingFooter = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.3 }}
-                        className="flex flex-col items-center md:items-start"
+                        className="flex flex-col items-center  text-center md:text-start"
                     >
                         <h3
                             className={`text-lg font-semibold mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'

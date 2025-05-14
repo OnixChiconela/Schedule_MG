@@ -454,7 +454,7 @@ function TrackingPageContent() {
 
     return (
         <div className={`flex flex-col min-h-screen ${theme === "light" ? "bg-gray-100" : "bg-slate-900"}`}>
-            <TrackingNav />
+            <TrackingNav themeButton={true}/>
             <main className="flex-1 py-12">
                 <Container>
                     <div className="max-w-screen-4xl mx-auto">
@@ -715,7 +715,7 @@ function TrackingPageContent() {
                                                     ? "#d1d5db"
                                                     : "#4b5563"
                                         }
-                                        className={`rounded-lg ${theme === "light" ? "bg-gray-100" : "bg-slate-700"}`}
+                                        className={`rounded-lg ${theme === "light" ? "bg-gray-100" : "bg-slate-700"} w-36 h-28 md:w-44 md:h-32 lg:w-52 lg:h-36`}
                                         maskColor="transparent"
                                         style={{ background: theme === "light" ? "#f1f1f1" : "#26304A" }}
                                     />

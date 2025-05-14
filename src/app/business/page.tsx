@@ -10,7 +10,7 @@ export default function Business() {
         <>
             <main className={`h-screen w-full duration-300 relative`}>
             <TrackingNav
-                themeButton={false}
+                themeButton={true}
             />
                 <div className="pt-20">
                     <MyBusinessTab />
