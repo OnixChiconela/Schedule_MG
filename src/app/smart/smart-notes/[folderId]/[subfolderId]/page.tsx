@@ -156,8 +156,6 @@ const SubfolderNote = () => {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
         // Margem e largura máxima
         const margin = 10;
         const maxWidth = canvas.width - 2 * margin;
@@ -372,8 +370,11 @@ const SubfolderNote = () => {
         window.scrollTo(0, 0);
         canvasRef.current?.focus();
     };
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (!isTyping) return;
+
+        e.preventDefault(); // Bloqueia o evento padrão (como scroll)
 
         if (e.key === "Enter") {
             setCurrentText((prev) => prev + "\n");
@@ -414,7 +415,7 @@ const SubfolderNote = () => {
             setCurrentText("");
             setTextPosition(null);
             setEditingTextIndex(null);
-        } else if (e.key.length === 1) {
+        } else if (e.key.length === 1 || e.key === " ") { // Trata espaço como entrada de texto
             setCurrentText((prev) => prev + e.key);
         } else if (e.key === "Backspace") {
             setCurrentText((prev) => prev.slice(0, -1));
@@ -501,7 +502,7 @@ const SubfolderNote = () => {
                         className={`w-full rounded-xl border ${theme === "light"
                             ? "border-gray-300 bg-white"
                             : "border-slate-600 bg-slate-800"
-                            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                            } focus:outline-none focus:ring-2 focus:ring-fuchsia-700`}
                     />
                 </main>
             </div>
