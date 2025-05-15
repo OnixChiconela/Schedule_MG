@@ -26,7 +26,8 @@ const ToolsNavbar = () => {
   return (
     <>
       <motion.button
-        className={`fixed top-[67px] left-4 lg:hidden z-20 p-2 rounded-md ${theme === "light" ? "bg-white text-gray-900 hover:bg-gray-200" : "bg-slate-700 text-gray-200 hover:bg-slate-600"} transition-all duration-200 ease-in-out`}
+        className={`fixed top-[67px] lg:hidden z-20 p-2 rounded-md ${theme === "light" ? "bg-white text-gray-900 hover:bg-gray-200 border-1 border-neutral-100" : "bg-slate-700 text-gray-200 hover:bg-slate-600"} transition-all duration-200 ease-in-out
+        ${isExpanded ? "left-56" : "left-4"}`}
         onClick={() => setIsExpanded(!isExpanded)}
         whileTap={{ scale: 0.95 }}
       >
@@ -34,7 +35,7 @@ const ToolsNavbar = () => {
       </motion.button>
 
       <motion.div
-        className={`fixed top-0 left-0 w-[260px] h-full ${theme === "light" ? "bg-gray-100" : "bg-slate-800"} ${isExpanded || "hidden"} lg:block z-10`}
+        className={`fixed top-0 left-0 w-[240px] h-full md:pl-5 lg:pl-16 ${theme === "light" ? "bg-gray-100" : "bg-slate-800"} ${isExpanded || "hidden"} lg:block z-10`}
         style={{
           paddingTop: `calc(5rem + env(safe-area-inset-top, 0px))`,
         }}

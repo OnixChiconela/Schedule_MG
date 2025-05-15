@@ -93,7 +93,7 @@ export default function AddTaskModal({
                 safeTheme === 'light'
                   ? 'border-gray-300 bg-white text-gray-900'
                   : 'border-slate-600 bg-slate-800 text-gray-200'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              } focus:outline-none focus:ring-2 focus:ring-neutral-700`}
               placeholder="Enter task title"
             />
             {!title.trim() && (
@@ -121,7 +121,7 @@ export default function AddTaskModal({
                 safeTheme === 'light'
                   ? 'border-gray-300 bg-white text-gray-900'
                   : 'border-slate-600 bg-slate-800 text-gray-200'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              } focus:outline-none focus:ring-2 focus:ring-neutral-700`}
               placeholder="Enter task description"
               rows={4}
             />
@@ -141,7 +141,7 @@ export default function AddTaskModal({
                 safeTheme === 'light'
                   ? 'border-gray-300 bg-white text-gray-900'
                   : 'border-slate-600 bg-slate-800 text-gray-200'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              } focus:outline-none focus:ring-2 focus:ring-neutral-700`}
             >
               <option value="To Do">To Do</option>
               <option value="In Progress">In Progress</option>
@@ -164,26 +164,11 @@ export default function AddTaskModal({
                 safeTheme === 'light'
                   ? 'border-gray-300 bg-white text-gray-900'
                   : 'border-slate-600 bg-slate-800 text-gray-200'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              } focus:outline-none focus:ring-2 focus:ring-neutral-700`}
             />
           </div>
-          <div className="flex space-x-2">
-            <motion.button
-              onClick={() => {
-                console.log('Clicked Save (AddTaskModal)')
-                handleSave()
-              }}
-              className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
-                safeTheme === 'light'
-                  ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                  : 'bg-blue-600 hover:bg-blue-700 text-gray-100'
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              disabled={!title.trim()}
-            >
-              Save
-            </motion.button>
+          <div className="flex justify-end space-x-2">
+            
             <motion.button
               onClick={() => {
                 console.log('Clicked Cancel (AddTaskModal)')
@@ -198,6 +183,22 @@ export default function AddTaskModal({
               whileTap={{ scale: 0.95 }}
             >
               Cancel
+            </motion.button>
+            <motion.button
+              onClick={() => {
+                console.log('Clicked Save (AddTaskModal)')
+                handleSave()
+              }}
+              className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
+                safeTheme === 'light'
+                  ? 'bg-neutral-900 hover:bg-black text-white'
+                : 'bg-neutral-900 hover:bg-black text-gray-100'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              disabled={!title.trim()}
+            >
+              Save
             </motion.button>
           </div>
         </div>

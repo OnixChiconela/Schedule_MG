@@ -8,16 +8,23 @@ import { useState } from "react";
 import { MoonStar, Sun } from "lucide-react";
 import { HiMenu, HiX } from "react-icons/hi";
 import { AnimatePresence, motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 const LandingNavbar = () => {
     const { theme, toggleTheme } = useTheme()
+    const router = useRouter()
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const handleRegisterOpen = () => {}
+    const handleRegisterOpen = () => { }
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
+
+    const tryDemo = () => {
+        if (!localStorage.getItem("userPreferences")) return router.push("/onboarding")
+        router.push("/dashboard")
+    }
 
 
     return (
@@ -60,15 +67,15 @@ const LandingNavbar = () => {
                             >
                                 Features
                             </Link>
-                            <Link
-                                href="/onboarding"
+                            <div
+                                onClick={() => tryDemo()}
                                 className={`px-3 py-2 rounded-md ${theme === 'light'
                                     ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                     : 'hover:bg-slate-600 hover:text-fuchsia-400'
                                     } transition`}
                             >
                                 Try Demo
-                            </Link>
+                            </div>
                             <a
                                 href="mailto:josechiconela@icloud.com"
                                 className={`px-3 py-2 rounded-md ${theme === 'light'
@@ -145,16 +152,15 @@ const LandingNavbar = () => {
                                 >
                                     Features
                                 </Link>
-                                <Link
-                                    href="/onboarding"
+                                <div
+                                    onClick={() => tryDemo()}
                                     className={`text-base font-medium py-2 px-4 rounded-md ${theme === 'light'
                                         ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                         : 'hover:bg-slate-600 hover:text-fuchsia-400 text-neutral-200'
                                         } transition`}
-                                    onClick={toggleMenu}
                                 >
                                     Try Demo
-                                </Link>
+                                </div>
                                 <a
                                     href="mailto:josechiconela@icloud.com"
                                     className={`text-base font-medium py-2 px-4 rounded-md ${theme === 'light'

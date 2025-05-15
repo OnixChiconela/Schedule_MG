@@ -9,6 +9,8 @@ import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useSubfolderContext } from "@/app/context/SubfolderContext";
+import AIModal from "@/app/components/smart/smartnotes/subfolders/AIModal";
+import { Sparkles, X } from "lucide-react";
 
 type Subfolder = {
     id: number;
@@ -64,16 +66,16 @@ const SubfolderNote = () => {
                 const parsedContent = JSON.parse(subfolder.content);
                 const textLines = Array.isArray(parsedContent.textLines)
                     ? parsedContent.textLines.map((line: any) => {
-                        if (typeof line === "string") {
-                            return { text: line, x: 10, y: 30, width: 0 };
-                        }
-                        return {
-                            text: line.text || "",
-                            x: line.x || 10,
-                            y: line.y || 30,
-                            width: line.width || 0,
-                        };
-                    })
+                          if (typeof line === "string") {
+                              return { text: line, x: 10, y: 30, width: 0 };
+                          }
+                          return {
+                              text: line.text || "",
+                              x: line.x || 10,
+                              y: line.y || 30,
+                              width: line.width || 0,
+                          };
+                      })
                     : [];
                 return {
                     textLines,
@@ -87,7 +89,7 @@ const SubfolderNote = () => {
         return { textLines: [], lines: [] };
     });
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null); // Referência para o input oculto
+    const inputRef = useRef<HTMLInputElement>(null);
     const [isDrawing, setIsDrawing] = useState(false);
     const [lastX, setLastX] = useState<number | null>(null);
     const [lastY, setLastY] = useState<number | null>(null);
@@ -97,9 +99,13 @@ const SubfolderNote = () => {
     const [textPosition, setTextPosition] = useState<{ x: number; y: number } | null>(null);
     const [cursorVisible, setCursorVisible] = useState(true);
     const [editingTextIndex, setEditingTextIndex] = useState<number | null>(null);
-    const [scaleFactor, setScaleFactor] = useState(1); // Fator de escala para texto
+    const [scaleFactor, setScaleFactor] = useState(1);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+    const [selectedTextIndex, setSelectedTextIndex] = useState<number | null>(null);
 
-    // Animação do cursor piscante
+    // Cursor blinking animation
     useEffect(() => {
         if (!isTyping) return;
         const interval = setInterval(() => {
@@ -108,7 +114,7 @@ const SubfolderNote = () => {
         return () => clearInterval(interval);
     }, [isTyping]);
 
-    // Função para quebrar linhas manualmente ou automaticamente
+    // Line breaking function
     const breakLines = (text: string, x: number, y: number, maxWidth: number, ctx: CanvasRenderingContext2D) => {
         const lines: TextLine[] = [];
         let currentY = y;
@@ -139,12 +145,12 @@ const SubfolderNote = () => {
         return lines;
     };
 
-    // Ajuste do scaleFactor e redimensionamento do canvas
+    // Canvas resizing and scaling
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const referenceWidth = 1200; // Largura de referência para calcular o scaleFactor
+        const referenceWidth = 1200;
         const resizeCanvas = () => {
             const rect = canvas.getBoundingClientRect();
             canvas.width = rect.width;
@@ -154,7 +160,7 @@ const SubfolderNote = () => {
                 window.innerHeight - 100
             );
 
-            const newScaleFactor = Math.max(rect.width / referenceWidth, 0.3); // Mínimo de 0.3 para evitar texto muito pequeno
+            const newScaleFactor = Math.max(rect.width / referenceWidth, 0.3);
             setScaleFactor(newScaleFactor);
         };
 
@@ -163,7 +169,7 @@ const SubfolderNote = () => {
         return () => window.removeEventListener("resize", resizeCanvas);
     }, [canvasState]);
 
-    // Renderização
+    // Rendering
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext("2d");
@@ -171,13 +177,12 @@ const SubfolderNote = () => {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Aplicar scaleFactor
         ctx.scale(scaleFactor, scaleFactor);
 
-        const margin = 10 / scaleFactor; // Ajustar margem com base no scaleFactor
+        const margin = 10 / scaleFactor;
         const maxWidth = (canvas.width / scaleFactor) - 2 * margin;
 
-        ctx.font = `${16 / scaleFactor}px Arial`; // Ajustar tamanho da fonte
+        ctx.font = `${16 / scaleFactor}px Arial`;
         ctx.fillStyle = theme === "light" ? "#000000" : "#ffffff";
         canvasState.textLines.forEach((line, index) => {
             if (line && typeof line.text === "string" && (!isTyping || editingTextIndex !== index)) {
@@ -221,9 +226,8 @@ const SubfolderNote = () => {
             }
         }
 
-        ctx.setTransform(1, 0, 0, 1, 0, 0); // Resetar transformação para evitar acumulação
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-        // Desenhar linhas
         canvasState.lines.forEach((line) => {
             ctx.beginPath();
             line.points.forEach((point, index) => {
@@ -297,8 +301,9 @@ const SubfolderNote = () => {
         setTextPosition(null);
         setEditingTextIndex(null);
         if (inputRef.current) {
-            inputRef.current.blur(); // Remove o foco do input
+            inputRef.current.blur();
         }
+        setIsPopupOpen(false);
     };
 
     const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -376,16 +381,23 @@ const SubfolderNote = () => {
                 x: canvasState.textLines[clickedTextIndex].x,
                 y: canvasState.textLines[clickedTextIndex].y,
             });
+            setSelectedTextIndex(clickedTextIndex);
+            const textLine = canvasState.textLines[clickedTextIndex];
+            const adjustedX = textLine.x + textLine.width + 10;
+            const adjustedY = textLine.y + 20;
+            setPopupPosition({ x: adjustedX, y: adjustedY });
+            setIsPopupOpen(true);
         } else {
             setTextPosition({ x: clickX, y: clickY });
             setCurrentText("");
             setEditingTextIndex(null);
+            setSelectedTextIndex(null);
+            setIsPopupOpen(false);
         }
         setIsTyping(true);
         e.preventDefault();
-        window.scrollTo(0, 0);
         if (inputRef.current) {
-            inputRef.current.focus(); // Foca no input oculto para abrir o teclado
+            inputRef.current.focus();
         }
     };
 
@@ -436,6 +448,8 @@ const SubfolderNote = () => {
             if (inputRef.current) {
                 inputRef.current.blur();
             }
+            setIsPopupOpen(false);
+            setSelectedTextIndex(null);
         } else if (e.key.length === 1 || e.key === " ") {
             setCurrentText((prev) => prev + e.key);
         } else if (e.key === "Backspace") {
@@ -452,6 +466,44 @@ const SubfolderNote = () => {
         toast.success("Subfolder updated");
     };
 
+    const openAIModal = () => {
+        if (!textPosition) {
+            toast.error("Please click on the canvas to set a position for the AI response");
+            return;
+        }
+        setIsModalOpen(true);
+    };
+
+    const closePopup = () => {
+        setIsPopupOpen(false);
+        setSelectedTextIndex(null);
+    };
+
+    const handleAISubmit = (prompt: string) => {
+        if (!textPosition) return;
+
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext("2d");
+        if (!ctx) return;
+
+        // Placeholder for AI response; replace with actual backend API call
+        const response = `AI Generated: ${prompt}`; // Example: Call your backend here, e.g., fetch('/api/generate', { method: 'POST', body: JSON.stringify({ prompt }) })
+
+        const margin = 10 / scaleFactor;
+        const maxWidth = (canvas!.width / scaleFactor) - 2 * margin;
+        const lines = breakLines(response, textPosition.x / scaleFactor, textPosition.y / scaleFactor, maxWidth, ctx);
+
+        setCanvasState((prev) => ({
+            ...prev,
+            textLines: [
+                ...prev.textLines,
+                ...lines.map((line) => ({ ...line, width: ctx.measureText(line.text).width })),
+            ],
+        }));
+
+        setIsModalOpen(false);
+    };
+
     return (
         <ClientOnly>
             <TrackingNav themeButton={true} />
@@ -463,7 +515,7 @@ const SubfolderNote = () => {
             >
                 <ToolsNavbar />
                 <main
-                    className="flex-1 overflow-y-auto p-6 pt-20 lg:ml-[260px]"
+                    className="flex-1 overflow-y-auto p-6 pt-20 lg:ml-[260px] overscroll-y-contain"
                     style={{
                         paddingTop: `calc(5rem + env(safe-area-inset-top, 0px))`,
                     }}
@@ -472,17 +524,30 @@ const SubfolderNote = () => {
                         <h1 className={`text-lg font-semibold ${theme === "light" ? "text-neutral-700" : "text-neutral-300"}`}>
                             {folder.title} / {subfolder.title}
                         </h1>
-                        <motion.button
-                            onClick={handleSave}
-                            className={`px-5 py-2 rounded-xl font-semibold transition-colors ${theme === "light"
-                                ? "bg-neutral-800 hover:bg-black text-white"
-                                : "bg-neutral-900 hover:bg-black text-gray-200"
-                                }`}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                        >
-                            Save
-                        </motion.button>
+                        <div className="flex space-x-2">
+                            <motion.button
+                                onClick={handleSave}
+                                className={`px-5 py-2 rounded-xl font-semibold transition-colors ${theme === "light"
+                                    ? "bg-neutral-800 hover:bg-black text-white"
+                                    : "bg-neutral-900 hover:bg-black text-gray-200"
+                                    }`}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                Save
+                            </motion.button>
+                            <motion.button
+                                onClick={openAIModal}
+                                className={`px-5 py-2 rounded-xl font-semibold transition-colors ${theme === "light"
+                                    ? "bg-neutral-800 hover:bg-black text-white"
+                                    : "bg-neutral-900 hover:bg-black text-gray-200"
+                                    }`}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                AI Edit
+                            </motion.button>
+                        </div>
                     </div>
 
                     <canvas
@@ -490,6 +555,7 @@ const SubfolderNote = () => {
                         width={window.innerWidth - (theme === "light" ? 300 : 300)}
                         height={window.innerHeight - 100}
                         onMouseDown={(e) => {
+                            e.preventDefault();
                             startDrawing(e);
                             startTyping(e);
                         }}
@@ -501,12 +567,12 @@ const SubfolderNote = () => {
                                 startTyping({
                                     clientX: touch.clientX - rect.left,
                                     clientY: touch.clientY - rect.top,
-                                    preventDefault: () => { },
+                                    preventDefault: () => {},
                                     currentTarget: canvasRef.current as HTMLCanvasElement,
                                 } as React.MouseEvent<HTMLCanvasElement>);
                             }
                             if (inputRef.current) {
-                                inputRef.current.focus(); // Foca no input para abrir o teclado
+                                inputRef.current.focus();
                             }
                         }}
                         onMouseMove={draw}
@@ -518,7 +584,7 @@ const SubfolderNote = () => {
                                 draw({
                                     clientX: touch.clientX - rect.left,
                                     clientY: touch.clientY - rect.top,
-                                    preventDefault: () => { },
+                                    preventDefault: () => {},
                                 } as React.MouseEvent<HTMLCanvasElement>);
                             }
                         }}
@@ -526,7 +592,6 @@ const SubfolderNote = () => {
                         onTouchEnd={stopDrawing}
                         onMouseOut={stopDrawing}
                         onKeyDown={handleKeyDown}
-                        tabIndex={0}
                         className={`w-full rounded-xl border ${theme === "light"
                             ? "border-gray-300 bg-white"
                             : "border-slate-600 bg-slate-800"
@@ -538,7 +603,51 @@ const SubfolderNote = () => {
                         value={currentText}
                         onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
-                        style={{ position: "absolute", opacity: 0, pointerEvents: "none" }}
+                        style={{ position: "absolute", opacity: 0, pointerEvents: "none", top: 0, left: 0 }}
+                    />
+
+                    {/* Popup with "Improve with AI" option */}
+                    {isPopupOpen && selectedTextIndex !== null && (
+                        <div
+                            style={{
+                                position: "absolute",
+                                top: popupPosition.y,
+                                left: popupPosition.x,
+                                backgroundColor: theme === "light" ? "#ffffff" : "#2d3748",
+                                border: `1px solid ${theme === "light" ? "#e2e8f0" : "#4a5568"}`,
+                                borderRadius: "4px",
+                                padding: "10px",
+                                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+                                zIndex: 1000,
+                            }}
+                            className="flex items-center"
+                        >
+                            <button
+                                onClick={() => {
+                                    setIsPopupOpen(false);
+                                    setIsModalOpen(true);
+                                }}
+                                className={`px-3 flex gap-1 py-1 rounded bg-transparent border-1 
+                                    ${theme === "light" 
+                                        ? "border-neutral-700 hover:bg-neutral-800 text-neutral-800 hover:text-neutral-900" 
+                                        : "border-neutral-800 hover:border-neutral-900 text-neutral-200 hover:text-neutral-50"}                                 `}
+                            >
+                                Improve with AI
+                                <Sparkles />
+                            </button>
+                            <button
+                                onClick={closePopup}
+                                className={`ml-2 px-3 py-1 rounded-full ${theme === "light" ? "bg-neutral-800 hover:bg-neutral-900" : "bg-neutral-700 hover:bg-neutral-900"} text-white`}
+                            >
+                                <X />
+                            </button>
+                        </div>
+                    )}
+
+                    <AIModal
+                        isOpen={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                        onSubmit={handleAISubmit}
                     />
                 </main>
             </div>

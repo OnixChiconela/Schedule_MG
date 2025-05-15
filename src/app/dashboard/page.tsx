@@ -150,7 +150,7 @@ export default function DashboardPPage() {
             <div
                 className={`min-h-screen flex ${theme === 'light' ? 'bg-white' : 'bg-slate-900'} transition-colors duration-300`}
                 style={{
-                    paddingTop: 'env(safe-area-inset-top, 0px)', // Adiciona padding superior seguro
+                    paddingTop: 'env(safe-area-inset-top, 0px)', 
                 }}
             >
                 <SideNavbar
@@ -163,7 +163,7 @@ export default function DashboardPPage() {
                 <main
                     className="flex-1 p-4 sm:p-6 lg:ml-[260px] sm:pt-20 max-w-screen-xl mx-auto"
                     style={{
-                        paddingTop: `calc(5rem + env(safe-area-inset-top, 0px))`, // Combina pt-20 com safe-area-inset-top
+                        paddingTop: `calc(5rem + env(safe-area-inset-top, 0px))`,
                     }}
                 >
                     <section className="mb-6">

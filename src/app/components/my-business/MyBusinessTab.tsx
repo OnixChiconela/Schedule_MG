@@ -8,6 +8,8 @@ import ProjectSelector from './BusinessProjectSelector'
 import AddProjectModal from './AddProjectModal'
 import AddTaskModal from './AddTaskModal'
 import AddBusinessModal from './AddBusinessModal'
+import Container from '../Container'
+import { format, parseISO } from 'date-fns'
 
 interface BusinessTask {
   id: string
@@ -314,21 +316,29 @@ export default function MyBusinessTab() {
   }
 
   const safeTheme = theme || 'light'
-  console.log('Rendering MyBusinessTab with theme:', safeTheme)
+
+   const formatDate = (date: string) => {
+      try {
+        return format(parseISO(date), 'dd MMM, yyyy')
+      } catch {
+        return date
+      }
+    }
 
   return (
     <>
       <div
-        className={`min-h-screen p-6 relative overflow-x-hidden ${safeTheme === 'light' ? 'bg-white' : 'bg-slate-800'}`}
+        className={`min-h-screen p-0 relative overflow-x-hidden ${safeTheme === 'light' ? 'bg-white' : 'bg-slate-800'}`}
         style={{
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
-          // backgroundColor: safeTheme === 'light' ? 'bg-white' : 'rgba(30, 41, 59, 0.8)',
         }}
       >
-        <div className="relative z-10 max-w-7xl mx-auto">
+        <Container>
+
+        <div className="relative z-10 w-full mx-auto">
           <motion.h1
-            className={`text-4xl font-bold mb-6 ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}
+            className={`text-4xl pt-8 font-bold mb-6 ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
@@ -485,22 +495,7 @@ export default function MyBusinessTab() {
                         placeholder="Description"
                         rows={4}
                       />
-                      <div className="flex space-x-2">
-                        <motion.button
-                          onClick={() => {
-                            console.log('Clicked Save (Edit Business)')
-                            handleSave()
-                          }}
-                          className={`px-4 py-2 rounded-xl font-semibold transition-colors ${safeTheme === 'light'
-                            ? 'bg-gray-950 hover:bg-black text-white'
-                            : 'bg-gray-950 hover:bg-black text-gray-100'
-                            }`}
-                          variants={buttonVariants}
-                          whileHover="hover"
-                          whileTap="tap"
-                        >
-                          Save
-                        </motion.button>
+                      <div className="flex justify-end space-x-2">
                         <motion.button
                           onClick={() => {
                             console.log('Clicked Cancel (Edit Business)')
@@ -515,6 +510,22 @@ export default function MyBusinessTab() {
                           whileTap="tap"
                         >
                           Cancel
+                        </motion.button>
+
+                        <motion.button
+                          onClick={() => {
+                            console.log('Clicked Save (Edit Business)')
+                            handleSave()
+                          }}
+                          className={`px-4 py-2 rounded-xl font-semibold transition-colors ${safeTheme === 'light'
+                            ? 'bg-gray-950 hover:bg-black text-white'
+                            : 'bg-gray-950 hover:bg-black text-gray-100'
+                            }`}
+                          variants={buttonVariants}
+                          whileHover="hover"
+                          whileTap="tap"
+                        >
+                          Save
                         </motion.button>
                       </div>
                     </motion.div>
@@ -548,8 +559,8 @@ export default function MyBusinessTab() {
                             setIsEditing(true)
                           }}
                           className={`px-4 py-1 rounded-xl font-semibold transition-colors bg-transparent border-2 ${safeTheme === 'light'
-                            ? 'border-fuchsia-200 hover:border-fuchsia-500 text-gray-900'
-                            : 'border-fuchsia-800 hover:border-fuchsia-700 text-gray-100'
+                            ? 'border-neutral-200 hover:border-fuchsia-200 text-gray-900'
+                            : 'border-neutral-800 hover:border-fuchsia-950 text-gray-100'
                             }`}
                           variants={buttonVariants}
                           whileHover="hover"
@@ -563,8 +574,8 @@ export default function MyBusinessTab() {
                             setIsAddProjectModalOpen(true)
                           }}
                           className={`px-4 py-1 rounded-xl font-semibold transition-colors bg-transparent border-2 ${safeTheme === 'light'
-                            ? 'border-green-200 hover:border-green-600 text-gray-900'
-                            : 'border-green-800 hover:border-green-700 text-gray-100'
+                            ? 'border-neutral-200 hover:border-gree-200 text-gray-900'
+                            : 'border-neutral-800 hover:border-green-950 text-gray-100'
                             }`}
                           variants={buttonVariants}
                           whileHover="hover"
@@ -578,8 +589,8 @@ export default function MyBusinessTab() {
                             setIsLinkingTask(true)
                           }}
                           className={`px-4 py-1 rounded-xl font-semibold transition-colors bg-transparent border-2 ${safeTheme === 'light'
-                            ? 'border-yellow-200 hover:border-yellow-600 text-gray-900'
-                            : 'border-yellow-800 hover:border-yellow-700 text-gray-100'
+                            ? 'border-neutral-200 hover:border-yellow-100 text-gray-900'
+                            : 'border-neutral-800 hover:border-yellow-950 text-gray-100'
                             }`}
                           variants={buttonVariants}
                           whileHover="hover"
@@ -588,6 +599,7 @@ export default function MyBusinessTab() {
                           Link Task from Tasks
                         </motion.button>
                       </motion.div>
+                      
                       <motion.h3
                         className={`text-xl font-semibold mt-6 ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}
                         initial={{ opacity: 0 }}
@@ -646,7 +658,7 @@ export default function MyBusinessTab() {
                                 >
                                   {corner.title}
                                 </p>
-                                <ul className="ml-4 mt-2 space-y-1">
+                                <ul className="ml-2 mt-2 space-y-1">
                                   {corner.tasks.map((task) => (
                                     <motion.li
                                       key={task.id}
@@ -657,13 +669,12 @@ export default function MyBusinessTab() {
                                     >
                                       <button
                                         onClick={() => {
-                                          console.log('Clicked Link Task:', task.title)
                                           handleLinkTask(corner.id, task.id)
                                         }}
-                                        className={`text-blue-400 hover:underline ${safeTheme === 'light' ? 'hover:text-blue-500' : 'hover:text-blue-300'}`}
+                                        className={`hover:underline cursor-pointer ${safeTheme === 'light' ? 'text-neutral-800' : 'text-neutral-300'}`}
                                         disabled={!selectedProjectId}
                                       >
-                                        {task.title} - {task.status}
+                                        {task.title} - <a className={`${theme == "light" ? "text-fuchsia-800" : "text-fuchsia-300"}`}>{task.status}</a>
                                       </button>
                                     </motion.li>
                                   ))}
@@ -718,7 +729,7 @@ export default function MyBusinessTab() {
                                       />
                                     </svg>
                                     <span
-                                      className={`font-medium ${safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'}`}
+                                      className={`font-semibold ${safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'}`}
                                     >
                                       {project.name}
                                     </span>
@@ -743,11 +754,11 @@ export default function MyBusinessTab() {
                                     {project.description}
                                   </p>
                                 )}
-                                <ul className="ml-4 mt-2 space-y-2">
+                                <ul className="ml-0 mt-2 space-y-2">
                                   {project.tasks.map((task, taskIndex) => (
                                     <motion.li
                                       key={task.id}
-                                      className={`p-2 rounded-md ${safeTheme === 'light' ? 'bg-white' : 'bg-slate-900'}`}
+                                      className={`p-2 rounded-md border-1 ${safeTheme === 'light' ? 'bg-neutral-50 border-neutral-100' : 'bg-slate-800/50 border-slate-900'}`}
                                       variants={cardVariants}
                                       initial="hidden"
                                       animate="visible"
@@ -758,7 +769,7 @@ export default function MyBusinessTab() {
                                           <span
                                             className={`${safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'}`}
                                           >
-                                            {task.title} - {task.status} (Due: {task.dueDate})
+                                            {task.title} - <a>{task.status}</a> (Due: {formatDate(task.dueDate)})
                                           </span>
                                           {task.description && (
                                             <p
@@ -770,10 +781,9 @@ export default function MyBusinessTab() {
                                         </div>
                                         <motion.button
                                           onClick={() => {
-                                            console.log('Clicked Add to Calendar:', task.title)
                                             handleLinkToCalendar(task, project.id)
                                           }}
-                                          className={`text-blue-400 hover:underline ${safeTheme === 'light' ? 'hover:text-blue-500' : 'hover:text-blue-300'}`}
+                                          className={` hover:underline ${safeTheme === 'light' ? 'text-fuchsia-800 hover:text-fuchsia-500' : 'text-fuchsia-300 hover:text-fuchsia-400'}`}
                                           variants={buttonVariants}
                                           whileHover="hover"
                                           whileTap="tap"
@@ -814,6 +824,7 @@ export default function MyBusinessTab() {
             </motion.div>
           </div>
         </div>
+        </Container>
       </div>
     </>
   )

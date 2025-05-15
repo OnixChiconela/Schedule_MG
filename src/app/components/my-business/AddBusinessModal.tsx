@@ -15,7 +15,6 @@ export default function AddBusinessModal({ isOpen, onClose, onSave, theme }: Add
   const [description, setDescription] = useState('')
 
   const safeTheme = theme || 'light'
-  console.log('Rendering AddBusinessModal, isOpen:', isOpen)
 
   const handleSave = () => {
     if (!name.trim()) {
@@ -56,7 +55,7 @@ export default function AddBusinessModal({ isOpen, onClose, onSave, theme }: Add
     >
       <motion.div
         className={`p-6 rounded-2xl shadow-xl w-full max-w-md ${
-          safeTheme === 'light' ? 'bg-white' : 'bg-slate-800'
+          safeTheme === 'light' ? 'bg-white' : 'bg-slate-800/90'
         }`}
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -120,7 +119,7 @@ export default function AddBusinessModal({ isOpen, onClose, onSave, theme }: Add
               className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
                 safeTheme === 'light'
                   ? 'bg-neutral-900 hover:bg-black text-white'
-                  : 'bg-neutral-900 hover:bg-blue-700 text-gray-100'
+                  : 'bg-neutral-900 hover:bg-black text-gray-100'
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

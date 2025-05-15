@@ -46,9 +46,7 @@ export default function SideNavbar({
       if (typeof window !== 'undefined') {
         const isDesktopView = window.innerWidth >= 1024;
         setIsDesktop(isDesktopView);
-        // Reset isOpen to true on desktop to ensure sidebar is visible
         if (isDesktopView && !isOpen) {
-          console.log('SideNavbar: Resizing to desktop, setting isOpen=true');
           setIsOpen(true);
         }
       }
@@ -64,37 +62,8 @@ export default function SideNavbar({
     tap: { scale: 0.95 },
   };
 
-  useEffect(() => {
-    console.log('SideNavbar State:', { isOpen, isDesktop, isVisible });
-  }, [isOpen, isDesktop, isVisible]);
-
   return (
     <>
-      {/* Toggle Button (Mobile Only, if not controlled externally) */}
-      {/* {!controlledIsOpen && (
-        <AnimatePresence>
-          {!isOpen && !isDesktop && (
-            <motion.button
-              key="menu-button"
-              onClick={() => {
-                console.log('SideNavbar Menu button clicked, opening sidebar');
-                setIsOpen(true);
-              }}
-              className="lg:hidden fixed top-16 left-4 z-[1000] p-3 rounded-lg bg-fuchsia-600 text-white shadow-md border border-fuchsia-700 hover:shadow-lg hover:shadow-fuchsia-500/50"
-              variants={buttonVariants}
-              whileHover="hover"
-              whileTap="tap"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Menu size={24} />
-            </motion.button>
-          )}
-        </AnimatePresence>
-      )} */}
-
       {/* Overlay (Mobile Only) */}
       <AnimatePresence>
         {isOpen && !isDesktop && (
@@ -106,7 +75,6 @@ export default function SideNavbar({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             onClick={() => {
-              console.log('SideNavbar Overlay clicked, closing sidebar');
               setIsOpen(false);
             }}
           />
@@ -136,7 +104,6 @@ export default function SideNavbar({
                 <div className="flex items-center gap-2">
                   <motion.button
                     onClick={() => {
-                      console.log('SideNavbar theme toggle clicked');
                       toggleTheme();
                     }}
                     whileHover="hover"
@@ -150,15 +117,14 @@ export default function SideNavbar({
                   {!isDesktop && (
                     <motion.button
                       onClick={() => {
-                        console.log('SideNavbar Close button clicked, closing sidebar');
                         setIsOpen(false);
                       }}
-                      className="lg:hidden p-3 rounded-lg bg-fuchsia-600 text-white shadow-md border border-fuchsia-700 hover:shadow-lg hover:shadow-fuchsia-500/50"
+                      className="lg:hidden p-2 rounded-lg bg-fuchsia-600 text-white shadow-md border border-fuchsia-700 hover:shadow-lg hover:shadow-fuchsia-500/50"
                       variants={buttonVariants}
                       whileHover="hover"
                       whileTap="tap"
                     >
-                      <X size={24} />
+                      <X size={20} />
                     </motion.button>
                   )}
                 </div>

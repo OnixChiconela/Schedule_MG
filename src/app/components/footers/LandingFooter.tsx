@@ -15,8 +15,8 @@ const LandingFooter = () => {
 
     const tryDemo = () => {
         if (!localStorage.getItem("userPreferences")) return router.push("/onboarding")
-          router.push("/dashboard")
-      }
+        router.push("/dashboard")
+    }
 
     return (
         <footer

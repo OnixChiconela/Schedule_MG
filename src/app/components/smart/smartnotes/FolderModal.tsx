@@ -58,7 +58,7 @@ const FolderModal: React.FC<FolderModalProps> = ({ isOpen, onClose, onCreate, th
             className={`w-full p-3 rounded-lg border ${theme === "light"
               ? "border-gray-300 bg-white text-gray-900"
               : "border-slate-600 bg-slate-800 text-gray-200"
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              } focus:outline-none focus:ring-2 focus:ring-neutral-700`}
             autoFocus
           />
           <div className="flex justify-end gap-2">
