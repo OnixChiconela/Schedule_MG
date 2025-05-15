@@ -26,7 +26,7 @@ const ToolsNavbar = () => {
   return (
     <>
       <motion.button
-        className={`fixed top-[67px] left-4 lg:hidden z-20 p-2 rounded-md ${theme === "light" ? "bg-gray-200 text-gray-900 hover:bg-gray-300" : "bg-slate-700 text-gray-200 hover:bg-slate-600"} transition-all duration-200 ease-in-out`}
+        className={`fixed top-[67px] left-4 lg:hidden z-20 p-2 rounded-md ${theme === "light" ? "bg-white text-gray-900 hover:bg-gray-200" : "bg-slate-700 text-gray-200 hover:bg-slate-600"} transition-all duration-200 ease-in-out`}
         onClick={() => setIsExpanded(!isExpanded)}
         whileTap={{ scale: 0.95 }}
       >

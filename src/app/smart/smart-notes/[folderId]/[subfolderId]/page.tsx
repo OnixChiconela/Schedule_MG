@@ -87,6 +87,7 @@ const SubfolderNote = () => {
         return { textLines: [], lines: [] };
     });
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null); // Referência para o input oculto
     const [isDrawing, setIsDrawing] = useState(false);
     const [lastX, setLastX] = useState<number | null>(null);
     const [lastY, setLastY] = useState<number | null>(null);
@@ -96,6 +97,7 @@ const SubfolderNote = () => {
     const [textPosition, setTextPosition] = useState<{ x: number; y: number } | null>(null);
     const [cursorVisible, setCursorVisible] = useState(true);
     const [editingTextIndex, setEditingTextIndex] = useState<number | null>(null);
+    const [scaleFactor, setScaleFactor] = useState(1); // Fator de escala para texto
 
     // Animação do cursor piscante
     useEffect(() => {
@@ -110,7 +112,7 @@ const SubfolderNote = () => {
     const breakLines = (text: string, x: number, y: number, maxWidth: number, ctx: CanvasRenderingContext2D) => {
         const lines: TextLine[] = [];
         let currentY = y;
-        const manualLines = text.split("\n"); // Divide por quebras manuais (Enter)
+        const manualLines = text.split("\n");
 
         manualLines.forEach((manualLine) => {
             let currentLine = "";
@@ -123,55 +125,68 @@ const SubfolderNote = () => {
                 } else {
                     if (currentLine) {
                         lines.push({ text: currentLine, x, y: currentY, width: metrics.width });
-                        currentY += 20;
+                        currentY += 20 * scaleFactor;
                         currentLine = word;
                     }
                 }
             }
             if (currentLine) {
                 lines.push({ text: currentLine, x, y: currentY, width: ctx.measureText(currentLine).width });
-                currentY += 20; // Espaço para a próxima linha manual
+                currentY += 20 * scaleFactor;
             }
         });
 
         return lines;
     };
 
+    // Ajuste do scaleFactor e redimensionamento do canvas
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const referenceWidth = 1200; // Largura de referência para calcular o scaleFactor
+        const resizeCanvas = () => {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = Math.max(
+                ...canvasState.textLines.map((line) => line.y + 20),
+                ...canvasState.lines.flatMap((line) => line.points.map((p) => p.y)),
+                window.innerHeight - 100
+            );
+
+            const newScaleFactor = Math.max(rect.width / referenceWidth, 0.3); // Mínimo de 0.3 para evitar texto muito pequeno
+            setScaleFactor(newScaleFactor);
+        };
+
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+        return () => window.removeEventListener("resize", resizeCanvas);
+    }, [canvasState]);
+
+    // Renderização
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext("2d");
         if (!canvas || !ctx) return;
 
-        let maxY = 0;
-        canvasState.textLines.forEach((line) => {
-            if (line.y + 20 > maxY) maxY = line.y + 20; // 20 é a altura aproximada de uma linha
-        });
-        canvasState.lines.forEach((line) => {
-            line.points.forEach((point) => {
-                if (point.y > maxY) maxY = point.y;
-            });
-        });
-        const newHeight = Math.max(maxY + 50, window.innerHeight - 100); // Mínimo de altura
-        canvas.height = newHeight;
-
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Margem e largura máxima
-        const margin = 10;
-        const maxWidth = canvas.width - 2 * margin;
+        // Aplicar scaleFactor
+        ctx.scale(scaleFactor, scaleFactor);
 
-        // Desenhar texto existente (exceto o que está sendo editado)
-        ctx.font = "16px Arial";
+        const margin = 10 / scaleFactor; // Ajustar margem com base no scaleFactor
+        const maxWidth = (canvas.width / scaleFactor) - 2 * margin;
+
+        ctx.font = `${16 / scaleFactor}px Arial`; // Ajustar tamanho da fonte
         ctx.fillStyle = theme === "light" ? "#000000" : "#ffffff";
         canvasState.textLines.forEach((line, index) => {
             if (line && typeof line.text === "string" && (!isTyping || editingTextIndex !== index)) {
-                ctx.fillText(line.text, line.x, line.y);
+                ctx.fillText(line.text, line.x / scaleFactor, line.y / scaleFactor);
             }
         });
 
-        // Desenhar texto em edição ou indicativo visual
         if (isTyping && textPosition) {
-            const lines = breakLines(currentText || "", textPosition.x, textPosition.y, maxWidth, ctx);
+            const lines = breakLines(currentText || "", textPosition.x / scaleFactor, textPosition.y / scaleFactor, maxWidth, ctx);
             if (lines.length > 0) {
                 lines.forEach((line) => {
                     if (line && typeof line.text === "string") {
@@ -180,18 +195,16 @@ const SubfolderNote = () => {
                     }
                 });
 
-                // Destacar texto em edição
                 if (editingTextIndex !== null) {
                     const originalLine = canvasState.textLines[editingTextIndex];
                     const textWidth = ctx.measureText(currentText || "").width;
                     ctx.fillStyle = theme === "light" ? "rgba(0, 0, 255, 0.1)" : "rgba(0, 255, 255, 0.1)";
-                    ctx.fillRect(originalLine.x - 2, originalLine.y - 14, textWidth + 4, Math.max(18, lines.length * 20));
+                    ctx.fillRect(originalLine.x / scaleFactor - 2, originalLine.y / scaleFactor - 14, textWidth + 4, Math.max(18, lines.length * 20));
                     ctx.strokeStyle = theme === "light" ? "rgba(0, 0, 255, 0.7)" : "rgba(0, 255, 255, 0.7)";
                     ctx.lineWidth = 2;
-                    ctx.strokeRect(originalLine.x - 2, originalLine.y - 14, textWidth + 4, Math.max(18, lines.length * 20));
+                    ctx.strokeRect(originalLine.x / scaleFactor - 2, originalLine.y / scaleFactor - 14, textWidth + 4, Math.max(18, lines.length * 20));
                 }
 
-                // Desenhar cursor piscante
                 if (cursorVisible) {
                     const lastLine = lines[lines.length - 1];
                     if (lastLine && typeof lastLine.text === "string") {
@@ -203,25 +216,26 @@ const SubfolderNote = () => {
                     }
                 }
             } else if (cursorVisible) {
-                // Indicativo visual quando currentText está vazio
                 ctx.fillStyle = theme === "light" ? "rgba(0, 0, 255, 0.7)" : "rgba(0, 255, 255, 0.7)";
-                ctx.fillRect(textPosition.x, textPosition.y - 12, 1, 16);
+                ctx.fillRect(textPosition.x / scaleFactor, textPosition.y / scaleFactor - 12, 1, 16);
             }
         }
+
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // Resetar transformação para evitar acumulação
 
         // Desenhar linhas
         canvasState.lines.forEach((line) => {
             ctx.beginPath();
             line.points.forEach((point, index) => {
-                if (index === 0) ctx.moveTo(point.x, point.y);
-                else ctx.lineTo(point.x, point.y);
+                if (index === 0) ctx.moveTo(point.x / scaleFactor, point.y / scaleFactor);
+                else ctx.lineTo(point.x / scaleFactor, point.y / scaleFactor);
             });
             ctx.strokeStyle = theme === "light" ? "#000000" : "#ffffff";
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 2 / scaleFactor;
             ctx.lineCap = "round";
             ctx.stroke();
         });
-    }, [canvasState, theme, isTyping, currentText, textPosition, cursorVisible, editingTextIndex]);
+    }, [canvasState, theme, isTyping, currentText, textPosition, cursorVisible, editingTextIndex, scaleFactor]);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -248,9 +262,9 @@ const SubfolderNote = () => {
         if (!ctx) return;
 
         const canvas = canvasRef.current;
-        const margin = 10;
-        const maxWidth = canvas.width - 2 * margin;
-        const lines = breakLines(currentText || "", textPosition.x, textPosition.y, maxWidth, ctx);
+        const margin = 10 / scaleFactor;
+        const maxWidth = (canvas.width / scaleFactor) - 2 * margin;
+        const lines = breakLines(currentText || "", textPosition.x / scaleFactor, textPosition.y / scaleFactor, maxWidth, ctx);
 
         if (editingTextIndex !== null) {
             if (currentText.trim()) {
@@ -263,7 +277,6 @@ const SubfolderNote = () => {
                     ),
                 }));
             } else {
-                // Remove o texto se estiver vazio
                 setCanvasState((prev) => ({
                     ...prev,
                     textLines: prev.textLines.filter((_, index) => index !== editingTextIndex),
@@ -283,6 +296,9 @@ const SubfolderNote = () => {
         setCurrentText("");
         setTextPosition(null);
         setEditingTextIndex(null);
+        if (inputRef.current) {
+            inputRef.current.blur(); // Remove o foco do input
+        }
     };
 
     const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -368,13 +384,15 @@ const SubfolderNote = () => {
         setIsTyping(true);
         e.preventDefault();
         window.scrollTo(0, 0);
-        canvasRef.current?.focus();
+        if (inputRef.current) {
+            inputRef.current.focus(); // Foca no input oculto para abrir o teclado
+        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (!isTyping) return;
 
-        e.preventDefault(); // Bloqueia o evento padrão (como scroll)
+        e.preventDefault();
 
         if (e.key === "Enter") {
             setCurrentText((prev) => prev + "\n");
@@ -388,9 +406,9 @@ const SubfolderNote = () => {
                 const canvas = canvasRef.current;
                 const ctx = canvas?.getContext("2d");
                 if (ctx && textPosition) {
-                    const margin = 10;
-                    const maxWidth = canvas!.width - 2 * margin;
-                    const newLines = breakLines(currentText, textPosition.x, textPosition.y, maxWidth, ctx);
+                    const margin = 10 / scaleFactor;
+                    const maxWidth = (canvas!.width / scaleFactor) - 2 * margin;
+                    const newLines = breakLines(currentText, textPosition.x / scaleFactor, textPosition.y / scaleFactor, maxWidth, ctx);
                     if (editingTextIndex !== null) {
                         setCanvasState((prev) => ({
                             ...prev,
@@ -415,11 +433,19 @@ const SubfolderNote = () => {
             setCurrentText("");
             setTextPosition(null);
             setEditingTextIndex(null);
-        } else if (e.key.length === 1 || e.key === " ") { // Trata espaço como entrada de texto
+            if (inputRef.current) {
+                inputRef.current.blur();
+            }
+        } else if (e.key.length === 1 || e.key === " ") {
             setCurrentText((prev) => prev + e.key);
         } else if (e.key === "Backspace") {
             setCurrentText((prev) => prev.slice(0, -1));
         }
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!isTyping) return;
+        setCurrentText(e.target.value);
     };
 
     const handleSave = () => {
@@ -468,7 +494,7 @@ const SubfolderNote = () => {
                             startTyping(e);
                         }}
                         onTouchStart={(e) => {
-                            e.preventDefault(); // Evita comportamento padrão de scroll
+                            e.preventDefault();
                             const touch = e.touches[0];
                             const rect = canvasRef.current?.getBoundingClientRect();
                             if (rect) {
@@ -479,7 +505,9 @@ const SubfolderNote = () => {
                                     currentTarget: canvasRef.current as HTMLCanvasElement,
                                 } as React.MouseEvent<HTMLCanvasElement>);
                             }
-                            canvasRef.current?.focus(); // Força o foco para ativar o teclado
+                            if (inputRef.current) {
+                                inputRef.current.focus(); // Foca no input para abrir o teclado
+                            }
                         }}
                         onMouseMove={draw}
                         onTouchMove={(e) => {
@@ -503,6 +531,14 @@ const SubfolderNote = () => {
                             ? "border-gray-300 bg-white"
                             : "border-slate-600 bg-slate-800"
                             } focus:outline-none focus:ring-2 focus:ring-fuchsia-700`}
+                    />
+                    <input
+                        ref={inputRef}
+                        type="text"
+                        value={currentText}
+                        onChange={handleInputChange}
+                        onKeyDown={handleKeyDown}
+                        style={{ position: "absolute", opacity: 0, pointerEvents: "none" }}
                     />
                 </main>
             </div>

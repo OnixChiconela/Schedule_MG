@@ -9,6 +9,7 @@ import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, MoreHorizontal } from "lucide-react";
 import { format, isSameYear } from "date-fns";
+import SideNavbar from "@/app/components/navbars/SideNavbar";
 
 type Subfolder = {
     id: number;
@@ -30,7 +31,6 @@ type Folder = {
 };
 
 const FolderPage = () => {
-    const { theme } = useTheme();
     const router = useRouter();
     const { folderId } = useParams();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -41,6 +41,7 @@ const FolderPage = () => {
         }
         return [];
     });
+    const { theme, toggleTheme } = useTheme();
     const folder = folders.find((f) => f.id === parseInt(folderId as string));
     const [isSubfolderModalOpen, setIsSubfolderModalOpen] = useState(false);
     const [subfolderTitle, setSubfolderTitle] = useState("");
@@ -49,6 +50,8 @@ const FolderPage = () => {
     const [editingSubfolderId, setEditingSubfolderId] = useState<number | null>(null);
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
     const menuRef = useRef<HTMLDivElement>(null);
+
+    
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -151,7 +154,7 @@ const FolderPage = () => {
     return (
         <ClientOnly>
             <Navbar
-                themeButton={true}
+                themeButton={false}
                 showToggleSidebarButton={true}
                 isSidebarOpen={isSidebarOpen}
                 toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -162,6 +165,13 @@ const FolderPage = () => {
                     paddingTop: "env(safe-area-inset-top, 0px)",
                 }}
             >
+                <SideNavbar
+                    theme={theme}
+                    toggleTheme={toggleTheme}
+                    isOpen={isSidebarOpen}
+                    setIsOpen={setIsSidebarOpen}
+                    isVisible={isSidebarOpen}
+                />
                 <main
                     className="flex-1 overflow-y-auto p-6 pt-20 lg:ml-[260px]"
                     style={{
