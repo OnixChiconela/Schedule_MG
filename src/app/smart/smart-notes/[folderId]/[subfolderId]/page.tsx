@@ -10,7 +10,7 @@ import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useSubfolderContext } from "@/app/context/SubfolderContext";
 import AIModal from "@/app/components/smart/smartnotes/subfolders/AIModal";
-import { Sparkles, X } from "lucide-react";
+import { Save, Sparkles, X } from "lucide-react";
 import { generateText } from "@/app/api/actions/AI/hugging_face/generateText";
 
 type Subfolder = {
@@ -522,7 +522,7 @@ const SubfolderNote = () => {
                 <div  className="z-[15]"><ToolsNavbar /></div>
                 
                 <header
-                    className={`fixed w-full z-10 top-[80px] py-4 bg-opacity-90 ${theme === "light" ? "bg-white" : "bg-slate-700"}`}
+                    className={`fixed w-full border-b-[1px] z-10 top-[80px] pt-4 pb-2 bg-opacity-90 ${theme === "light" ? "bg-white border-b-neutral-300" : "bg-slate-700 border-b-neutral-800"}`}
                     style={{
                         backdropFilter: "blur(5px)",
                     }}
@@ -534,33 +534,33 @@ const SubfolderNote = () => {
                         <div className="flex space-x-2">
                             <motion.button
                                 onClick={handleSave}
-                                className={`px-5 py-2 rounded-xl font-semibold transition-colors ${theme === "light"
+                                className={`px-5 py-1 rounded-xl font-semibold transition-colors ${theme === "light"
                                     ? "bg-neutral-800 hover:bg-black text-white"
                                     : "bg-neutral-900 hover:bg-black text-gray-200"
                                     }`}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                             >
-                                Save
+                                <Save />
                             </motion.button>
                             <motion.button
                                 onClick={openAIModal}
-                                className={`px-5 py-2 rounded-xl font-semibold transition-colors ${theme === "light"
+                                className={`px-5 py-1 rounded-xl font-semibold transition-colors ${theme === "light"
                                     ? "bg-neutral-800 hover:bg-black text-white"
                                     : "bg-neutral-900 hover:bg-black text-gray-200"
                                     }`}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                             >
-                                AI Edit
+                                <Sparkles />
                             </motion.button>
                         </div>
                     </div>
                 </header>
                 <main
-                    className="flex-1 overflow-y-auto p-6 lg:ml-[260px] overscroll-y-contain"
+                    className="flex-1 overflow-y-auto p-6 lg:ml-[240px] overscroll-y-contain"
                     style={{
-                        paddingTop: `calc(5rem + env(safe-area-inset-top, 0px) + 90px)`, // Ajustado para a altura do header
+                        paddingTop: `calc(5rem + env(safe-area-inset-top, 0px) + 105px)`, // Ajustado para a altura do header
                     }}
                 >
                     <canvas
@@ -606,7 +606,7 @@ const SubfolderNote = () => {
                         onMouseOut={stopDrawing}
                         onKeyDown={handleKeyDown}
                         className={`w-full rounded-xl border ${theme === "light"
-                            ? "border-gray-300 bg-white"
+                            ? "border-gray-100 bg-white"
                             : "border-slate-600 bg-slate-800"
                             } focus:outline-none focus:ring-2 focus:ring-fuchsia-700`}
                     />
@@ -622,7 +622,7 @@ const SubfolderNote = () => {
                     {isPopupOpen && selectedTextIndex !== null && (
                         <div
                             style={{
-                                position: "absolute",
+                                position: "fixed",
                                 top: popupPosition.y,
                                 left: popupPosition.x,
                                 backgroundColor: theme === "light" ? "#ffffff" : "#2d3748",
