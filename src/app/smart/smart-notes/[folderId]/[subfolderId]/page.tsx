@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { useSubfolderContext } from "@/app/context/SubfolderContext";
 import AIModal from "@/app/components/smart/smartnotes/subfolders/AIModal";
 import { Sparkles, X } from "lucide-react";
+import { generateText } from "@/app/api/actions/AI/hugging_face/generateText";
 
 type Subfolder = {
     id: number;
@@ -71,7 +72,7 @@ const SubfolderNote = () => {
                           }
                           return {
                               text: line.text || "",
-                              x: line.x || 10,
+                              x: 10,
                               y: line.y || 30,
                               width: line.width || 0,
                           };
@@ -186,12 +187,12 @@ const SubfolderNote = () => {
         ctx.fillStyle = theme === "light" ? "#000000" : "#ffffff";
         canvasState.textLines.forEach((line, index) => {
             if (line && typeof line.text === "string" && (!isTyping || editingTextIndex !== index)) {
-                ctx.fillText(line.text, line.x / scaleFactor, line.y / scaleFactor);
+                ctx.fillText(line.text, margin, line.y / scaleFactor);
             }
         });
 
         if (isTyping && textPosition) {
-            const lines = breakLines(currentText || "", textPosition.x / scaleFactor, textPosition.y / scaleFactor, maxWidth, ctx);
+            const lines = breakLines(currentText || "", margin, textPosition.y / scaleFactor, maxWidth, ctx);
             if (lines.length > 0) {
                 lines.forEach((line) => {
                     if (line && typeof line.text === "string") {
@@ -204,17 +205,17 @@ const SubfolderNote = () => {
                     const originalLine = canvasState.textLines[editingTextIndex];
                     const textWidth = ctx.measureText(currentText || "").width;
                     ctx.fillStyle = theme === "light" ? "rgba(0, 0, 255, 0.1)" : "rgba(0, 255, 255, 0.1)";
-                    ctx.fillRect(originalLine.x / scaleFactor - 2, originalLine.y / scaleFactor - 14, textWidth + 4, Math.max(18, lines.length * 20));
+                    ctx.fillRect(margin - 2, originalLine.y / scaleFactor - 14, textWidth + 4, Math.max(18, lines.length * 20));
                     ctx.strokeStyle = theme === "light" ? "rgba(0, 0, 255, 0.7)" : "rgba(0, 255, 255, 0.7)";
                     ctx.lineWidth = 2;
-                    ctx.strokeRect(originalLine.x / scaleFactor - 2, originalLine.y / scaleFactor - 14, textWidth + 4, Math.max(18, lines.length * 20));
+                    ctx.strokeRect(margin - 2, originalLine.y / scaleFactor - 14, textWidth + 4, Math.max(18, lines.length * 20));
                 }
 
                 if (cursorVisible) {
                     const lastLine = lines[lines.length - 1];
                     if (lastLine && typeof lastLine.text === "string") {
                         const textWidth = ctx.measureText(lastLine.text).width;
-                        const cursorX = lastLine.x + textWidth;
+                        const cursorX = margin + textWidth;
                         const cursorY = lastLine.y - 12;
                         ctx.fillStyle = theme === "light" ? "#000000" : "#ffffff";
                         ctx.fillRect(cursorX, cursorY, 1, 16);
@@ -222,7 +223,7 @@ const SubfolderNote = () => {
                 }
             } else if (cursorVisible) {
                 ctx.fillStyle = theme === "light" ? "rgba(0, 0, 255, 0.7)" : "rgba(0, 255, 255, 0.7)";
-                ctx.fillRect(textPosition.x / scaleFactor, textPosition.y / scaleFactor - 12, 1, 16);
+                ctx.fillRect(margin, textPosition.y / scaleFactor - 12, 1, 16);
             }
         }
 
@@ -268,7 +269,7 @@ const SubfolderNote = () => {
         const canvas = canvasRef.current;
         const margin = 10 / scaleFactor;
         const maxWidth = (canvas.width / scaleFactor) - 2 * margin;
-        const lines = breakLines(currentText || "", textPosition.x / scaleFactor, textPosition.y / scaleFactor, maxWidth, ctx);
+        const lines = breakLines(currentText || "", margin, textPosition.y / scaleFactor, maxWidth, ctx);
 
         if (editingTextIndex !== null) {
             if (currentText.trim()) {
@@ -276,7 +277,7 @@ const SubfolderNote = () => {
                     ...prev,
                     textLines: prev.textLines.map((line, index) =>
                         index === editingTextIndex
-                            ? { ...line, text: currentText, width: ctx.measureText(currentText).width }
+                            ? { ...line, text: currentText, x: margin * scaleFactor, width: ctx.measureText(currentText).width }
                             : line
                     ),
                 }));
@@ -291,7 +292,7 @@ const SubfolderNote = () => {
                 ...prev,
                 textLines: [
                     ...prev.textLines,
-                    ...lines.map((line) => ({ ...line, width: ctx.measureText(line.text).width })),
+                    ...lines.map((line) => ({ ...line, x: margin * scaleFactor, width: ctx.measureText(line.text).width })),
                 ],
             }));
         }
@@ -374,21 +375,23 @@ const SubfolderNote = () => {
             return yRange && xRange;
         });
 
+        const margin = 10; // Fixed margin in pixels (unscaled)
+
         if (clickedTextIndex !== -1) {
             setEditingTextIndex(clickedTextIndex);
             setCurrentText(canvasState.textLines[clickedTextIndex].text || "");
             setTextPosition({
-                x: canvasState.textLines[clickedTextIndex].x,
+                x: margin * scaleFactor,
                 y: canvasState.textLines[clickedTextIndex].y,
             });
             setSelectedTextIndex(clickedTextIndex);
             const textLine = canvasState.textLines[clickedTextIndex];
-            const adjustedX = textLine.x + textLine.width + 10;
+            const adjustedX = margin * scaleFactor + textLine.width + 10;
             const adjustedY = textLine.y + 20;
             setPopupPosition({ x: adjustedX, y: adjustedY });
             setIsPopupOpen(true);
         } else {
-            setTextPosition({ x: clickX, y: clickY });
+            setTextPosition({ x: margin * scaleFactor, y: clickY });
             setCurrentText("");
             setEditingTextIndex(null);
             setSelectedTextIndex(null);
@@ -420,13 +423,13 @@ const SubfolderNote = () => {
                 if (ctx && textPosition) {
                     const margin = 10 / scaleFactor;
                     const maxWidth = (canvas!.width / scaleFactor) - 2 * margin;
-                    const newLines = breakLines(currentText, textPosition.x / scaleFactor, textPosition.y / scaleFactor, maxWidth, ctx);
+                    const newLines = breakLines(currentText, margin, textPosition.y / scaleFactor, maxWidth, ctx);
                     if (editingTextIndex !== null) {
                         setCanvasState((prev) => ({
                             ...prev,
                             textLines: prev.textLines.map((line, index) =>
                                 index === editingTextIndex
-                                    ? { ...line, text: currentText, width: ctx.measureText(currentText).width }
+                                    ? { ...line, text: currentText, x: margin * scaleFactor, width: ctx.measureText(currentText).width }
                                     : line
                             ),
                         }));
@@ -435,7 +438,7 @@ const SubfolderNote = () => {
                             ...prev,
                             textLines: [
                                 ...prev.textLines,
-                                ...newLines.map((line) => ({ ...line, width: ctx.measureText(line.text).width })),
+                                ...newLines.map((line) => ({ ...line, x: margin * scaleFactor, width: ctx.measureText(line.text).width })),
                             ],
                         }));
                     }
@@ -479,25 +482,28 @@ const SubfolderNote = () => {
         setSelectedTextIndex(null);
     };
 
-    const handleAISubmit = (prompt: string) => {
+    const handleAISubmit = async (prompt: string) => {
         if (!textPosition) return;
 
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext("2d");
         if (!ctx) return;
 
-        // Placeholder for AI response; replace with actual backend API call
-        const response = `AI Generated: ${prompt}`; // Example: Call your backend here, e.g., fetch('/api/generate', { method: 'POST', body: JSON.stringify({ prompt }) })
+        const response = await generateText(prompt);
+        if (!response) {
+            toast.error("Oops. Please try again.");
+            return;
+        }
 
         const margin = 10 / scaleFactor;
         const maxWidth = (canvas!.width / scaleFactor) - 2 * margin;
-        const lines = breakLines(response, textPosition.x / scaleFactor, textPosition.y / scaleFactor, maxWidth, ctx);
+        const lines = breakLines(response, margin, textPosition.y / scaleFactor, maxWidth, ctx);
 
         setCanvasState((prev) => ({
             ...prev,
             textLines: [
                 ...prev.textLines,
-                ...lines.map((line) => ({ ...line, width: ctx.measureText(line.text).width })),
+                ...lines.map((line) => ({ ...line, x: margin * scaleFactor, width: ctx.measureText(line.text).width })),
             ],
         }));
 
@@ -513,14 +519,15 @@ const SubfolderNote = () => {
                     paddingTop: "env(safe-area-inset-top, 0px)",
                 }}
             >
-                <ToolsNavbar />
-                <main
-                    className="flex-1 overflow-y-auto p-6 pt-20 lg:ml-[260px] overscroll-y-contain"
+                <div  className="z-[15]"><ToolsNavbar /></div>
+                
+                <header
+                    className={`fixed w-full z-10 top-[80px] py-4 bg-opacity-90 ${theme === "light" ? "bg-white" : "bg-slate-700"}`}
                     style={{
-                        paddingTop: `calc(5rem + env(safe-area-inset-top, 0px))`,
+                        backdropFilter: "blur(5px)",
                     }}
                 >
-                    <div className="flex items-center justify-between mb-6 mt-3">
+                    <div className="flex justify-between items-center lg:ml-[260px] mx-auto px-6">
                         <h1 className={`text-lg font-semibold ${theme === "light" ? "text-neutral-700" : "text-neutral-300"}`}>
                             {folder.title} / {subfolder.title}
                         </h1>
@@ -549,7 +556,13 @@ const SubfolderNote = () => {
                             </motion.button>
                         </div>
                     </div>
-
+                </header>
+                <main
+                    className="flex-1 overflow-y-auto p-6 lg:ml-[260px] overscroll-y-contain"
+                    style={{
+                        paddingTop: `calc(5rem + env(safe-area-inset-top, 0px) + 90px)`, // Ajustado para a altura do header
+                    }}
+                >
                     <canvas
                         ref={canvasRef}
                         width={window.innerWidth - (theme === "light" ? 300 : 300)}
@@ -606,7 +619,6 @@ const SubfolderNote = () => {
                         style={{ position: "absolute", opacity: 0, pointerEvents: "none", top: 0, left: 0 }}
                     />
 
-                    {/* Popup with "Improve with AI" option */}
                     {isPopupOpen && selectedTextIndex !== null && (
                         <div
                             style={{
@@ -629,7 +641,7 @@ const SubfolderNote = () => {
                                 }}
                                 className={`px-3 flex gap-1 py-1 rounded bg-transparent border-1 
                                     ${theme === "light" 
-                                        ? "border-neutral-700 hover:bg-neutral-800 text-neutral-800 hover:text-neutral-900" 
+                                        ? "border-neutral-700 hover:bg-neutral-100 text-neutral-800 hover:text-neutral-900" 
                                         : "border-neutral-800 hover:border-neutral-900 text-neutral-200 hover:text-neutral-50"}                                 `}
                             >
                                 Improve with AI

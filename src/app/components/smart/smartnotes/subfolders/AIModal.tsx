@@ -3,6 +3,7 @@
 import { useState, MouseEvent } from "react";
 import { motion } from "framer-motion";
 import { useTheme } from "@/app/themeContext";
+import toast from "react-hot-toast";
 
 interface AIModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export default function AIModal({
   const handleSubmit = () => {
     if (!prompt.trim()) {
       console.warn("handleSubmit: Prompt is empty");
+      toast.error("Prompt is empty")
       return;
     }
     onSubmit(prompt);
@@ -72,6 +74,9 @@ export default function AIModal({
         >
           Generate with AI
         </h2>
+        <div>
+          <div></div>
+        </div>
         <div className="space-y-4">
           <textarea
             value={prompt}
@@ -87,7 +92,6 @@ export default function AIModal({
           <div className="flex justify-end space-x-2">
             <motion.button
               onClick={() => {
-                console.log("Clicked Cancel (AIModal)");
                 setPrompt("");
                 onClose();
               }}
@@ -103,7 +107,6 @@ export default function AIModal({
             </motion.button>
             <motion.button
               onClick={() => {
-                console.log("Clicked Submit (AIModal)");
                 handleSubmit();
               }}
               className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
