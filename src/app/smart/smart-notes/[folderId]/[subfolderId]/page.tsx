@@ -68,7 +68,7 @@ const SubfolderNote = () => {
             toolbar: [
                 [{ header: [1, 2, false] }],
                 ["bold", "italic", "underline"],
-                [{ color: [] }],
+                [{ color: [""] }],
                 ["clean"],
             ],
         },
@@ -244,15 +244,98 @@ const SubfolderNote = () => {
                 .quill-editor :global(.ql-toolbar) {
                     border: none !important;
                     background: ${theme === "light" ? "#f3f4f6" : "#1f2937"};
+                    border-radius: 8px;
+                    padding: 8px;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 }
                 .quill-editor :global(.ql-editor) {
-                    color: ${theme === "light" ? "#000" : "#fff"};
                     min-height: 250px;
                     padding: 12px;
                     overflow-y: auto;
                 }
                 .quill-editor :global(.ql-editor:focus) {
                     outline: none;
+                }
+                /* Estilizar headings */
+                .quill-editor :global(.ql-editor h1) {
+                    font-size: 20px;
+                    font-weight: bold;
+                }
+                .quill-editor :global(.ql-editor h2) {
+                    font-size: 17.5px;
+                    font-weight: bold;
+                }
+                /* Ajustar cor do texto sem sobrescrever cores aplicadas */
+                .quill-editor :global(.ql-editor p) {
+                    color: ${theme === "light" ? "#000" : "#fff"};
+                }
+                /* Estilizar botões e dropdowns */
+                .quill-editor :global(.ql-format) {
+                    padding: 6px;
+                    border-radius: 4px;
+                    transition: background 0.2s;
+                }
+                .quill-editor :global(.ql-format:hover),
+                .quill-editor :global(.ql-format.ql-active) {
+                    background: ${theme === "light" ? "#e5e7eb" : "#374151"};
+                }
+                .quill-editor :global(.ql-picker) {
+                    color: ${theme === "light" ? "#000" : "#fff"} !important;
+                    border-radius: 4px;
+                    padding: 6px;
+                }
+                .quill-editor :global(.ql-picker-label) {
+                    color: ${theme === "light" ? "#000" : "#fff"} !important;
+                }
+                .quill-editor :global(.ql-picker.ql-expanded .ql-picker-label),
+                .quill-editor :global(.ql-picker.ql-expanded .ql-picker-options) {
+                    color: ${theme === "light" ? "#000" : "#fff"} !important;
+                    border-color: ${theme === "light" ? "#000" : "#fff"} !important;
+                }
+                .quill-editor :global(.ql-picker.ql-expanded .ql-picker-label:hover),
+                .quill-editor :global(.ql-picker.ql-expanded .ql-picker-label.ql-active) {
+                    color: ${theme === "light" ? "#000" : "#fff"} !important;
+                    background: ${theme === "light" ? "#e5e7eb" : "#374151"} !important;
+                }
+                .quill-editor :global(.ql-picker.ql-expanded .ql-picker-options) {
+                    background: ${theme === "light" ? "#fff" : "#1f2937"} !important;
+                    border: 1px solid ${theme === "light" ? "#000" : "#fff"} !important;
+                    border-radius: 8px;
+                    padding: 5px;
+                    min-width: 120px;
+                    max-width: 150px;
+                }
+                .quill-editor :global(.ql-picker.ql-expanded .ql-picker-item) {
+                    color: ${theme === "light" ? "#000" : "#fff"} !important;
+                    border-radius: 4px;
+                    padding: 4px 8px;
+                }
+                .quill-editor :global(.ql-picker.ql-expanded .ql-picker-item:hover),
+                .quill-editor :global(.ql-picker.ql-expanded .ql-picker-item.ql-selected) {
+                    background: ${theme === "light" ? "#e5e7eb" : "#374151"} !important;
+                    color: ${theme === "light" ? "#000" : "#fff"} !important;
+                }
+                /* Responsividade para celulares */
+                @media (max-width: 600px) {
+                    .quill-editor :global(.ql-toolbar) {
+                        font-size: 14px;
+                        padding: 4px;
+                    }
+                    .quill-editor :global(.ql-format) {
+                        padding: 4px;
+                    }
+                    .quill-editor :global(.ql-picker) {
+                        padding: 4px;
+                    }
+                    .quill-editor :global(.ql-picker.ql-expanded .ql-picker-options) {
+                        min-width: 100px;
+                        max-width: 120px;
+                        font-size: 12px;
+                        padding: 3px;
+                    }
+                    .quill-editor :global(.ql-picker.ql-expanded .ql-picker-item) {
+                        padding: 3px 6px;
+                    }
                 }
             `}</style>
         </ClientOnly>
