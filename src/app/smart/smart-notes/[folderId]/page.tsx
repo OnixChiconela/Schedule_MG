@@ -34,7 +34,7 @@ type Folder = {
     subfolders: Subfolder[];
 };
 
-// Componente para cada card de subfolder com suporte a drag-and-drop
+// Componente para cada card de subfolder com suporte a drag-and-drop apenas no ícone
 const SubfolderCard = ({
     subfolder,
     theme,
@@ -86,7 +86,6 @@ const SubfolderCard = ({
             <motion.div
                 ref={setNodeRef}
                 style={style}
-                {...(isDraggable ? { ...attributes, ...listeners } : {})}
                 className={`rounded-xl border-2 cursor-pointer p-4 flex flex-col gap-2 h-[180px] ${theme === "light" ? "bg-white border-gray-200" : "bg-slate-700 border-slate-600"} relative`}
                 onClick={() => handleOpenSubfolder(subfolder.id)}
                 whileHover={{ scale: 1.03 }}
@@ -151,8 +150,12 @@ const SubfolderCard = ({
                     })()}
                 </p>
                 {isDraggable && (
-                    <div className="absolute bottom-2 right-2">
-                        <GripVertical size={16} className="text-gray-400 cursor-grab" />
+                    <div
+                        className="absolute bottom-2 right-2 p-1 rounded-full"
+                        {...attributes}
+                        {...listeners}
+                    >
+                        <GripVertical size={18} className="text-gray-400 cursor-grab hover:text-gray-600 transition-colors" />
                     </div>
                 )}
             </motion.div>
@@ -391,7 +394,7 @@ const FolderPage = () => {
                                                 })()}
                                             </p>
                                             <div className="absolute bottom-2 right-2">
-                                                <GripVertical size={16} className="text-gray-400 cursor-grab" />
+                                                <GripVertical size={18} className="text-gray-400 cursor-grab" />
                                             </div>
                                         </motion.div>
                                     ) : null}
