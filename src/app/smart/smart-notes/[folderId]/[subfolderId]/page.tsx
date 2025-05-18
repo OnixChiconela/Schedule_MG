@@ -248,7 +248,7 @@ const SubfolderNote = () => {
                                 onClick={handleSave}
                                 className={`px-2 py-1 rounded-2xl font-semibold transition-colors ${theme === "light"
                                     ? "bg-neutral-800 hover:bg-black text-white"
-                                    : "bg-neutral-200 hover:bg-neutral-100 text-gray-800"
+                                    : "bg-slate-700 hover:bg-slate-600 text-neutral-200"
                                     }`}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
@@ -259,7 +259,7 @@ const SubfolderNote = () => {
                                 onClick={openAIModal}
                                 className={`px-2 py-1 rounded-2xl font-semibold transition-colors ${theme === "light"
                                     ? "bg-neutral-800 hover:bg-black text-white"
-                                    : "bg-neutral-200 hover:bg-neutral-100 text-gray-800"
+                                    : "bg-slate-700 hover:bg-slate-600 text-neutral-200"
                                     }`}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}

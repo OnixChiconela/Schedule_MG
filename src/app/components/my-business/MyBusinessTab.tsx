@@ -10,6 +10,10 @@ import AddTaskModal from './AddTaskModal'
 import AddBusinessModal from './AddBusinessModal'
 import Container from '../Container'
 import { format, parseISO } from 'date-fns'
+import { Link, MoreHorizontal, Pen, Plus } from 'lucide-react'
+import LinkTaskSection from './LinkTaskSection'
+import ProjectsList from './ProjectsList'
+import BusinessHeader from './BusinessHeader'
 
 interface BusinessTask {
   id: string
@@ -50,16 +54,18 @@ export default function MyBusinessTab() {
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState({ name: '', description: '' }) // Valores padrão
+  const [formData, setFormData] = useState({ name: '', description: '' })
   const [isLinkingTask, setIsLinkingTask] = useState(false)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
+
   const [isAddBusinessModalOpen, setIsAddBusinessModalOpen] = useState(false)
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false)
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState<{ open: boolean; projectId: string | null }>({ open: false, projectId: null })
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [corners, setCorners] = useState<Corner[]>([])
 
-  // Carregar localStorage no cliente
   useEffect(() => {
     console.log('Running client-side useEffect for localStorage')
     if (typeof window !== 'undefined') {
@@ -87,7 +93,6 @@ export default function MyBusinessTab() {
     }
   }, [])
 
-  // Salvar businesses no localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -99,7 +104,6 @@ export default function MyBusinessTab() {
     }
   }, [businesses])
 
-  // Gerenciar toast
   useEffect(() => {
     if (toastMessage) {
       console.log('Showing toast:', toastMessage)
@@ -300,6 +304,15 @@ export default function MyBusinessTab() {
     }
   }
 
+  const handleDeleteBusiness = () => {
+    if (!selectedBusiness) return
+    console.log('Deleting business:', selectedBusiness.name)
+    setBusinesses(businesses.filter(b => b.id !== selectedBusiness.id))
+    setSelectedBusiness(businesses.length > 1 ? businesses.find(b => b.id !== selectedBusiness.id) || null : null)
+    setIsDeleteConfirmOpen(false)
+    setToastMessage(`Business "${selectedBusiness.name}" deleted successfully`)
+  }
+
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -317,13 +330,13 @@ export default function MyBusinessTab() {
 
   const safeTheme = theme || 'light'
 
-   const formatDate = (date: string) => {
-      try {
-        return format(parseISO(date), 'dd MMM, yyyy')
-      } catch {
-        return date
-      }
+  const formatDate = (date: string) => {
+    try {
+      return format(parseISO(date), 'dd MMM, yyyy')
+    } catch {
+      return date
     }
+  }
 
   return (
     <>
@@ -335,495 +348,328 @@ export default function MyBusinessTab() {
         }}
       >
         <Container>
-
-        <div className="relative z-10 w-full mx-auto">
-          <motion.h1
-            className={`text-4xl pt-8 font-bold mb-6 ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            My Business
-          </motion.h1>
-          <AddBusinessModal
-            isOpen={isAddBusinessModalOpen}
-            onClose={() => {
-              console.log('Closing AddBusinessModal')
-              setIsAddBusinessModalOpen(false)
-            }}
-            onSave={handleAddBusiness}
-            theme={safeTheme}
-          />
-          <AddProjectModal
-            isOpen={isAddProjectModalOpen}
-            onClose={() => {
-              console.log('Closing AddProjectModal')
-              setIsAddProjectModalOpen(false)
-            }}
-            onSave={handleAddProject}
-            theme={safeTheme}
-          />
-          <AddTaskModal
-            isOpen={isAddTaskModalOpen.open}
-            onClose={() => {
-              console.log('Closing AddTaskModal')
-              setIsAddTaskModalOpen({ open: false, projectId: null })
-            }}
-            onSave={(taskData) => {
-              console.log('Saving task from AddTaskModal:', taskData)
-              handleAddTask(isAddTaskModalOpen.projectId!, taskData)
-            }}
-            theme={safeTheme}
-          />
-          {toastMessage && (
-            <motion.div
-              className={`fixed bottom-4 right-4 p-4 rounded-md shadow-md z-50 ${toastMessage.includes('Error') ?
-                (safeTheme === 'light' ? 'bg-red-500 text-white' : 'bg-red-600 text-gray-100') :
-                (safeTheme === 'light' ? 'bg-green-500 text-white' : 'bg-green-600 text-gray-100')
-                }`}
-              variants={toastVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
+          <div className="relative z-10 w-full mx-auto">
+            <motion.h1
+              className={`text-4xl pt-8 font-bold mb-6 ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
             >
-              <div className="flex items-center">
-                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
-                </svg>
-                {toastMessage}
-              </div>
-            </motion.div>
-          )}
-
-          <div className="flex flex-col lg:flex-row lg:gap-6 w-full">
-            <motion.div
-              className="w-full max-w-full lg:max-w-64 mb-8 lg:mb-0 mx-auto"
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              <motion.button
-                onClick={() => {
-                  console.log('Clicked Add Business')
-                  setIsAddBusinessModalOpen(true)
-                }}
-                className={`w-full mb-4 px-4 py-2 rounded-xl font-semibold transition-colors ${safeTheme === 'light'
-                  ? 'bg-gray-950 hover:bg-black text-white'
-                  : 'bg-gray-950 hover:bg-black text-gray-100'
-                  } shadow-md`}
-                variants={buttonVariants}
-                whileHover="hover"
-                whileTap="tap"
-              >
-                Add Business
-              </motion.button>
-              <div
-                className={`p-4 rounded-xl shadow-md border ${safeTheme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-gray-700'}`}
-              >
-                {businesses.length > 0 ? (
-                  businesses.map((business, index) => (
-                    <motion.div
-                      key={business.id}
-                      className={`p-3 mb-2 rounded-lg cursor-pointer transition-colors ${selectedBusiness?.id === business.id
-                        ? safeTheme === 'light'
-                          ? 'bg-fuchsia-100 text-fuchsia-900'
-                          : 'bg-slate-600 text-white'
-                        : safeTheme === 'light'
-                          ? 'bg-gray-100 text-gray-900'
-                          : 'bg-slate-800 text-gray-200'
-                        } hover:${safeTheme === 'light'
-                          ? 'bg-gradient-to-r from-gray-200 to-gray-300'
-                          : 'bg-gradient-to-r from-slate-600 to-slate-700'
-                        }`}
-                      onClick={() => {
-                        console.log('Selecting business:', business.name)
-                        setSelectedBusiness(business)
-                        setFormData({ name: business.name, description: business.description })
-                        setSelectedProjectId(business.projects[0]?.id || null)
-                        setIsEditing(false)
-                      }}
-                      variants={cardVariants}
-                      initial="hidden"
-                      animate="visible"
-                      transition={{ delay: index * 0.1 }}
+              My Business
+            </motion.h1>
+            <AddBusinessModal
+              isOpen={isAddBusinessModalOpen}
+              onClose={() => {
+                console.log('Closing AddBusinessModal')
+                setIsAddBusinessModalOpen(false)
+              }}
+              onSave={handleAddBusiness}
+              theme={safeTheme}
+            />
+            <AddProjectModal
+              isOpen={isAddProjectModalOpen}
+              onClose={() => {
+                console.log('Closing AddProjectModal')
+                setIsAddProjectModalOpen(false)
+              }}
+              onSave={handleAddProject}
+              theme={safeTheme}
+            />
+            <AddTaskModal
+              isOpen={isAddTaskModalOpen.open}
+              onClose={() => {
+                console.log('Closing AddTaskModal')
+                setIsAddTaskModalOpen({ open: false, projectId: null })
+              }}
+              onSave={(taskData) => {
+                console.log('Saving task from AddTaskModal:', taskData)
+                handleAddTask(isAddTaskModalOpen.projectId!, taskData)
+              }}
+              theme={safeTheme}
+            />
+            {isDeleteConfirmOpen && (
+              <div className={`fixed inset-0 ${safeTheme === 'light' ? 'bg-gray-100/50' : 'bg-slate-800/70'} bg-opacity-80 flex items-center justify-center z-50`}>
+                <div className={`p-4 rounded-lg ${safeTheme === 'light' ? 'bg-white' : 'bg-slate-700'}`}>
+                  <p className={safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'}>Are you sure you want to delete this business?</p>
+                  <div className="flex justify-end space-x-2 mt-4">
+                    <motion.button
+                      onClick={() => setIsDeleteConfirmOpen(false)}
+                      className={`px-4 py-2 rounded-xl ${safeTheme === 'light' ? 'bg-gray-200 hover:bg-gray-300 text-gray-900' : 'bg-slate-600 hover:bg-slate-500 text-gray-200'}`}
+                      variants={buttonVariants}
+                      whileHover="hover"
+                      whileTap="tap"
                     >
-                      {business.name}
-                    </motion.div>
-                  ))
-                ) : (
-                  <p className={`text-sm ${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
-                    No businesses available.
-                  </p>
-                )}
+                      Cancel
+                    </motion.button>
+                    <motion.button
+                      onClick={handleDeleteBusiness}
+                      className={`px-4 py-2 rounded-xl ${safeTheme === 'light' ? 'bg-red-700/70 hover:bg-red-600/70 text-white' : 'bg-red-600/60 hover:bg-red-500/60 text-gray-100'}`}
+                      variants={buttonVariants}
+                      whileHover="hover"
+                      whileTap="tap"
+                    >
+                      Delete
+                    </motion.button>
+                  </div>
+                </div>
               </div>
-            </motion.div>
+            )}
+            {toastMessage && (
+              <motion.div
+                className={`fixed bottom-4 right-4 p-4 rounded-md shadow-md z-50 ${toastMessage.includes('Error')
+                  ? (safeTheme === 'light' ? 'bg-red-500 text-white' : 'bg-red-600 text-gray-100')
+                  : (safeTheme === 'light' ? 'bg-green-500 text-white' : 'bg-green-600 text-gray-100')
+                  }`}
+                variants={toastVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+              >
+                <div className="flex items-center">
+                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                  </svg>
+                  {toastMessage}
+                </div>
+              </motion.div>
+            )}
 
-            <motion.div
-              className="flex-1 w-full max-w-full mx-auto" // Ajuste para telas menores
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {selectedBusiness ? (
-                <div
-                  className={`p-6 rounded-xl shadow-md border ${safeTheme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-gray-700'}`}
+            <div className="flex flex-col lg:flex-row lg:gap-6 w-full">
+              <motion.div
+                className="w-full max-w-full lg:max-w-64 mb-8 lg:mb-0 mx-auto"
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                <motion.button
+                  onClick={() => {
+                    console.log('Clicked Add Business')
+                    setIsAddBusinessModalOpen(true)
+                  }}
+                  className={`w-full mb-4 px-4 py-2 rounded-xl font-semibold transition-colors ${safeTheme === 'light'
+                    ? 'bg-gray-950 hover:bg-black text-white'
+                    : 'bg-gray-950 hover:bg-black text-gray-100'
+                    } shadow-md`}
+                  variants={buttonVariants}
+                  whileHover="hover"
+                  whileTap="tap"
                 >
-                  {isEditing ? (
-                    <motion.div
-                      className="space-y-4"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <input
-                        type="text"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className={`w-full p-3 rounded-lg border ${safeTheme === 'light'
-                          ? 'border-gray-300 bg-white text-gray-900'
-                          : 'border-slate-600 bg-slate-800 text-gray-200'
-                          } focus:outline-none focus:ring-2 focus:ring-gray-500`}
-                        placeholder="Business Name"
-                      />
-                      <textarea
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        className={`w-full p-3 rounded-lg border ${safeTheme === 'light'
-                          ? 'border-gray-300 bg-white text-gray-900'
-                          : 'border-slate-600 bg-slate-800 text-gray-200'
-                          } focus:outline-none focus:ring-2 focus:ring-gray-500`}
-                        placeholder="Description"
-                        rows={4}
-                      />
-                      <div className="flex justify-end space-x-2">
-                        <motion.button
-                          onClick={() => {
-                            console.log('Clicked Cancel (Edit Business)')
-                            setIsEditing(false)
-                          }}
-                          className={`px-4 py-2 rounded-xl font-semibold transition-colors ${safeTheme === 'light'
-                            ? 'bg-gray-200 hover:bg-gray-300 text-gray-900'
-                            : 'bg-slate-600 hover:bg-slate-500 text-gray-200'
-                            }`}
-                          variants={buttonVariants}
-                          whileHover="hover"
-                          whileTap="tap"
-                        >
-                          Cancel
-                        </motion.button>
-
-                        <motion.button
-                          onClick={() => {
-                            console.log('Clicked Save (Edit Business)')
-                            handleSave()
-                          }}
-                          className={`px-4 py-2 rounded-xl font-semibold transition-colors ${safeTheme === 'light'
-                            ? 'bg-gray-950 hover:bg-black text-white'
-                            : 'bg-gray-950 hover:bg-black text-gray-100'
-                            }`}
-                          variants={buttonVariants}
-                          whileHover="hover"
-                          whileTap="tap"
-                        >
-                          Save
-                        </motion.button>
-                      </div>
-                    </motion.div>
+                  Add Business
+                </motion.button>
+                <div
+                  className={`p-4 rounded-xl shadow-md border ${safeTheme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-gray-700'}`}
+                >
+                  {businesses.length > 0 ? (
+                    businesses.map((business, index) => (
+                      <motion.div
+                        key={business.id}
+                        className={`p-3 mb-2 rounded-lg cursor-pointer transition-colors ${selectedBusiness?.id === business.id
+                          ? safeTheme === 'light'
+                            ? 'bg-fuchsia-100 text-fuchsia-900'
+                            : 'bg-slate-600 text-white'
+                          : safeTheme === 'light'
+                            ? 'bg-gray-100 text-gray-900'
+                            : 'bg-slate-800 text-gray-200'
+                          } hover:${safeTheme === 'light'
+                            ? 'bg-gradient-to-r from-gray-200 to-gray-300'
+                            : 'bg-gradient-to-r from-slate-600 to-slate-700'
+                          }`}
+                        onClick={() => {
+                          console.log('Selecting business:', business.name)
+                          setSelectedBusiness(business)
+                          setFormData({ name: business.name, description: business.description })
+                          setSelectedProjectId(business.projects[0]?.id || null)
+                          setIsEditing(false)
+                        }}
+                        variants={cardVariants}
+                        initial="hidden"
+                        animate="visible"
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        {business.name}
+                      </motion.div>
+                    ))
                   ) : (
-                    <div className="space-y-4">
-                      <motion.h2
-                        className={`text-2xl font-semibold ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}
+                    <p className={`text-sm ${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
+                      No businesses available.
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="flex-1 w-full max-w-full mx-auto"
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {selectedBusiness ? (
+                  <div
+                    className={`p-6 rounded-xl shadow-md border ${safeTheme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-700 border-gray-700'}`}
+                  >
+                    {isEditing ? (
+                      <motion.div
+                        className="space-y-4"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.3 }}
                       >
-                        {selectedBusiness.name}
-                      </motion.h2>
-                      <motion.p
-                        className={`${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.3, delay: 0.1 }}
-                      >
-                        {selectedBusiness.description || 'No description'}
-                      </motion.p>
-                      <motion.div
-                        className="flex space-x-2"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.3, delay: 0.2 }}
-                      >
-                        <motion.button
-                          onClick={() => {
-                            console.log('Clicked Edit Business')
-                            setIsEditing(true)
-                          }}
-                          className={`px-4 py-1 rounded-xl font-semibold transition-colors bg-transparent border-2 ${safeTheme === 'light'
-                            ? 'border-neutral-200 hover:border-fuchsia-200 text-gray-900'
-                            : 'border-neutral-800 hover:border-fuchsia-950 text-gray-100'
-                            }`}
-                          variants={buttonVariants}
-                          whileHover="hover"
-                          whileTap="tap"
-                        >
-                          Edit Business
-                        </motion.button>
-                        <motion.button
-                          onClick={() => {
-                            console.log('Clicked Add Project')
-                            setIsAddProjectModalOpen(true)
-                          }}
-                          className={`px-4 py-1 rounded-xl font-semibold transition-colors bg-transparent border-2 ${safeTheme === 'light'
-                            ? 'border-neutral-200 hover:border-gree-200 text-gray-900'
-                            : 'border-neutral-800 hover:border-green-950 text-gray-100'
-                            }`}
-                          variants={buttonVariants}
-                          whileHover="hover"
-                          whileTap="tap"
-                        >
-                          Add Project
-                        </motion.button>
-                        <motion.button
-                          onClick={() => {
-                            console.log('Clicked Link Task from Tasks')
-                            setIsLinkingTask(true)
-                          }}
-                          className={`px-4 py-1 rounded-xl font-semibold transition-colors bg-transparent border-2 ${safeTheme === 'light'
-                            ? 'border-neutral-200 hover:border-yellow-100 text-gray-900'
-                            : 'border-neutral-800 hover:border-yellow-950 text-gray-100'
-                            }`}
-                          variants={buttonVariants}
-                          whileHover="hover"
-                          whileTap="tap"
-                        >
-                          Link Task from Tasks
-                        </motion.button>
-                      </motion.div>
-                      
-                      <motion.h3
-                        className={`text-xl font-semibold mt-6 ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.3, delay: 0.3 }}
-                      >
-                        Projects
-                      </motion.h3>
-                      {isLinkingTask ? (
-                        <motion.div
-                          className="space-y-4"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <h4
-                            className={`text-lg font-semibold ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}
-                          >
-                            Select Task to Link
-                          </h4>
-                          <div>
-                            <label
-                              className={`block text-sm font-medium ${safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'}`}
-                            >
-                              Select Project
-                            </label>
-                            <ProjectSelector
-                              projects={selectedBusiness.projects}
-                              selectedProjectId={selectedProjectId}
-                              onSelect={(id) => {
-                                console.log('Selected project ID:', id)
-                                setSelectedProjectId(id)
-                              }}
-                              theme={safeTheme}
-                            />
-                            {!selectedProjectId && (
-                              <p
-                                className={`text-sm ${safeTheme === 'light' ? 'text-red-600' : 'text-red-400'} mt-1`}
-                              >
-                                Please select a project
-                              </p>
-                            )}
-                          </div>
-                          {corners.length > 0 ? (
-                            corners.map((corner, index) => (
-                              <motion.div
-                                key={corner.id}
-                                className={`p-4 rounded-lg shadow-sm border ${safeTheme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-slate-800 border-gray-700'}`}
-                                variants={cardVariants}
-                                initial="hidden"
-                                animate="visible"
-                                transition={{ delay: index * 0.1 }}
-                              >
-                                <p
-                                  className={`font-medium ${safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'}`}
-                                >
-                                  {corner.title}
-                                </p>
-                                <ul className="ml-2 mt-2 space-y-1">
-                                  {corner.tasks.map((task) => (
-                                    <motion.li
-                                      key={task.id}
-                                      variants={cardVariants}
-                                      initial="hidden"
-                                      animate="visible"
-                                      transition={{ delay: 0.2 }}
-                                    >
-                                      <button
-                                        onClick={() => {
-                                          handleLinkTask(corner.id, task.id)
-                                        }}
-                                        className={`hover:underline cursor-pointer ${safeTheme === 'light' ? 'text-neutral-800' : 'text-neutral-300'}`}
-                                        disabled={!selectedProjectId}
-                                      >
-                                        {task.title} - <a className={`${theme == "light" ? "text-fuchsia-800" : "text-fuchsia-300"}`}>{task.status}</a>
-                                      </button>
-                                    </motion.li>
-                                  ))}
-                                </ul>
-                              </motion.div>
-                            ))
-                          ) : (
-                            <p
-                              className={`${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}
-                            >
-                              No tasks available in Tasks.
-                            </p>
-                          )}
+                        <input
+                          type="text"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          className={`w-full p-3 rounded-lg border ${safeTheme === 'light'
+                            ? 'border-gray-300 bg-white text-gray-900'
+                            : 'border-slate-600 bg-slate-800 text-gray-200'
+                            } focus:outline-none focus:ring-2 focus:ring-gray-500`}
+                          placeholder="Business Name"
+                        />
+                        <textarea
+                          value={formData.description}
+                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                          className={`w-full p-3 rounded-lg border ${safeTheme === 'light'
+                            ? 'border-gray-300 bg-white text-gray-900'
+                            : 'border-slate-600 bg-slate-800 text-gray-200'
+                            } focus:outline-none focus:ring-2 focus:ring-gray-500`}
+                          placeholder="Description"
+                          rows={4}
+                        />
+                        <div className="flex justify-end space-x-2">
                           <motion.button
                             onClick={() => {
-                              console.log('Clicked Cancel (Link Task)')
-                              setIsLinkingTask(false)
+                              console.log('Clicked Cancel (Edit Business)')
+                              setIsEditing(false)
                             }}
-                            className={`px-4 py-2 rounded-xl font-semibold transition-colors ${safeTheme === 'light' ? 'bg-gray-200 hover:bg-gray-300 text-gray-900' : 'bg-slate-600 hover:bg-slate-500 text-gray-200'}`}
+                            className={`px-4 py-2 rounded-xl font-semibold transition-colors ${safeTheme === 'light'
+                              ? 'bg-gray-200 hover:bg-gray-300 text-gray-900'
+                              : 'bg-slate-600 hover:bg-slate-500 text-gray-200'
+                              }`}
                             variants={buttonVariants}
                             whileHover="hover"
                             whileTap="tap"
                           >
                             Cancel
                           </motion.button>
+                          <motion.button
+                            onClick={() => {
+                              console.log('Clicked Save (Edit Business)')
+                              handleSave()
+                            }}
+                            className={`px-4 py-2 rounded-xl font-semibold transition-colors ${safeTheme === 'light'
+                              ? 'bg-gray-950 hover:bg-black text-white'
+                              : 'bg-gray-950 hover:bg-black text-gray-100'
+                              }`}
+                            variants={buttonVariants}
+                            whileHover="hover"
+                            whileTap="tap"
+                          >
+                            Save
+                          </motion.button>
+                        </div>
+                      </motion.div>
+                    ) : (
+                      <div className="space-y-4">
+                        <BusinessHeader
+                          name={selectedBusiness.name}
+                          onEdit={() => setIsEditing(true)}
+                          onDelete={() => setIsDeleteConfirmOpen(true)}
+                        />
+                        <motion.p
+                          className={`${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.3, delay: 0.1 }}
+                        >
+                          {selectedBusiness.description || 'No description'}
+                        </motion.p>
+                        <motion.div
+                          className="flex space-x-2"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.3, delay: 0.2 }}
+                        >
+              
+                          <motion.button
+                            onClick={() => {
+                              console.log('Clicked Add Project')
+                              setIsAddProjectModalOpen(true)
+                            }}
+                            className={`px-4 py-1 rounded-xl font-semibold transition-colors bg-transparent border-2 ${safeTheme === 'light'
+                              ? 'border-neutral-200 hover:border-green-200 text-gray-900'
+                              : 'border-neutral-800 hover:border-green-950 text-gray-100'
+                              } flex gap-2 items-center`}
+                            variants={buttonVariants}
+                            whileHover="hover"
+                            whileTap="tap"
+                          >
+                            <Plus />
+                            Add Project
+                          </motion.button>
+                          <motion.button
+                            onClick={() => {
+                              console.log('Clicked Link Task from Tasks')
+                              setIsLinkingTask(true)
+                            }}
+                            className={`px-4 py-1 rounded-xl font-semibold transition-colors bg-transparent border-2 ${safeTheme === 'light'
+                              ? 'border-neutral-200 hover:border-yellow-100 text-gray-900'
+                              : 'border-neutral-800 hover:border-yellow-950 text-gray-100'
+                              } flex gap-2 items-center`}
+                            variants={buttonVariants}
+                            whileHover="hover"
+                            whileTap="tap"
+                          >
+                            <Link />
+                            Link from Tasks
+                          </motion.button>
                         </motion.div>
-                      ) : (
-                        <ul className="space-y-4">
-                          {selectedBusiness.projects.length > 0 ? (
-                            selectedBusiness.projects.map((project, index) => (
-                              <motion.li
-                                key={project.id}
-                                className={`p-4 rounded-lg shadow-sm border ${safeTheme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-slate-800 border-gray-700'}`}
-                                variants={cardVariants}
-                                initial="hidden"
-                                animate="visible"
-                                transition={{ delay: index * 0.1 }}
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center">
-                                    <svg
-                                      className={`w-5 h-5 mr-2 ${safeTheme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                      />
-                                    </svg>
-                                    <span
-                                      className={`font-semibold ${safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'}`}
-                                    >
-                                      {project.name}
-                                    </span>
-                                  </div>
-                                  <motion.button
-                                    onClick={() => {
-                                      console.log('Clicked Add Task for project:', project.id)
-                                      setIsAddTaskModalOpen({ open: true, projectId: project.id })
-                                    }}
-                                    className={`px-3 py-1 rounded-lg font-semibold transition-colors border-2 ${safeTheme === 'light' ? 'bg-gray-200 text-black hover:bg-gray-300' : 'bg-slate-600 text-gray-200 hover:bg-slate-500'}`}
-                                    variants={buttonVariants}
-                                    whileHover="hover"
-                                    whileTap="tap"
-                                  >
-                                    Add Task
-                                  </motion.button>
-                                </div>
-                                {project.description && (
-                                  <p
-                                    className={`text-sm mt-2 ${safeTheme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}
-                                  >
-                                    {project.description}
-                                  </p>
-                                )}
-                                <ul className="ml-0 mt-2 space-y-2">
-                                  {project.tasks.map((task, taskIndex) => (
-                                    <motion.li
-                                      key={task.id}
-                                      className={`p-2 rounded-md border-1 ${safeTheme === 'light' ? 'bg-neutral-50 border-neutral-100' : 'bg-slate-800/50 border-slate-900'}`}
-                                      variants={cardVariants}
-                                      initial="hidden"
-                                      animate="visible"
-                                      transition={{ delay: taskIndex * 0.05 }}
-                                    >
-                                      <div className="flex items-center justify-between">
-                                        <div>
-                                          <span
-                                            className={`${safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'}`}
-                                          >
-                                            {task.title} - <a>{task.status}</a> (Due: {formatDate(task.dueDate)})
-                                          </span>
-                                          {task.description && (
-                                            <p
-                                              className={`text-sm ${safeTheme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}
-                                            >
-                                              {task.description}
-                                            </p>
-                                          )}
-                                        </div>
-                                        <motion.button
-                                          onClick={() => {
-                                            handleLinkToCalendar(task, project.id)
-                                          }}
-                                          className={` hover:underline ${safeTheme === 'light' ? 'text-fuchsia-800 hover:text-fuchsia-500' : 'text-fuchsia-300 hover:text-fuchsia-400'}`}
-                                          variants={buttonVariants}
-                                          whileHover="hover"
-                                          whileTap="tap"
-                                        >
-                                          Add to Calendar
-                                        </motion.button>
-                                      </div>
-                                    </motion.li>
-                                  ))}
-                                </ul>
-                              </motion.li>
-                            ))
-                          ) : (
-                            <motion.p
-                              className={`${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}
-                              variants={cardVariants}
-                              initial="hidden"
-                              animate="visible"
-                            >
-                              No projects assigned.
-                            </motion.p>
-                          )}
-                        </ul>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <motion.p
-                  className={`${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}
-                  variants={cardVariants}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  Select a business to view details.
-                </motion.p>
-              )}
-            </motion.div>
+
+                        <motion.h3
+                          className={`text-xl font-semibold mt-6 ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.3, delay: 0.3 }}
+                        >
+                          Projects
+                        </motion.h3>
+                        {isLinkingTask ? (
+                          <LinkTaskSection
+                            corners={corners}
+                            selectedProjectId={selectedProjectId}
+                            onLinkTask={handleLinkTask}
+                            onCancel={() => {
+                              console.log('Clicked Cancel (Link Task)')
+                              setIsLinkingTask(false)
+                            }}
+                            // theme={safeTheme}
+                          />
+                        ) : (
+                          <ProjectsList
+                            projects={selectedBusiness.projects}
+                            // theme={safeTheme}
+                            formatDate={formatDate}
+                            onAddTask={(projectId) => {
+                              console.log('Clicked Add Task for project:', projectId)
+                              setIsAddTaskModalOpen({ open: true, projectId })
+                            }}
+                            onLinkToCalendar={handleLinkToCalendar}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <motion.p
+                    className={`${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}
+                    variants={cardVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    Select a business to view details.
+                  </motion.p>
+                )}
+              </motion.div>
+            </div>
           </div>
-        </div>
         </Container>
       </div>
     </>
