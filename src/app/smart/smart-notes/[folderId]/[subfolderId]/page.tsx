@@ -13,6 +13,7 @@ import "quill/dist/quill.snow.css";
 import AIModal from "@/app/components/smart/smartnotes/subfolders/AIModal";
 import { Save, Sparkles } from "lucide-react";
 import { generateText } from "@/app/api/actions/AI/hugging_face/generateText";
+import { canUseAI } from "@/app/api/actions/AI/CanUseAI";
 
 type Subfolder = {
     id: number;
@@ -145,6 +146,11 @@ const SubfolderNote = () => {
     };
 
     const handleAISubmit = async (prompt: string) => {
+        // if (!canUseAI()) {
+        //     toast.error("You have already reach AI target")
+        //     return
+        // }
+
         const response = await generateText(prompt);
         if (!response) {
             toast.error("Oops. Please try again.");
@@ -188,9 +194,9 @@ const SubfolderNote = () => {
                         <div className="flex space-x-2">
                             <motion.button
                                 onClick={handleSave}
-                                className={`px-5 py-1 rounded-xl font-semibold transition-colors ${theme === "light"
+                                className={`px-2 py-1 rounded-2xl font-semibold transition-colors ${theme === "light"
                                     ? "bg-neutral-800 hover:bg-black text-white"
-                                    : "bg-neutral-900 hover:bg-black text-gray-200"
+                                    : "bg-neutral-200 hover:bg-neutral-100 text-gray-800"
                                     }`}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
@@ -199,9 +205,9 @@ const SubfolderNote = () => {
                             </motion.button>
                             <motion.button
                                 onClick={openAIModal}
-                                className={`px-5 py-1 rounded-xl font-semibold transition-colors ${theme === "light"
+                                className={`px-2 py-1 rounded-2xl font-semibold transition-colors ${theme === "light"
                                     ? "bg-neutral-800 hover:bg-black text-white"
-                                    : "bg-neutral-900 hover:bg-black text-gray-200"
+                                    : "bg-neutral-200 hover:bg-neutral-100 text-gray-800"
                                     }`}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}

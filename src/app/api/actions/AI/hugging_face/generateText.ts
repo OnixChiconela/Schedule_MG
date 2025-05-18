@@ -1,5 +1,4 @@
 import api from "@/app/api/api"
-import toast from "react-hot-toast"
 
 export const generateText = async (prompt: string) => {
     try {
