@@ -70,7 +70,7 @@ const SubfolderNote = () => {
         modules: {
             toolbar: [
                 [{ header: [1, 2, false] }],
-                ["bold", "italic", "underline",],
+                ["bold", "italic", "underline"],
                 [{ color: [] }],
                 ["clean"],
             ],
@@ -78,15 +78,16 @@ const SubfolderNote = () => {
         placeholder: "Start typing your notes here...",
     });
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showEnhanceButton, setShowEnhanceButton] = useState(false);
+    const [selectedText, setSelectedText] = useState("");
+    const [selectionBounds, setSelectionBounds] = useState<{ top: number; left: number } | null>(null);
     const isInitialized = useRef(false);
+    const buttonRef = useRef<HTMLDivElement>(null);
 
     // Depuração e inicialização do Quill
     useEffect(() => {
-        console.log("quill:", quill);
-        console.log("quillRef:", quillRef);
         if (quill && !isInitialized.current) {
-            console.log("Inicializando Quill com conteúdo:", noteContent);
-            quill.setContents([]); // Limpar o editor
+            quill.setContents([]);
             quill.clipboard.dangerouslyPasteHTML(noteContent || "<p></p>");
             isInitialized.current = true;
         }
@@ -101,7 +102,6 @@ const SubfolderNote = () => {
                 timeout = setTimeout(() => {
                     const newContent = quill.root.innerHTML;
                     if (newContent !== noteContent) {
-                        console.log("Texto alterado:", newContent);
                         setNoteContent(newContent);
                     }
                 }, 300);
@@ -115,6 +115,41 @@ const SubfolderNote = () => {
             };
         }
     }, [quill, noteContent]);
+
+    // Detectar seleção de texto no Quill
+    useEffect(() => {
+        if (quill) {
+            const handleSelectionChange = () => {
+                const selection = quill.getSelection();
+                if (selection && selection.length > 0) {
+                    const selectedContent = quill.getText(selection.index, selection.length);
+                    setSelectedText(selectedContent);
+                    setShowEnhanceButton(true);
+
+                    // Obter a posição da seleção
+                    const bounds = quill.getBounds(selection.index, selection.length);
+                    const editor = quillRef.current?.querySelector(".ql-editor");
+                    if (editor) {
+                        const editorRect = editor.getBoundingClientRect();
+                        setSelectionBounds({
+                            top: editorRect.top + bounds!.top - 40, // Ajustar para aparecer acima
+                            left: editorRect.left + bounds!.left + bounds!.width / 2 - 50, // Centralizar o botão
+                        });
+                    }
+                } else {
+                    setShowEnhanceButton(false);
+                    setSelectedText("");
+                    setSelectionBounds(null);
+                }
+            };
+
+            quill.on("selection-change", handleSelectionChange);
+
+            return () => {
+                quill.off("selection-change", handleSelectionChange);
+            };
+        }
+    }, [quill, quillRef]);
 
     // Salvar no localStorage a cada mudança (com debounce)
     useEffect(() => {
@@ -148,11 +183,6 @@ const SubfolderNote = () => {
     };
 
     const handleAISubmit = async (prompt: string) => {
-        // if (!canUseAI()) {
-        //     toast.error("You have already reach AI target")
-        //     return
-        // }
-
         const response = await generateText(prompt);
         if (!response) {
             toast.error("Oops. Please try again.");
@@ -160,14 +190,34 @@ const SubfolderNote = () => {
         }
 
         if (quill) {
-            console.log("Resposta da API:", response);
-            quill.setContents([]); // Limpar o editor
+            quill.setContents([]);
             quill.clipboard.dangerouslyPasteHTML(response);
             const newContent = quill.root.innerHTML;
-            console.log("Novo conteúdo após AI Edit:", newContent);
             setNoteContent(newContent);
         }
         setIsModalOpen(false);
+    };
+
+    const handleEnhanceText = async () => {
+        if (!selectedText || !quill) return;
+
+        const prompt = `Enhance this text: ${selectedText}`;
+        const response = await generateText(prompt);
+        if (!response) {
+            toast.error("Oops. Please try again.");
+            return;
+        }
+
+        const selection = quill.getSelection();
+        if (selection) {
+            quill.deleteText(selection.index, selection.length);
+            quill.insertText(selection.index, response);
+            const newContent = quill.root.innerHTML;
+            setNoteContent(newContent);
+        }
+        setShowEnhanceButton(false);
+        setSelectedText("");
+        setSelectionBounds(null);
     };
 
     return (
@@ -234,6 +284,24 @@ const SubfolderNote = () => {
                                 } quill-editor`}
                             style={{ minHeight: "300px", maxHeight: "80vh", overflow: "auto" }}
                         />
+                        {showEnhanceButton && selectionBounds && (
+                            <div
+                                ref={buttonRef}
+                                className={`absolute px-3 py-1 rounded-full shadow-md cursor-pointer transition-colors ${theme === "light"
+                                    ? "bg-neutral-200 text-gray-700 hover:bg-neutral-300"
+                                    : "bg-slate-700 text-gray-200 hover:bg-slate-600"
+                                    }`}
+                                style={{
+                                    position: "absolute",
+                                    zIndex: 20,
+                                    top: `${selectionBounds.top}px`,
+                                    left: `${selectionBounds.left}px`,
+                                }}
+                                onClick={handleEnhanceText}
+                            >
+                                Enhance with AI
+                            </div>
+                        )}
                     </div>
 
                     <AIModal

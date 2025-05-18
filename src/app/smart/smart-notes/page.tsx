@@ -336,7 +336,7 @@ const SmartNotes = () => {
                           {openMenuId === folder.id && (
                             <motion.div
                               ref={menuRef}
-                              className={`absolute right-2 top-8 z-10 rounded-md shadow-lg ${theme === "light" ? "bg-white" : "bg-slate-800"}`}
+                              className={`absolute right-2 p-1 top-8 z-10 rounded-md shadow-lg ${theme === "light" ? "bg-white" : "bg-slate-800"}`}
                               initial={{ opacity: 0, scale: 0.95 }}
                               animate={{ opacity: 1, scale: 1 }}
                               exit={{ opacity: 0, scale: 0.95 }}
@@ -344,7 +344,7 @@ const SmartNotes = () => {
                             >
                               <div className="py-1">
                                 <button
-                                  className={`block w-full text-left px-4 py-2 text-sm ${theme === "light" ? "text-gray-700 hover:bg-gray-100" : "text-gray-200 hover:bg-slate-700"}`}
+                                  className={`block w-full text-left px-4 rounded-md py-2 text-sm ${theme === "light" ? "text-gray-700 hover:bg-gray-100" : "text-gray-200 hover:bg-slate-700"}`}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleRenameFolder(folder.id);
@@ -353,7 +353,7 @@ const SmartNotes = () => {
                                   Rename
                                 </button>
                                 <button
-                                  className={`block w-full text-left px-4 py-2 text-sm ${theme === "light" ? "text-gray-700 hover:bg-gray-100" : "text-gray-200 hover:bg-slate-700"}`}
+                                  className={`block w-full text-left px-4 rounded-md py-2 text-sm ${theme === "light" ? "text-gray-700 hover:bg-gray-100" : "text-gray-200 hover:bg-slate-700"}`}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleDuplicateFolder(folder.id);
@@ -362,13 +362,13 @@ const SmartNotes = () => {
                                   Duplicate
                                 </button>
                                 <button
-                                  className={`block w-full text-left px-4 py-2 text-sm ${theme === "light" ? "text-gray-700 hover:bg-gray-100" : "text-gray-200 hover:bg-slate-700"}`}
+                                  className={`block w-full text-left px-4 rounded-md py-2 text-sm ${theme === "light" ? "text-gray-700 hover:bg-gray-100" : "text-gray-200 hover:bg-slate-700"}`}
                                   onClick={(e) => toast.success("Share your thoughts, may be good for someone else!")}
                                 >
                                   Share
                                 </button>
                                 <button
-                                  className={`block w-full text-left px-4 py-2 text-sm ${theme === "light" ? "text-red-600 hover:bg-gray-100" : "text-red-500 hover:bg-slate-700"}`}
+                                  className={`block w-full text-left px-4 rounded-md py-2 text-sm ${theme === "light" ? "text-red-600 hover:bg-red-400/10" : "text-red-500 hover:bg-red-700/20"}`}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleDeleteFolder(folder.id);

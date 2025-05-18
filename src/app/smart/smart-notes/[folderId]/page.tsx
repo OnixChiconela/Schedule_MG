@@ -7,14 +7,18 @@ import toast from "react-hot-toast";
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, MoreHorizontal } from "lucide-react";
+import { Plus, MoreHorizontal, GripVertical } from "lucide-react";
 import { format, isSameYear } from "date-fns";
 import SideNavbar from "@/app/components/navbars/SideNavbar";
+import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import CreateSubfolderModal from "@/app/components/smart/smartnotes/folders/createSubfolderModal";
 
 type Subfolder = {
     id: number;
     title: string;
-    description: string; // Novo campo para descrição (máximo 150 caracteres)
+    description: string;
     content: string;
     createdAt: string;
 };
@@ -28,6 +32,132 @@ type Folder = {
     shadow: string;
     opacity: number;
     subfolders: Subfolder[];
+};
+
+// Componente para cada card de subfolder com suporte a drag-and-drop
+const SubfolderCard = ({
+    subfolder,
+    theme,
+    openMenuId,
+    setOpenMenuId,
+    handleOpenSubfolder,
+    handleEditSubfolder,
+    handleDeleteSubfolder,
+    isDraggable,
+}: {
+    subfolder: Subfolder;
+    theme: string;
+    openMenuId: number | null;
+    setOpenMenuId: (id: number | null) => void;
+    handleOpenSubfolder: (subfolderId: number) => void;
+    handleEditSubfolder: (subfolderId: number) => void;
+    handleDeleteSubfolder: (subfolderId: number) => void;
+    isDraggable: boolean;
+}) => {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+        id: subfolder.id.toString(),
+        disabled: !isDraggable,
+    });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setOpenMenuId(null);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [setOpenMenuId]);
+
+    return (
+        <motion.div
+            layout
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
+            <motion.div
+                ref={setNodeRef}
+                style={style}
+                {...(isDraggable ? { ...attributes, ...listeners } : {})}
+                className={`rounded-xl border-2 cursor-pointer p-4 flex flex-col gap-2 h-[180px] ${theme === "light" ? "bg-white border-gray-200" : "bg-slate-700 border-slate-600"} relative`}
+                onClick={() => handleOpenSubfolder(subfolder.id)}
+                whileHover={{ scale: 1.03 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+            >
+                <div className="flex justify-between items-start">
+                    <h2 className={`text-lg font-semibold line-clamp-2 ${theme === "light" ? "text-gray-900" : "text-white"}`}>
+                        {subfolder.title}
+                    </h2>
+                    <div
+                        className={`p-1 ${theme === "light" ? "text-neutral-700 hover:bg-gray-200" : "text-neutral-300 hover:bg-slate-600"} rounded-full cursor-pointer`}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuId(openMenuId === subfolder.id ? null : subfolder.id);
+                        }}
+                    >
+                        <MoreHorizontal size={20} />
+                    </div>
+                    <AnimatePresence>
+                        {openMenuId === subfolder.id && (
+                            <motion.div
+                                ref={menuRef}
+                                className={`absolute right-0 p-1 top-10 z-10 rounded-md shadow-lg ${theme === "light" ? "bg-white" : "bg-slate-800"} sm:w-32`}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ duration: 0.1 }}
+                            >
+                                <div className="py-1">
+                                    <button
+                                        className={`block w-full text-left rounded-md px-4 py-2 text-sm ${theme === "light" ? "text-gray-700 hover:bg-gray-100" : "text-gray-200 hover:bg-slate-700"}`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEditSubfolder(subfolder.id);
+                                        }}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className={`block w-full text-left rounded-md px-4 py-2 text-sm ${theme === "light" ? "text-red-600 hover:bg-red-400/10" : "text-red-500 hover:bg-red-700/20"}`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteSubfolder(subfolder.id);
+                                        }}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+                <p className={`text-sm flex-1 line-clamp-3 ${theme === "light" ? "text-gray-600" : "text-gray-300"}`}>
+                    {subfolder.description.length > 100 ? subfolder.description.slice(0, 100) + "..." : subfolder.description}
+                </p>
+                <p className={`text-xs ${theme === "light" ? "text-gray-400" : "text-gray-500"}`}>
+                    Created: {(() => {
+                        const createdDate = new Date(subfolder.createdAt);
+                        const currentDate = new Date();
+                        const formatString = isSameYear(createdDate, currentDate) ? "dd MMM" : "dd MMM yyyy";
+                        return format(createdDate, formatString);
+                    })()}
+                </p>
+                {isDraggable && (
+                    <div className="absolute bottom-2 right-2">
+                        <GripVertical size={16} className="text-gray-400 cursor-grab" />
+                    </div>
+                )}
+            </motion.div>
+        </motion.div>
+    );
 };
 
 const FolderPage = () => {
@@ -45,23 +175,11 @@ const FolderPage = () => {
     const folder = folders.find((f) => f.id === parseInt(folderId as string));
     const [isSubfolderModalOpen, setIsSubfolderModalOpen] = useState(false);
     const [subfolderTitle, setSubfolderTitle] = useState("");
-    const [subfolderDescription, setSubfolderDescription] = useState(""); // Novo estado para descrição
+    const [subfolderDescription, setSubfolderDescription] = useState("");
     const [subfolderContent, setSubfolderContent] = useState("");
     const [editingSubfolderId, setEditingSubfolderId] = useState<number | null>(null);
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
-    const menuRef = useRef<HTMLDivElement>(null);
-
-    
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                setOpenMenuId(null);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    const [activeId, setActiveId] = useState<string | null>(null);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -72,7 +190,7 @@ const FolderPage = () => {
     const handleCreateSubfolder = () => {
         setIsSubfolderModalOpen(true);
         setSubfolderTitle("");
-        setSubfolderDescription(""); // Limpar descrição
+        setSubfolderDescription("");
         setSubfolderContent("");
         setEditingSubfolderId(null);
     };
@@ -82,20 +200,20 @@ const FolderPage = () => {
         if (subfolder) {
             setIsSubfolderModalOpen(true);
             setSubfolderTitle(subfolder.title);
-            setSubfolderDescription(subfolder.description); // Carregar descrição
+            setSubfolderDescription(subfolder.description);
             setSubfolderContent(subfolder.content);
             setEditingSubfolderId(subfolderId);
             setOpenMenuId(null);
         }
     };
 
-    const handleSaveSubfolder = () => {
-        if (!subfolderTitle.trim()) {
+    const handleSaveSubfolder = (title: string, description: string, content: string) => {
+        if (!title.trim()) {
             toast.error("Subfolder title cannot be empty");
             return;
         }
 
-        if (subfolderDescription.length > 150) {
+        if (description.length > 150) {
             toast.error("Description cannot exceed 150 characters");
             return;
         }
@@ -103,20 +221,18 @@ const FolderPage = () => {
         const updatedFolders = folders.map((f) => {
             if (f.id !== parseInt(folderId as string)) return f;
             if (editingSubfolderId !== null) {
-                // Editar subpasta existente
                 const updatedSubfolders = f.subfolders.map((sf) =>
                     sf.id === editingSubfolderId
-                        ? { ...sf, title: subfolderTitle, description: subfolderDescription, content: subfolderContent }
+                        ? { ...sf, title, description, content }
                         : sf
                 );
                 return { ...f, subfolders: updatedSubfolders };
             } else {
-                // Criar nova subpasta
                 const newSubfolder: Subfolder = {
                     id: f.subfolders.length ? Math.max(...f.subfolders.map((sf) => sf.id)) + 1 : 1,
-                    title: subfolderTitle,
-                    description: subfolderDescription, // Salvar descrição
-                    content: subfolderContent,
+                    title,
+                    description,
+                    content,
                     createdAt: new Date().toISOString(),
                 };
                 return { ...f, subfolders: [...f.subfolders, newSubfolder] };
@@ -126,7 +242,7 @@ const FolderPage = () => {
         setFolders(updatedFolders);
         setIsSubfolderModalOpen(false);
         setSubfolderTitle("");
-        setSubfolderDescription(""); // Limpar descrição
+        setSubfolderDescription("");
         setSubfolderContent("");
         setEditingSubfolderId(null);
         toast.success(editingSubfolderId !== null ? "Subfolder updated" : "Subfolder created");
@@ -147,9 +263,35 @@ const FolderPage = () => {
         router.push(`/smart/smart-notes/${folderId}/${subfolderId}`);
     };
 
+    const handleDragStart = (event: any) => {
+        setActiveId(event.active.id);
+    };
+
+    const handleDragEnd = (event: any) => {
+        const { active, over } = event;
+
+        if (active.id !== over.id && folder?.subfolders.length! > 1) {
+            const updatedFolders = folders.map((f) => {
+                if (f.id !== parseInt(folderId as string)) return f;
+                const subfolders = [...f.subfolders];
+                const oldIndex = subfolders.findIndex((sf) => sf.id.toString() === active.id);
+                const newIndex = subfolders.findIndex((sf) => sf.id.toString() === over.id);
+                const [movedSubfolder] = subfolders.splice(oldIndex, 1);
+                subfolders.splice(newIndex, 0, movedSubfolder);
+                return { ...f, subfolders };
+            });
+            setFolders(updatedFolders);
+        }
+
+        setActiveId(null);
+    };
+
     if (!folder) {
         return <div>Folder not found</div>;
     }
+
+    const activeSubfolder = activeId ? folder.subfolders.find((sf) => sf.id.toString() === activeId) : null;
+    const isDraggable = folder.subfolders.length > 1;
 
     return (
         <ClientOnly>
@@ -200,182 +342,79 @@ const FolderPage = () => {
                                 No fragments yet. Create one to get started.
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-2">
-                                <AnimatePresence>
-                                    {folder.subfolders.map((subfolder) => (
+                            <DndContext
+                                collisionDetection={closestCenter}
+                                onDragStart={handleDragStart}
+                                onDragEnd={handleDragEnd}
+                            >
+                                <SortableContext
+                                    items={folder.subfolders.map((sf) => sf.id.toString())}
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-2">
+                                        <AnimatePresence>
+                                            {folder.subfolders.map((subfolder) => (
+                                                <SubfolderCard
+                                                    key={subfolder.id}
+                                                    subfolder={subfolder}
+                                                    theme={theme}
+                                                    openMenuId={openMenuId}
+                                                    setOpenMenuId={setOpenMenuId}
+                                                    handleOpenSubfolder={handleOpenSubfolder}
+                                                    handleEditSubfolder={handleEditSubfolder}
+                                                    handleDeleteSubfolder={handleDeleteSubfolder}
+                                                    isDraggable={isDraggable}
+                                                />
+                                            ))}
+                                        </AnimatePresence>
+                                    </div>
+                                </SortableContext>
+                                <DragOverlay>
+                                    {activeSubfolder && isDraggable ? (
                                         <motion.div
-                                            key={subfolder.id}
-                                            layout
-                                            initial={{ opacity: 1 }}
-                                            exit={{ opacity: 0, scale: 0.95 }}
-                                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                                            className={`rounded-xl border-2 cursor-pointer p-4 flex flex-col gap-2 h-[180px] ${theme === "light" ? "bg-white border-gray-200" : "bg-slate-700 border-slate-600"} relative opacity-75`}
                                         >
-                                            <motion.div
-                                                className={`rounded-xl border-2 p-4 flex flex-col gap-2 ${theme === "light" ? "bg-white border-gray-200" : "bg-slate-700 border-slate-600"}`}
-                                                onClick={() => handleOpenSubfolder(subfolder.id)}
-                                                whileHover={{ scale: 1.03 }}
-                                                transition={{ duration: 0.2, ease: "easeInOut" }}
-                                            >
-                                                <div className="flex justify-between items-start">
-                                                    <h2 className={`text-lg font-semibold ${theme === "light" ? "text-gray-900" : "text-white"}`}>
-                                                        {subfolder.title}
-                                                    </h2>
-                                                    <div
-                                                        className={`p-1 ${theme === "light" ? "text-neutral-700 hover:bg-gray-200" : "text-neutral-300 hover:bg-slate-600"} rounded-full cursor-pointer`}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setOpenMenuId(openMenuId === subfolder.id ? null : subfolder.id);
-                                                        }}
-                                                    >
-                                                        <MoreHorizontal size={20} />
-                                                    </div>
-                                                    <AnimatePresence>
-                                                        {openMenuId === subfolder.id && (
-                                                            <motion.div
-                                                                ref={menuRef}
-                                                                className={`absolute right-2 top-8 z-10 rounded-md shadow-lg ${theme === "light" ? "bg-white" : "bg-slate-800"}`}
-                                                                initial={{ opacity: 0, scale: 0.95 }}
-                                                                animate={{ opacity: 1, scale: 1 }}
-                                                                exit={{ opacity: 0, scale: 0.95 }}
-                                                                transition={{ duration: 0.1 }}
-                                                            >
-                                                                <div className="py-1">
-                                                                    <button
-                                                                        className={`block w-full text-left px-4 py-2 text-sm ${theme === "light" ? "text-gray-700 hover:bg-gray-100" : "text-gray-200 hover:bg-slate-700"}`}
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleEditSubfolder(subfolder.id);
-                                                                        }}
-                                                                    >
-                                                                        Edit
-                                                                    </button>
-                                                                    <button
-                                                                        className={`block w-full text-left px-4 py-2 text-sm ${theme === "light" ? "text-red-600 hover:bg-gray-100" : "text-red-500 hover:bg-slate-700"}`}
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleDeleteSubfolder(subfolder.id);
-                                                                        }}
-                                                                    >
-                                                                        Delete
-                                                                    </button>
-                                                                </div>
-                                                            </motion.div>
-                                                        )}
-                                                    </AnimatePresence>
-                                                </div>
-                                                <p className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-300"}`}>
-                                                    {subfolder.description.length > 100 ? subfolder.description.slice(0, 100) + "..." : subfolder.description}
-                                                </p>
-                                                <p className={`text-xs ${theme === "light" ? "text-gray-400" : "text-gray-500"}`}>
-                                                    Created: {(() => {
-                                                        const createdDate = new Date(subfolder.createdAt);
-                                                        const currentDate = new Date(); // 14 de maio de 2025, 18:28 CAT
-                                                        const formatString = isSameYear(createdDate, currentDate) ? "dd MMM" : "dd MMM yyyy";
-                                                        return format(createdDate, formatString);
-                                                    })()}
-                                                </p>
-                                            </motion.div>
+                                            <div className="flex justify-between items-start">
+                                                <h2 className={`text-lg font-semibold line-clamp-2 ${theme === "light" ? "text-gray-900" : "text-white"}`}>
+                                                    {activeSubfolder.title}
+                                                </h2>
+                                            </div>
+                                            <p className={`text-sm flex-1 line-clamp-3 ${theme === "light" ? "text-gray-600" : "text-gray-300"}`}>
+                                                {activeSubfolder.description.length > 100 ? activeSubfolder.description.slice(0, 100) + "..." : activeSubfolder.description}
+                                            </p>
+                                            <p className={`text-xs ${theme === "light" ? "text-gray-400" : "text-gray-500"}`}>
+                                                Created: {(() => {
+                                                    const createdDate = new Date(activeSubfolder.createdAt);
+                                                    const currentDate = new Date();
+                                                    const formatString = isSameYear(createdDate, currentDate) ? "dd MMM" : "dd MMM yyyy";
+                                                    return format(createdDate, formatString);
+                                                })()}
+                                            </p>
+                                            <div className="absolute bottom-2 right-2">
+                                                <GripVertical size={16} className="text-gray-400 cursor-grab" />
+                                            </div>
                                         </motion.div>
-                                    ))}
-                                </AnimatePresence>
-                            </div>
+                                    ) : null}
+                                </DragOverlay>
+                            </DndContext>
                         )}
                     </div>
 
-                    {isSubfolderModalOpen && (
-                        <motion.div
-                            className="fixed inset-0 flex items-center justify-center z-50 bg-gray-100/50 dark:bg-slate-800/50"
-                            style={{
-                                backdropFilter: "blur(4px)",
-                                WebkitBackdropFilter: "blur(4px)",
-                            }}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                        >
-                            <motion.div
-                                className={`p-6 rounded-xl shadow-lg w-full max-w-md ${theme === "light" ? "bg-white border-gray-200" : "bg-slate-700 border-gray-700"}`}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 20 }}
-                                transition={{ duration: 0.3, ease: "easeInOut" }}
-                            >
-                                <h2
-                                    className={`text-xl font-semibold mb-6 ${theme === "light" ? "text-gray-900" : "text-white"}`}
-                                >
-                                    {editingSubfolderId !== null ? "Edit fragment" : "Create fragment"}
-                                </h2>
-                                <div className="space-y-6">
-                                    <div>
-                                        <label className={`block text-sm font-medium mb-2 ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
-                                            Fragment title
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={subfolderTitle}
-                                            onChange={(e) => setSubfolderTitle(e.target.value)}
-                                            className={`w-full p-2 rounded-md border ${theme === "light"
-                                                ? "border-gray-300 bg-white text-gray-900"
-                                                : "border-slate-600 bg-slate-800 text-gray-200"
-                                                } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className={`block text-sm font-medium mb-2 ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
-                                            Description
-                                        </label>
-                                        <textarea
-                                            value={subfolderDescription}
-                                            onChange={(e) => {
-                                                if (e.target.value.length <= 150) {
-                                                    setSubfolderDescription(e.target.value);
-                                                }
-                                            }}
-                                            className={`w-full p-2 rounded-md border ${theme === "light"
-                                                ? "border-gray-300 bg-white text-gray-900"
-                                                : "border-slate-600 bg-slate-800 text-gray-200"
-                                                } focus:outline-none focus:ring-2 focus:ring-blue-500 h-16 resize-none`}
-                                            placeholder="Enter a brief description..."
-                                        />
-                                        <p className={`text-xs mt-1 ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
-                                            {subfolderDescription.length}/150 characters
-                                        </p>
-                                    </div>
-                                    <div className="flex justify-end gap-3 pt-4">
-                                        <motion.button
-                                            onClick={() => {
-                                                setIsSubfolderModalOpen(false);
-                                                setSubfolderTitle("");
-                                                setSubfolderDescription("");
-                                                setSubfolderContent("");
-                                                setEditingSubfolderId(null);
-                                            }}
-                                            className={`px-5 py-2 rounded-xl font-semibold transition-colors ${theme === "light"
-                                                ? "bg-gray-200 hover:bg-gray-300 text-gray-900"
-                                                : "bg-slate-600 hover:bg-slate-500 text-gray-200"
-                                                }`}
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                        >
-                                            Cancel
-                                        </motion.button>
-                                        <motion.button
-                                            onClick={handleSaveSubfolder}
-                                            className={`px-5 py-2 rounded-xl font-semibold transition-colors ${theme === "light"
-                                                ? "bg-neutral-800 hover:bg-black text-white"
-                                                : "bg-neutral-900 hover:bg-black text-gray-200"
-                                                }`}
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                        >
-                                            Save
-                                        </motion.button>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        </motion.div>
-                    )}
+                    <CreateSubfolderModal
+                        isOpen={isSubfolderModalOpen}
+                        onClose={() => {
+                            setIsSubfolderModalOpen(false);
+                            setSubfolderTitle("");
+                            setSubfolderDescription("");
+                            setSubfolderContent("");
+                            setEditingSubfolderId(null);
+                        }}
+                        onSubmit={handleSaveSubfolder}
+                        initialTitle={subfolderTitle}
+                        initialDescription={subfolderDescription}
+                        initialContent={subfolderContent}
+                        isEditing={editingSubfolderId !== null}
+                    />
                 </main>
             </div>
         </ClientOnly>
