@@ -68,7 +68,7 @@ const SubfolderNote = () => {
         modules: {
             toolbar: [
                 [{ header: [1, 2, false] }],
-                ["bold", "italic", "underline"],
+                ["bold", "italic", "underline",],
                 [{ color: [] }],
                 ["clean"],
             ],
@@ -241,7 +241,21 @@ const SubfolderNote = () => {
                     />
                 </main>
             </div>
-            <style jsx>{`
+            <style jsx global>{`
+                .ql-toolbar {
+                    background: ${theme == "light" ? "#f9fafb" : "#1f2937"} !important;
+                    border: none !important;
+                    margin-bottom: 10px;
+                    display: flex;
+                    border-radius: 12px;
+                }
+                .ql-toolbar button,
+                .ql-toolbar .ql-picker {
+
+                }
+                .ql-toolbar .ql-picker-label {
+                    color: ${theme == "light" ? "#111827" : "#e5e7eb"} !important
+                }
                 .quill-editor :global(.ql-container) {
                     border: none !important;
                     font-size: 16px;
@@ -268,6 +282,17 @@ const SubfolderNote = () => {
                 .quill-editor :global(.ql-editor:focus) {
                     outline: none;
                 }
+                
+                @media (max-width: 600px) {
+                .ql-toolbar {
+                    flex-direction: row;
+                }
+                .ql-toolbar button svg {
+                    width: 14px !important;
+                    height: 14px !important;
+                    horizontal-align: middle;
+                }
+                    
             `}</style>
         </ClientOnly>
     );
