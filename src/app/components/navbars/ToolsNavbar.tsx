@@ -35,7 +35,7 @@ const ToolsNavbar = () => {
       </motion.button>
 
       <motion.div
-        className={`fixed top-0 left-0 w-[240px] h-full md:pl-5 lg:pl-16 ${theme === "light" ? "bg-gray-100" : "bg-slate-800"} ${isExpanded || "hidden"} lg:block z-10`}
+        className={`fixed top-0 z-20 left-0 w-[240px] h-full md:pl-5 lg:pl-16 ${theme === "light" ? "bg-gray-100" : "bg-slate-800"} ${isExpanded || "hidden"} lg:block z-10`}
         style={{
           paddingTop: `calc(5rem + env(safe-area-inset-top, 0px))`,
         }}

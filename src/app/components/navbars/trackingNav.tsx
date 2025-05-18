@@ -12,7 +12,7 @@ const TrackingNav = ({ themeButton }: { themeButton?: boolean }) => {
 
   return (
     <div
-      className={`fixed w-full z-20 shadow-sm ${theme === "light" ? "bg-white" : "bg-slate-700"}
+      className={`fixed w-full z-30 shadow-sm ${theme === "light" ? "bg-white" : "bg-slate-700"}
             transition-colors duration-300`}
     >
       <Container>
