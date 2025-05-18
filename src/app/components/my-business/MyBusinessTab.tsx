@@ -57,7 +57,6 @@ export default function MyBusinessTab() {
   const [formData, setFormData] = useState({ name: '', description: '' })
   const [isLinkingTask, setIsLinkingTask] = useState(false)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null)
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
 
   const [isAddBusinessModalOpen, setIsAddBusinessModalOpen] = useState(false)
@@ -336,6 +335,29 @@ export default function MyBusinessTab() {
     } catch {
       return date
     }
+  }
+
+  const handleDeleteProject = (projectId: string) => {
+    if (!selectedBusiness) {
+      console.warn('handleDeleteProject: No selected business')
+      return
+    }
+    console.log('Deleting project with ID:', projectId)
+    const updatedProjects = selectedBusiness.projects.filter(p => p.id !== projectId)
+    setBusinesses(prev =>
+      prev.map(b =>
+        b.id === selectedBusiness.id ? { ...b, projects: updatedProjects } : b
+      )
+    )
+    setSelectedBusiness(prev =>
+      prev && prev.id === selectedBusiness.id
+        ? { ...prev, projects: updatedProjects }
+        : prev
+    )
+    if (selectedProjectId === projectId) {
+      setSelectedProjectId(updatedProjects[0]?.id || null)
+    }
+    setToastMessage('Project deleted successfully')
   }
 
   return (
@@ -652,6 +674,7 @@ export default function MyBusinessTab() {
                               setIsAddTaskModalOpen({ open: true, projectId })
                             }}
                             onLinkToCalendar={handleLinkToCalendar}
+                            onDeleteProject={handleDeleteProject}
                           />
                         )}
                       </div>

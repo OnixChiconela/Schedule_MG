@@ -2,10 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { MoreHorizontal, Calendar } from 'lucide-react'
-import { useTheme } from '@/app/themeContext'
-import ProjectTasksPage from './project/ProjectTaskPage'
-import AllProjectsPage from './project/AllProjectPage'
+import { MoreHorizontal, Calendar, ArrowLeft } from 'lucide-react'
+import ProjectTasksPage from './ProjectTaskPage'
 
 interface BusinessTask {
   id: string
@@ -22,32 +20,39 @@ interface BusinessProject {
   tasks: BusinessTask[]
 }
 
-interface ProjectsListProps {
+interface AllProjectsPageProps {
   projects: BusinessProject[]
+  theme: string
   formatDate: (date: string) => string
   onAddTask: (projectId: string) => void
   onLinkToCalendar: (task: BusinessTask, projectId: string) => void
-  onDeleteProject?: (projectId: string) => void
+  onDeleteProject: (projectId: string) => void
+  onBack: () => void
 }
 
-export default function ProjectsList({
+export default function AllProjectsPage({
   projects,
+  theme,
   formatDate,
   onAddTask,
   onLinkToCalendar,
-  onDeleteProject = () => {},
-}: ProjectsListProps) {
+  onDeleteProject,
+  onBack,
+}: AllProjectsPageProps) {
   const [isProjectMenuOpen, setIsProjectMenuOpen] = useState<string | null>(null)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
-  const [showAllProjects, setShowAllProjects] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  const { theme } = useTheme()
   const safeTheme = theme || 'light'
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  }
+
+  const buttonVariants = {
+    hover: { scale: 1.05, transition: { duration: 0.2 } },
+    tap: { scale: 0.95 },
   }
 
   useEffect(() => {
@@ -59,25 +64,6 @@ export default function ProjectsList({
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
-
-  const buttonVariants = {
-    hover: { scale: 1.05, transition: { duration: 0.2 } },
-    tap: { scale: 0.95 },
-  }
-
-  if (showAllProjects) {
-    return (
-      <AllProjectsPage
-        projects={projects}
-        theme={safeTheme}
-        formatDate={formatDate}
-        onAddTask={onAddTask}
-        onLinkToCalendar={onLinkToCalendar}
-        onDeleteProject={onDeleteProject}
-        onBack={() => setShowAllProjects(false)}
-      />
-    )
-  }
 
   if (selectedProjectId) {
     const selectedProject = projects.find((project) => project.id === selectedProjectId)
@@ -93,9 +79,23 @@ export default function ProjectsList({
   }
 
   return (
-    <div>
+    <div className="space-y-4">
+      <div className="flex items-center space-x-2">
+        <motion.button
+          onClick={onBack}
+          className={`p-2 rounded-full ${safeTheme === 'light' ? 'bg-gray-200 hover:bg-gray-300' : 'bg-slate-600 hover:bg-slate-500'}`}
+          variants={buttonVariants}
+          whileHover="hover"
+          whileTap="tap"
+        >
+          <ArrowLeft className={safeTheme === 'light' ? 'text-gray-900' : 'text-gray-200'} />
+        </motion.button>
+        <h3 className={`text-xl font-semibold ${safeTheme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+          All Projects
+        </h3>
+      </div>
       <ul className="space-y-4">
-        {projects.slice(0, 3).map((project, index) => (
+        {projects.map((project, index) => (
           <motion.li
             key={project.id}
             className={`p-4 rounded-lg shadow-sm border ${safeTheme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-slate-800 border-gray-700'}`}
@@ -241,27 +241,6 @@ export default function ProjectsList({
           </motion.li>
         ))}
       </ul>
-      {projects.length > 3 && (
-        <motion.button
-          onClick={() => setShowAllProjects(true)}
-          className={`mt-4 text-sm font-semibold ${safeTheme === 'light' ? 'text-gray-600 hover:text-gray-800' : 'text-gray-400 hover:text-gray-200'}`}
-          variants={buttonVariants}
-          whileHover="hover"
-          whileTap="tap"
-        >
-          Show More ({projects.length - 3} more projects)
-        </motion.button>
-      )}
-      {projects.length === 0 && (
-        <motion.p
-          className={`${safeTheme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          No projects assigned.
-        </motion.p>
-      )}
     </div>
   )
 }

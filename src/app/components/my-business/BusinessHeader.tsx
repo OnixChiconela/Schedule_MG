@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { MoreHorizontal, Pen, Trash } from 'lucide-react'
 import { useTheme } from '@/app/themeContext'
@@ -13,7 +13,18 @@ interface BusinessHeaderProps {
 
 export default function BusinessHeader({ name, onEdit, onDelete }: BusinessHeaderProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const menuRef = useRef<HTMLDivElement>(null);
+
     const { theme } = useTheme()
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setIsMenuOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     const buttonVariants = {
         hover: { scale: 1.05, transition: { duration: 0.2 } },
@@ -44,6 +55,7 @@ export default function BusinessHeader({ name, onEdit, onDelete }: BusinessHeade
                 </motion.button>
                 {isMenuOpen && (
                     <motion.div
+                        ref={menuRef}
                         className={`absolute right-0 mt-2 p-1 rounded-md border-2 shadow-lg 
                         ${theme === 'light' ? 'bg-neutral-100 border-neutral-200' : 'bg-slate-800/90 border-slate-500'} ring-opacity-5`}
                         initial={{ opacity: 0, y: -10 }}
