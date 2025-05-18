@@ -10,6 +10,8 @@ import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useQuill } from "react-quilljs";
 import "quill/dist/quill.snow.css";
+import "quill/dist/quill.core.css";
+
 import AIModal from "@/app/components/smart/smartnotes/subfolders/AIModal";
 import { Save, Sparkles } from "lucide-react";
 import { generateText } from "@/app/api/actions/AI/hugging_face/generateText";
@@ -223,10 +225,10 @@ const SubfolderNote = () => {
                         paddingTop: `calc(5rem + env(safe-area-inset-top, 0px) + 105px)`,
                     }}
                 >
-                    <div className="flex flex-col h-full">
+                    <div className="flex flex-col h-full -mt-7">
                         <div
                             ref={quillRef}
-                            className={`w-full h-screen rounded-xl border ${theme === "light"
+                            className={`w-full h-screen rounded-xl border -pt- ${theme === "light"
                                 ? "border-gray-100 bg-white text-black"
                                 : "border-slate-600 bg-slate-800 text-white"
                                 } quill-editor`}
@@ -249,12 +251,14 @@ const SubfolderNote = () => {
                     display: flex;
                     border-radius: 12px;
                 }
-                .ql-toolbar button,
-                .ql-toolbar .ql-picker {
-
-                }
+                
                 .ql-toolbar .ql-picker-label {
                     color: ${theme == "light" ? "#111827" : "#e5e7eb"} !important
+                }
+                .ql-toolbar button.ql-active,
+                .ql-toolbar .ql-picker.ql-active .ql-picker-label {
+                    text-color: #7c3aed !important;
+                    border-color: #c4b5fd !important;
                 }
                 .quill-editor :global(.ql-container) {
                     border: none !important;
@@ -286,11 +290,18 @@ const SubfolderNote = () => {
                 @media (max-width: 600px) {
                 .ql-toolbar {
                     flex-direction: row;
+                    flex-wrap: wrap;
+                    justify-content: flex-start
                 }
                 .ql-toolbar button svg {
-                    width: 14px !important;
-                    height: 14px !important;
+                    width: 15px !important;
+                    height: 15px !important;
                     horizontal-align: middle;
+                }
+
+                .ql-toolbar button {
+                    line-height: 1 !important;
+                    padding: 6px !important;
                 }
                     
             `}</style>
