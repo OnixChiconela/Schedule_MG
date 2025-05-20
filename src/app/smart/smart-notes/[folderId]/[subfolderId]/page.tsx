@@ -293,7 +293,7 @@ const SubfolderNote = () => {
                             {folder.title} / {subfolder.title}
                         </h1>
                         <div className="flex space-x-2">
-                            <motion.button
+                            {/* <motion.button
                                 onClick={handleSave}
                                 className={`px-2 py-1 rounded-2xl font-semibold transition-colors ${theme === "light"
                                     ? "bg-neutral-800 hover:bg-black text-white"
@@ -303,11 +303,11 @@ const SubfolderNote = () => {
                                 whileTap={{ scale: 0.95 }}
                             >
                                 <Save />
-                            </motion.button>
+                            </motion.button> */}
                             <motion.button
                                 onClick={openAIModal}
                                 className={`px-2 py-1 rounded-2xl font-semibold transition-colors ${theme === "light"
-                                    ? "bg-neutral-800 hover:bg-black text-white"
+                                    ? "bg-neutral-200 hover:bg-neutral-400 text-neutral-800"
                                     : "bg-slate-700 hover:bg-slate-600 text-neutral-200"
                                     }`}
                                 whileHover={{ scale: 1.05 }}
@@ -397,58 +397,172 @@ const SubfolderNote = () => {
                     margin-bottom: 10px;
                     display: flex;
                     border-radius: 12px;
+                    padding: 6px 8px;
+                    box-shadow: ${
+                      theme === "light"
+                        ? "0 1px 3px rgba(0, 0, 0, 0.1)"
+                        : "0 1px 3px rgba(0, 0, 0, 0.3)"
+                    };
                 }
-                
+
+                /* Estilizando o botão/label do dropdown */
                 .ql-toolbar .ql-picker-label {
-                    color: ${theme === "light" ? "#111827" : "#e5e7eb"} !important
+                    color: ${theme === "light" ? "#111827" : "#e5e7eb"} !important;
+                    background: ${theme === "light" ? "#ffffff" : "#2d3748"} !important;
+                    border: 1px solid ${
+                      theme === "light" ? "#d1d5db" : "#4b5563"
+                    } !important;
+                    border-radius: 8px !important;
+                    padding: 4px 8px !important;
+                    transition: all 0.2s ease !important;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                    cursor: pointer;
                 }
+
+           
+
+                /* Rotacionar a seta quando o dropdown está aberto */
+                .ql-toolbar .ql-picker-label.ql-active::after {
+                    transform: rotate(180deg);
+                }
+
+                /* Estilizando o dropdown aberto */
+                .ql-toolbar .ql-picker-options {
+                    background: ${theme === "light" ? "#ffffff" : "#2d3748"} !important;
+                    border: 1px solid ${
+                      theme === "light" ? "#d1d5db" : "#4b5563"
+                    } !important;
+                    border-radius: 8px !important;
+                    box-shadow: ${
+                      theme === "light"
+                        ? "0 2px 8px rgba(0, 0, 0, 0.15)"
+                        : "0 2px 8px rgba(0, 0, 0, 0.3)"
+                    } !important;
+                    margin-top: 4px !important;
+                    animation: fadeIn 0.2s ease;
+                }
+
+
+            
+           
+
+                .ql-color-picker .ql-picker-options .ql-picker-item {
+                    width: 20px !important;
+                    height: 20px !important;
+                    padding: 0 !important;
+                    border: 1px solid ${
+                      theme === "light" ? "#d1d5db" : "#4b5563"
+                    } !important;
+                    border-radius: 4px !important;
+                }
+
+                /* Hover nos itens do dropdown */
+                .ql-toolbar .ql-picker-item:hover {
+                    border-color: ${theme === "light" ? "#f3f4f6" : "#4b5563"} !important;
+                }
+
+                /* Item selecionado no dropdown */
+                .ql-toolbar .ql-picker-item.ql-selected {
+                    background: ${theme === "light" ? "#e5e7eb" : "#6b7280"} !important;
+                    font-weight: 600 !important;
+                }
+
+                /* Estilizando botões da toolbar */
+                .ql-toolbar button {
+                    border-radius: 8px !important;
+                    padding: 4px !important;
+                    transition: background 0.2s ease !important;
+                }
+
+                .ql-toolbar button:hover {
+                    background: ${theme === "light" ? "#e5e7eb" : "#4b5563"} !important;
+                    text-color: ${theme == "light" ? "black" : "white"}
+                }
+
+                /* Ícones pretos quando selecionados (Bold, Italic, Underline) */
+                .ql-toolbar button.ql-active svg,
+                .ql-toolbar .ql-picker.ql-active .ql-picker-label svg {
+                    fill: ${theme === "light" ? "#000000" : "#ffffff"} !important;
+                    stroke: ${theme === "light" ? "#000000" : "#ffffff"} !important;
+                }
+
+
                 .ql-toolbar button.ql-active,
                 .ql-toolbar .ql-picker.ql-active .ql-picker-label {
-                    text-color: #7c3aed !important;
+                    color: #7c3aed !important;
                     border-color: #c4b5fd !important;
+                    background: ${theme === "light" ? "#f3f4f6" : "#4b5563"} !important;
                 }
+
                 .quill-editor :global(.ql-container) {
                     border: none !important;
                     font-size: 16px;
                     height: 100%;
                 }
+
                 .quill-editor :global(.ql-toolbar) {
                     border: none !important;
                     background: ${theme === "light" ? "#f3f4f6" : "#1f2937"};
                 }
+
                 .quill-editor :global(.ql-editor h1) {
                     font-size: 18px;
                     font-weight: bold;
                 }
+
                 .quill-editor :global(.ql-editor h2) {
                     font-size: 16px;
                     font-weight: bold;
                 }
+
                 .quill-editor :global(.ql-editor) {
                     color: ${theme === "light" ? "#000" : "#fff"};
                     min-height: 250px;
                     padding: 12px;
                     overflow-y: auto;
                 }
+
                 .quill-editor :global(.ql-editor:focus) {
                     outline: none;
                 }
-                
+
+                /* Animação para o dropdown */
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-4px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+
                 @media (max-width: 600px) {
                     .ql-toolbar {
                         flex-direction: row;
                         flex-wrap: wrap;
-                        justify-content: flex-start
-                    }
-                    .ql-toolbar button svg {
-                        width: 15px !important;
-                        height: 15px !important;
-                        horizontal-align: middle;
+                        justify-content: flex-start;
                     }
 
-                    .ql-toolbar button {
+                    .ql-toolbar button svg,
+                    .ql-toolbar .ql-picker-label svg {
+                        width: 15px !important;
+                        height: 15px !important;
+                        vertical-align: middle;
+                    }
+
+                    .ql-toolbar button,
+                    .ql-toolbar .ql-picker-label {
                         line-height: 1 !important;
                         padding: 6px !important;
+                    }
+
+                    .ql-toolbar .ql-picker-options {
+                        max-height: 150px;
+                        overflow-y: auto;
                     }
                 }
             `}</style>
