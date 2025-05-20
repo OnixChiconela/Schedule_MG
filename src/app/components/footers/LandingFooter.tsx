@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { useTheme } from '@/app/themeContext';
 import Container from '../Container';
 import { useRouter } from 'next/navigation';
+import Logo from '../navbars/Logo';
 
 const LandingFooter = () => {
     const { theme } = useTheme()
@@ -33,13 +34,7 @@ const LandingFooter = () => {
                         className="flex flex-col items-center md:items-start"
                     >
                         <Link href="/" className="flex items-center gap-2 mb-4">
-                            <Image
-                                alt="Scheuor Logo"
-                                className="h-10 w-auto"
-                                height={40}
-                                width={80}
-                                src="/scheuor.png"
-                            />
+                            <Logo />
                             <span
                                 className={`text-lg font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
                                     }`}

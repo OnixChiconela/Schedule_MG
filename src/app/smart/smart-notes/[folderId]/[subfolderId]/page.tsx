@@ -14,8 +14,9 @@ import "quill/dist/quill.core.css";
 
 import AIModal from "@/app/components/smart/smartnotes/subfolders/AIModal";
 import { Save, Sparkles } from "lucide-react";
-import { generateText } from "@/app/api/actions/AI/hugging_face/generateText";
+import { generateText, simulateStreaming } from "@/app/api/actions/AI/hugging_face/generateText";
 import { canUseAI } from "@/app/api/actions/AI/CanUseAI";
+import Quill from "quill";
 
 type Subfolder = {
     id: number;
@@ -83,8 +84,9 @@ const SubfolderNote = () => {
     const [selectionBounds, setSelectionBounds] = useState<{ top: number; left: number } | null>(null);
     const isInitialized = useRef(false);
     const buttonRef = useRef<HTMLDivElement>(null);
+    const [isGenerating, setIsGenerating] = useState(false);
 
-    // Depuração e inicialização do Quill
+    // Inicializa o Quill Editor
     useEffect(() => {
         if (quill && !isInitialized.current) {
             quill.setContents([]);
@@ -126,14 +128,13 @@ const SubfolderNote = () => {
                     setSelectedText(selectedContent);
                     setShowEnhanceButton(true);
 
-                    // Obter a posição da seleção
                     const bounds = quill.getBounds(selection.index, selection.length);
                     const editor = quillRef.current?.querySelector(".ql-editor");
                     if (editor) {
                         const editorRect = editor.getBoundingClientRect();
                         setSelectionBounds({
-                            top: editorRect.top + bounds!.top - 40, // Ajustar para aparecer acima
-                            left: editorRect.left + bounds!.left + bounds!.width / 2 - 50, // Centralizar o botão
+                            top: editorRect.top + bounds!.top - 40,
+                            left: editorRect.left + bounds!.left + bounds!.width / 2 - 50,
                         });
                     }
                 } else {
@@ -182,39 +183,88 @@ const SubfolderNote = () => {
         setIsModalOpen(true);
     };
 
+    // Remove o prefixo "Creating..." quando a geração termina
+    useEffect(() => {
+        if (!isGenerating && quill) {
+            const currentHTML = quill.root.innerHTML;
+            const prefix = '<p><span style="opacity: 0.5;">Creating...</span> </p>';
+            if (currentHTML.includes(prefix)) {
+                const cleanedContent = currentHTML.replace(prefix, '');
+                quill.clipboard.dangerouslyPasteHTML(cleanedContent);
+                setNoteContent(cleanedContent);
+            }
+        }
+    }, [isGenerating, quill]);
+
     const handleAISubmit = async (prompt: string) => {
+        setIsModalOpen(false); // Fecha o modal imediatamente após o envio
+        setIsGenerating(true);
         const response = await generateText(prompt);
+
         if (!response) {
             toast.error("Oops. Please try again.");
+            setIsGenerating(false);
             return;
         }
 
         if (quill) {
-            quill.setContents([]);
-            quill.clipboard.dangerouslyPasteHTML(response);
-            const newContent = quill.root.innerHTML;
-            setNoteContent(newContent);
+            const selection = quill.getSelection();
+            const insertIndex = selection ? selection.index : quill.getLength() - 1;
+
+            // Adiciona o prefixo "Creating..." com opacidade reduzida
+            quill.insertText(insertIndex, '\n<p><span style="opacity: 0.5;">Creating...</span> </p>\n');
+
+            let currentContent = '';
+
+            // Simula o streaming do texto a partir da posição do cursor
+            await simulateStreaming(
+                response,
+                (chunk: string) => {
+                    currentContent += chunk;
+                    quill.deleteText(insertIndex, currentContent.length); // Remove o texto temporário anterior
+                    quill.insertText(insertIndex, currentContent);
+                    setNoteContent(quill.root.innerHTML);
+                },
+                5, // Tamanho do chunk (5 palavras por vez)
+                200 // Atraso entre chunks (200ms)
+            );
+
+            // Remove o prefixo após a geração (já feito no useEffect)
+            setNoteContent(quill.root.innerHTML);
         }
-        setIsModalOpen(false);
+
+        setIsGenerating(false);
     };
 
     const handleEnhanceText = async () => {
         if (!selectedText || !quill) return;
 
         const prompt = `Enhance this text: ${selectedText}`;
+        setIsGenerating(true);
         const response = await generateText(prompt);
         if (!response) {
             toast.error("Oops. Please try again.");
+            setIsGenerating(false);
             return;
         }
 
         const selection = quill.getSelection();
         if (selection) {
-            quill.deleteText(selection.index, selection.length);
-            quill.insertText(selection.index, response);
-            const newContent = quill.root.innerHTML;
-            setNoteContent(newContent);
+            const insertIndex = selection.index;
+            quill.deleteText(insertIndex, selection.length);
+
+            await simulateStreaming(
+                response,
+                (chunk: string) => {
+                    quill.insertText(insertIndex, chunk);
+                    setNoteContent(quill.root.innerHTML);
+                },
+                5,
+                200
+            );
         }
+
+        setIsGenerating(false);
         setShowEnhanceButton(false);
         setSelectedText("");
         setSelectionBounds(null);
@@ -278,7 +328,7 @@ const SubfolderNote = () => {
                     <div className="flex flex-col h-full -mt-7">
                         <div
                             ref={quillRef}
-                            className={`w-full h-screen rounded-xl border -pt- ${theme === "light"
+                            className={`w-full h-screen rounded-xl border ${theme === "light"
                                 ? "border-gray-100 bg-white text-black"
                                 : "border-slate-600 bg-slate-800 text-white"
                                 } quill-editor`}
@@ -302,18 +352,48 @@ const SubfolderNote = () => {
                                 Enhance with AI
                             </div>
                         )}
+                        {isGenerating && (
+                            <div className="mt-4 flex items-center space-x-2">
+                                <svg
+                                    className="animate-spin h-5 w-5 text-blue-500"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                    />
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8v8H4z"
+                                    />
+                                </svg>
+                                <span
+                                    className={theme === "light" ? "text-gray-600" : "text-gray-400"}
+                                >
+                                    Generating...
+                                </span>
+                            </div>
+                        )}
                     </div>
 
                     <AIModal
                         isOpen={isModalOpen}
                         onClose={() => setIsModalOpen(false)}
                         onSubmit={handleAISubmit}
+                        isGenerating={isGenerating}
                     />
                 </main>
             </div>
             <style jsx global>{`
                 .ql-toolbar {
-                    background: ${theme == "light" ? "#f9fafb" : "#1f2937"} !important;
+                    background: ${theme === "light" ? "#f9fafb" : "#1f2937"} !important;
                     border: none !important;
                     margin-bottom: 10px;
                     display: flex;
@@ -321,7 +401,7 @@ const SubfolderNote = () => {
                 }
                 
                 .ql-toolbar .ql-picker-label {
-                    color: ${theme == "light" ? "#111827" : "#e5e7eb"} !important
+                    color: ${theme === "light" ? "#111827" : "#e5e7eb"} !important
                 }
                 .ql-toolbar button.ql-active,
                 .ql-toolbar .ql-picker.ql-active .ql-picker-label {
@@ -356,22 +436,22 @@ const SubfolderNote = () => {
                 }
                 
                 @media (max-width: 600px) {
-                .ql-toolbar {
-                    flex-direction: row;
-                    flex-wrap: wrap;
-                    justify-content: flex-start
-                }
-                .ql-toolbar button svg {
-                    width: 15px !important;
-                    height: 15px !important;
-                    horizontal-align: middle;
-                }
+                    .ql-toolbar {
+                        flex-direction: row;
+                        flex-wrap: wrap;
+                        justify-content: flex-start
+                    }
+                    .ql-toolbar button svg {
+                        width: 15px !important;
+                        height: 15px !important;
+                        horizontal-align: middle;
+                    }
 
-                .ql-toolbar button {
-                    line-height: 1 !important;
-                    padding: 6px !important;
+                    .ql-toolbar button {
+                        line-height: 1 !important;
+                        padding: 6px !important;
+                    }
                 }
-                    
             `}</style>
         </ClientOnly>
     );

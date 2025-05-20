@@ -9,6 +9,7 @@ import { MoonStar, Sun } from "lucide-react";
 import { HiMenu, HiX } from "react-icons/hi";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Logo from "./Logo";
 
 const LandingNavbar = () => {
     const { theme, toggleTheme } = useTheme()
@@ -36,16 +37,9 @@ const LandingNavbar = () => {
                 <div className="flex flex-row items-center justify-between py-6  mx-auto">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2">
-                        <Image
-                            alt="Scheuor Logo"
-                            className="h-12 w-auto"
-                            height={48}
-                            width={100}
-                            src="/scheuor.png"
-                            priority
-                        />
+                        <Logo />
                         <span
-                            className={`text-sm font-medium ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
+                            className={`text-md font-medium ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
                                 } hidden sm:block`}
                         >
                             Scheuor

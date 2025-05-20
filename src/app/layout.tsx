@@ -11,12 +11,19 @@ export const metadata: Metadata = {
   description: 'Manage your destiny.',
 };
 
+// const font = Nunito_Sans({
+//   subsets: ['latin'],
+//   weight: ['300', '400', '500', '600', '700'],
+//   style: ['normal', 'italic'],
+// });
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const gaTrackingId = process.env.NEXT_PUBLIC_GA_TRACKING_ID;
 
   return (
     <html lang="en">
       <head>
+        <link rel="icon" type="image/png" sizes="12x12" href="/scheuor_logo.png" />
         {gaTrackingId && (
           <>
             <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaTrackingId}`}></script>

@@ -10,12 +10,14 @@ interface AIModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (prompt: string) => void;
+  isGenerating: boolean;
 }
 
 export default function AIModal({
   isOpen,
   onClose,
   onSubmit,
+  isGenerating,
 }: AIModalProps) {
   const { theme } = useTheme();
   const [prompt, setPrompt] = useState("");
@@ -30,18 +32,15 @@ export default function AIModal({
       return;
     }
     // Adicionar apenas o tom ao prompt, sem instrução fixa
-    const finalPrompt =
-      tone
-        ? `${tone}: ${prompt}`
-        : prompt;
+    const finalPrompt = tone ? `${tone}: ${prompt}` : prompt;
     onSubmit(finalPrompt);
     setPrompt("");
     setTone(""); // Resetar o tom após o envio
-    onClose();
+    // onClose(); // Removido para fechar apenas após a geração
   };
 
   const handleBackgroundClick = () => {
-    onClose();
+    if (!isGenerating) onClose(); // Só fecha se não estiver gerando
   };
 
   const handleModalContentClick = (e: MouseEvent<HTMLDivElement>) => {
@@ -49,7 +48,6 @@ export default function AIModal({
   };
 
   const handleToneChange = (value: string) => {
-    // Se o valor clicado for o mesmo que o atual, desmarcar (setar como "")
     if (tone === value) {
       setTone("");
     } else {
@@ -92,7 +90,6 @@ export default function AIModal({
           Generate with AI
         </h2>
         <div className="space-y-4">
-          {/* Seletor de tom com botões estilizados */}
           <div>
             <label
               className={`block mb-2 font-medium ${
@@ -115,6 +112,7 @@ export default function AIModal({
                       : "border-purple-200 bg-slate-700"
                     : ""
                 }`}
+                disabled={isGenerating}
               >
                 Dynamic
                 <Zap />
@@ -132,13 +130,13 @@ export default function AIModal({
                       : "border-neutral-200 bg-slate-700"
                     : ""
                 }`}
+                disabled={isGenerating}
               >
                 Formal
                 <PenTool />
               </button>
             </div>
           </div>
-          {/* Textarea para o prompt */}
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
@@ -149,12 +147,15 @@ export default function AIModal({
                 ? "border-gray-300 bg-white text-gray-900"
                 : "border-slate-600 bg-slate-900 text-gray-200"
             } focus:outline-none focus:ring-2 focus:ring-neutral-700`}
+            disabled={isGenerating}
           />
           <div className="flex justify-end space-x-2">
             <motion.button
               onClick={() => {
-                setPrompt("");
-                onClose();
+                if (!isGenerating) {
+                  setPrompt("");
+                  onClose();
+                }
               }}
               className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
                 safeTheme === "light"
@@ -163,6 +164,7 @@ export default function AIModal({
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              disabled={isGenerating}
             >
               Cancel
             </motion.button>
@@ -177,11 +179,40 @@ export default function AIModal({
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              disabled={!prompt.trim()}
+              disabled={!prompt.trim() || isGenerating}
             >
               Submit
             </motion.button>
           </div>
+          {isGenerating && (
+            <div className="mt-4 flex items-center space-x-2">
+              <svg
+                className="animate-spin h-5 w-5 text-blue-500"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8H4z"
+                />
+              </svg>
+              <span
+                className={safeTheme === "light" ? "text-gray-600" : "text-gray-400"}
+              >
+                Generating...
+              </span>
+            </div>
+          )}
         </div>
       </motion.div>
     </motion.div>

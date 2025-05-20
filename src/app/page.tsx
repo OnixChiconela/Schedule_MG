@@ -364,7 +364,7 @@ export default function LandingPage() {
                 </span>
               </h2>
               <p className={`text-lg  ${theme == "light" ? "text-gray-600" : "text-neutral-300"} mt-4 max-w-2xl mx-auto`}>
-                Discover how Scheuor helps you connect with your audience and grow your business.
+                Discover how Scheuor helps you connect with your self while keeping everthing in control.
               </p>
             </div>
           </Container>
@@ -401,7 +401,7 @@ export default function LandingPage() {
           <Container>
             <h2 className={`text-3xl sm:text-4xl font-bold  ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`}>Join Scheuor Today!</h2>
             <p className={`text-lg mt-4 max-w-2xl mx-auto  ${theme == "light" ? "text-gray-600" : "text-neutral-300"}`}>
-              Sign up now to unlock powerful tools and grow your business.
+              Sign up now to become part of the crew.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -411,7 +411,8 @@ export default function LandingPage() {
                 Get Started
               </Link>
               <a
-                href="mailto:contact@scheuor.com"
+                // href="mailto:contact@scheuor.com"
+                href="mailto:josechiconela@icloud.com"
                 className="text-sm font-semibold py-3 px-6 rounded-full border border-fuchsia-600 text-fuchsia-600 hover:bg-fuchsia-50 transition"
               >
                 Contact Us
