@@ -16,7 +16,6 @@ import AIModal from "@/app/components/smart/smartnotes/subfolders/AIModal";
 import { Save, Sparkles } from "lucide-react";
 import { generateText, simulateStreaming } from "@/app/api/actions/AI/hugging_face/generateText";
 import { canUseAI } from "@/app/api/actions/AI/CanUseAI";
-import Quill from "quill";
 
 type Subfolder = {
     id: number;

@@ -13,7 +13,7 @@ const Logo = () => {
             <Image
                 onClick={() => router.push('/')}
                 alt="Logo"
-                className="hidden md:block cursor-pointer"
+                className="md:block cursor-pointer"
                 height="55"
                 width="55"
                 src={require("@/../public/scheuor_logo.png")}
