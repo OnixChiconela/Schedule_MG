@@ -15,6 +15,7 @@ import InfoCard from './components/cards/CardInfo'
 import LandingNavbar from './components/navbars/LandingNavbar'
 import LandingFooter from './components/footers/LandingFooter'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 export default function LandingPage() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false)
@@ -25,7 +26,7 @@ export default function LandingPage() {
 
   const getStart = () => {
     if (!localStorage.getItem("userPreferences")) return router.push("/onboarding")
-      router.push("/dashboard")
+    router.push("/dashboard")
   }
 
   return (
@@ -134,18 +135,21 @@ export default function LandingPage() {
               {/* <div className="mt-16"> */}
               <div className="space-y-16 lg:space-y-20">
 
-                <div className="flex flex-col items-center gap-6 lg:gap-16 lg:flex-row">
+                <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded hover:scale-102 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                   <div className="flex-none md:flex-1 lg:max-w-xl">
                     <div className="relative aspect-[4/2.5] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
-
+                      <Image
+                        alt="calendar"
+                        src={require("@/../public/images/mybss.png")}
+                      />
                     </div>
                   </div>
                   <div className="flex-1 text-center lg:text-left">
-                    <div className="
+                    <div className={`
                       mb-6 inline-flex h-12 w-12 
                       items-center justify-center 
                       text-xl font-bold bg-gradient-to-bl
-                      text-black rounded-xl">
+                      ${theme == "light" ? "text-neutral-800" : "text-neutral-200"} rounded-xl`}>
                       {`1`}
                     </div>
                     <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Set Your Intentions`}</h3>
@@ -154,14 +158,14 @@ export default function LandingPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col items-center gap-6 lg:gap-16 lg:flex-row">
+                <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded hover:scale-102 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
 
                   <div className="flex-1 text-center lg:text-left">
-                    <div className="
+                    <div className={`
                       mb-6 inline-flex h-12 w-12 
                       items-center justify-center 
-                      text-xl font-bold bg-gradient-to-b
-                      text-black rounded-xl ">
+                      text-xl font-bold bg-gradient-to-bl
+                      ${theme == "light" ? "text-neutral-800" : "text-neutral-200"} rounded-xl`}>
                       {`2`}
                     </div>
                     <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Organize Your Space`}</h3>
@@ -171,22 +175,28 @@ export default function LandingPage() {
                   </div>
                   <div className="flex-1 lg:max-w-xl">
                     <div className="relative aspect-[4/2.5] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
-
+                      <Image
+                        alt="calendar"
+                        src={require("@/../public/images/calendar.png")}
+                      />
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col items-center gap-6 lg:gap-16 lg:flex-row">
+                <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded hover:scale-102 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                   <div className="flex-none md:flex-1 lg:max-w-xl">
                     <div className="relative aspect-[4/2.5] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
-
+                      <Image
+                        alt="calendar"
+                        src={require("@/../public/images/road.png")}
+                      />
                     </div>
                   </div>
                   <div className="flex-1 text-center lg:text-left">
-                    <div className="
+                    <div className={`
                       mb-6 inline-flex h-12 w-12 
                       items-center justify-center 
-                      bg-gradient-to-t text-xl font-bold 
-                      text-black rounded-xl">
+                      text-xl font-bold bg-gradient-to-bl
+                      ${theme == "light" ? "text-neutral-800" : "text-neutral-200"} rounded-xl`}>
                       {`3`}
                     </div>
                     <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Track & Grow`}</h3>
