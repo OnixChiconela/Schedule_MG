@@ -12,6 +12,7 @@ import { X } from "lucide-react";
 import CustomDropdown from "../components/CustomDropdown";
 import { initialSuggestions } from "../fake/suggestions";
 import { emojiOptions } from "../components/emojiOptions";
+import EventSuggestions from "../components/events/EventSuggestions";
 
 type Task = {
     id: number;
@@ -303,6 +304,9 @@ export default function DashboardPPage() {
                                 Pick your preferences so we can give you ideas
                             </div>
                         )}
+                        {/* <section >
+                            <EventSuggestions userCategories={userInterests}/>
+                        </section> */}
 
                         <motion.p
                             className={`mt-3 sm:mt-4 text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}

@@ -5,6 +5,7 @@ import ClientOnly from './components/ClientOnly'
 import ToasterProvider from './providers/ToasterProvider'
 import { Metadata } from 'next';
 import { SubfolderProvider } from './context/SubfolderContext';
+import { LocationProvider } from './context/LocationContext';
 
 export const metadata: Metadata = {
   title: 'Scheuor',
@@ -44,11 +45,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ClientOnly>
           <ToasterProvider />
-          <ThemeProvider>
-            <SubfolderProvider>
-              {children}
-            </SubfolderProvider>
-          </ThemeProvider>
+          <LocationProvider>
+            <ThemeProvider>
+              <SubfolderProvider>
+                {children}
+              </SubfolderProvider>
+            </ThemeProvider>
+          </LocationProvider>
         </ClientOnly>
       </body>
     </html>

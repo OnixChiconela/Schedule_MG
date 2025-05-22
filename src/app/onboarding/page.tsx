@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { toast } from 'react-hot-toast'
 import { useTheme } from '../themeContext'
 import { MoonStar, Sun } from 'lucide-react'
+import { USER_INTEREST_CATEGORIES } from '../lib/categories'
 
 const categories = ['Technology', 'Art', 'Finance', 'Education', 'Health', 'Travel', 'Music']
 
@@ -24,13 +25,19 @@ export default function Onboarding() {
           : prev
     )
   }
+  const selectedCategories = USER_INTEREST_CATEGORIES.filter(cat =>
+    selectedInterests.includes(cat.label)
+  )
+  const eventbriteIds = selectedCategories.map(cat => cat.eventbriteId)
+  const meetupIds = selectedCategories.map(cat => cat.meetupId)
+
 
   const handleStart = () => {
     if (selectedInterests.length < 3) {
       toast.error('Select at least 3 interest.')
       return
     }
-    const userPreferences = { userId: 'default-user', interests: selectedInterests }
+    const userPreferences = { userId: 'default-user', interests: selectedInterests, eventbriteIds, meetupIds }
     localStorage.setItem('userPreferences', JSON.stringify(userPreferences))
     console.log('Onboarding: Saved user preferences', userPreferences)
     toast.success(`Hi! Let's start!`)
@@ -54,22 +61,9 @@ export default function Onboarding() {
           className={`px-3 py-2 rounded-lg ${theme === 'light' ? 'bg-gray-200 text-gray-900' : 'bg-slate-800 text-gray-200'}`}
         >
           {theme == "light" ?
-            <Sun size={20} /> :
-            <div>
-              {/* {init && (
-                <Particles
-                  id="tsparticles"
-                  options={particlesOptions}
-                  className="absolute inset-0 z-0"
-                />
-              )} */}
-              {/* <Particles 
-                id='tsparticles'
-              /> */}
-              <MoonStar size={20} />
-            </div>
+            <Sun size={20} /> : <MoonStar size={20} />
           }
-         
+
         </motion.button>
       </div>
       <motion.div
@@ -85,16 +79,16 @@ export default function Onboarding() {
           Select between 3 to 5 interest so we can give you personilized suggestions
         </p>
         <div className="gap-2 grid grid-cols-3 mb-6">
-          {categories.map((category) => (
+          {USER_INTEREST_CATEGORIES.map((category) => (
             <button
-              key={category}
-              onClick={() => handleInterestToggle(category)}
-              className={`w-full p-4 rounded-lg text-left ${selectedInterests.includes(category)
+              key={category.label}
+              onClick={() => handleInterestToggle(category.label)}
+              className={`w-full p-4 rounded-lg text-left ${selectedInterests.includes(category.label)
                 ? 'bg-fuchsia-800/60 text-white'
                 : 'bg-gray-200 dark:bg-slate-600 text-gray-900 dark:text-gray-200'
                 }`}
             >
-              {category}
+              {category.label}
             </button>
           ))}
         </div>
