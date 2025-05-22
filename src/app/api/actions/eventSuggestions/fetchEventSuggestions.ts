@@ -13,11 +13,9 @@ export const fetchEventSuggestions = async (
     const eventbriteIds = selectedCategories.map(cat => cat.eventbriteId)
     const meetupIds = selectedCategories.map(cat => cat.meetupId)
 
-    // console.log(eventbriteIds, " and ", meetupIds)
-
     const res = await api.post('/suggested-events/suggestions', {
       location,
-    //   eventbriteIds,
+      eventbriteIds,
       meetupIds,
     })
 

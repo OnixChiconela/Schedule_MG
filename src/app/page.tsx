@@ -30,7 +30,6 @@ export default function LandingPage() {
     router.push("/dashboard")
   }
 
-
   return (
     <ClientOnly>
       {/* <ThemeProvider> */}

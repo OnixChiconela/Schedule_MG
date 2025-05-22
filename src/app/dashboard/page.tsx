@@ -1,10 +1,10 @@
-'use client'
+'use client';
 
 import { useRouter } from "next/navigation";
-import ClientOnly from "../components/ClientOnly"
-import SideNavbar from "../components/navbars/SideNavbar"
-import { ThemeProvider, useTheme } from "../themeContext"
-import { motion } from "framer-motion"
+import ClientOnly from "../components/ClientOnly";
+import SideNavbar from "../components/navbars/SideNavbar";
+import { ThemeProvider, useTheme } from "../themeContext";
+import { motion } from "framer-motion";
 import { format, getYear } from 'date-fns';
 import Navbar from "../components/navbars/Navbar";
 import { useEffect, useState } from "react";
@@ -13,6 +13,7 @@ import CustomDropdown from "../components/CustomDropdown";
 import { initialSuggestions } from "../fake/suggestions";
 import { emojiOptions } from "../components/emojiOptions";
 import EventSuggestions from "../components/events/EventSuggestions";
+import { useLocation } from "../context/LocationContext";
 
 type Task = {
     id: number;
@@ -42,11 +43,12 @@ type Note = {
     content: string;
     title?: string;
     emoji?: string;
-    createdAt?: number
+    createdAt?: number;
 };
 
 export default function DashboardPPage() {
     const { theme, toggleTheme } = useTheme();
+    // const {location} = useLocation()
     const router = useRouter();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [corners] = useState<Corner[]>(() => {
@@ -121,9 +123,9 @@ export default function DashboardPPage() {
     };
 
     useEffect(() => {
-        checkExpiredNotes(); // Verifica ao carregar
-        const interval = setInterval(checkExpiredNotes, 60000); // Verifica a cada minuto
-        return () => clearInterval(interval); // Limpa o intervalo ao desmontar
+        checkExpiredNotes();
+        const interval = setInterval(checkExpiredNotes, 60000);
+        return () => clearInterval(interval);
     }, [notes]);
 
     const updateEmoji = (id: number, emoji: string) => {
@@ -133,12 +135,14 @@ export default function DashboardPPage() {
     };
 
     const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 5) return "Work while others sleep, but remember to rest!";
-    if (hour < 12) return "Good morning, ready for a great day?";
-    if (hour < 17) return "Good afternoon, how's it going?";
-    return "Good evening, how was your day?";
-};
+        const hour = new Date().getHours();
+        if (hour < 5) return "Work while others sleep, but remember to rest!";
+        if (hour < 12) return "Good morning, ready for a great day?";
+        if (hour < 17) return "Good afternoon, how's it going?";
+        return "Good evening, how was your day?";
+    };
+
+    const location = useLocation()
 
     return (
         <ClientOnly>
@@ -150,9 +154,7 @@ export default function DashboardPPage() {
             />
             <div
                 className={`min-h-screen flex ${theme === 'light' ? 'bg-white' : 'bg-slate-900'} transition-colors duration-300`}
-                style={{
-                    paddingTop: 'env(safe-area-inset-top, 0px)', 
-                }}
+                style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
             >
                 <SideNavbar
                     theme={theme}
@@ -163,9 +165,7 @@ export default function DashboardPPage() {
                 />
                 <main
                     className="flex-1 p-4 sm:p-6 lg:ml-[260px] sm:pt-20 max-w-screen-xl mx-auto"
-                    style={{
-                        paddingTop: `calc(5rem + env(safe-area-inset-top, 0px))`,
-                    }}
+                    style={{ paddingTop: `calc(5rem + env(safe-area-inset-top, 0px))` }}
                 >
                     <section className="mb-6">
                         <motion.h1
@@ -262,52 +262,7 @@ export default function DashboardPPage() {
                         </div>
                     </section>
                     <section className="mb-6">
-                        <h2 className={`text-lg sm:text-[18px] font-semibold mb-3 sm:mb-4 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-300'}`}>
-                            Event suggestion <a className={`${theme == "light" ? 'text-neutral-600' : 'text-neutral-500'}`}>{`(Illustrative data)`}</a>
-                        </h2>
-                        {userInterests.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {suggestions
-                                    .filter((s) => userInterests.includes(s.category))
-                                    .slice(0, 3)
-                                    .map((item) => (
-                                        <motion.div
-                                            key={item.id}
-                                            className={`p-3 sm:p-5 rounded-xl shadow-lg border-l-4 ${categoryColors[item.category]} bg-gradient-to-br ${theme === 'light' ? 'from-white to-gray-50' : 'from-slate-800 to-slate-700'} min-h-[120px] relative`} // Adicionado 'relative'
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.3 }}
-                                        >
-                                            <h3 className={`text-base sm:text-lg font-semibold ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
-                                                {item.title}
-                                            </h3>
-                                            <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                                                {formatEventDate(item.date)} - {item.category}
-                                            </p>
-                                            <div
-                                                className={`absolute top-2 right-2 w-6 h-6 cursor-pointer transition-all flex items-center justify-center rounded-full ${theme === 'light' ? 'text-neutral-700 hover:bg-red-100 hover:text-neutral-950' : 'text-neutral-300 hover:bg-red-900/20 hover:text-neutral-100'} z-10`} // Adicionado 'z-10' e fundo no hover
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    removeSuggestion(item.id);
-                                                }}
-                                                aria-label="Remove suggestion"
-                                            >
-                                                <X size={16} />
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                            </div>
-                        ) : (
-                            <div className={`${theme == "light" ? "text-neutral-600 hover:text-neutral-800" : "text-neutral-300 hover:text-neutral-100"} underline cursor-pointer`}
-                                onClick={() => router.push('/onboarding')}
-                            >
-                                Pick your preferences so we can give you ideas
-                            </div>
-                        )}
-                        {/* <section >
-                            <EventSuggestions userCategories={userInterests}/>
-                        </section> */}
-
+                        <EventSuggestions userCategories={userInterests} location={location}/>
                         <motion.p
                             className={`mt-3 sm:mt-4 text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}
                             initial={{ opacity: 0 }}
