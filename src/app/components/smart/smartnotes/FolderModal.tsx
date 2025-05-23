@@ -47,7 +47,7 @@ const FolderModal: React.FC<FolderModalProps> = ({ isOpen, onClose, onCreate, th
           className={`text-xl font-semibold mb-4 ${theme === "light" ? "text-gray-900" : "text-white"
             }`}
         >
-          New Folder
+          New Vault
         </h2>
         <div className="space-y-4">
           <input
