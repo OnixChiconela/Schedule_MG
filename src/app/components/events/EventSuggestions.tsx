@@ -140,6 +140,15 @@ const EventSuggestions: React.FC<EventSuggestionsProps> = ({ userCategories, loc
             </div>
         );
     }
+    if (displayedSuggestions.length == 0) {
+        return (
+            <div className={`${theme === 'light' ? 'text-neutral-600 hover:text-neutral-800' : 'text-neutral-300 hover:text-neutral-100'} underline cursor-pointer text-center`}
+                onClick={() => window.location.href = '/onboarding'}
+            >
+                
+            </div>
+        );
+    }
 
     return (
         <>
