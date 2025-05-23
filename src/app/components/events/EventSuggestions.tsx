@@ -84,6 +84,7 @@ const EventSuggestions: React.FC<EventSuggestionsProps> = ({ userCategories, loc
     useEffect(() => {
         const fetchSuggestions = async () => {
             if (!location) {
+                toast.error("Cannot find your location")
                 setLoading(false);
                 return;
             }
@@ -130,12 +131,12 @@ const EventSuggestions: React.FC<EventSuggestionsProps> = ({ userCategories, loc
 
     if (loading) return <div className="text-center py-4">Loading...</div>;
     if (error) return <div className="text-center py-4 text-red-500">{error}</div>;
-    if (interest) {
+    if (!interest) {
         return (
             <div className={`${theme === 'light' ? 'text-neutral-600 hover:text-neutral-800' : 'text-neutral-300 hover:text-neutral-100'} underline cursor-pointer text-center`}
                 onClick={() => window.location.href = '/onboarding'}
             >
-                Pick your preferences so we can give you ideas
+                Pick your preferences so we can give you ideas!
             </div>
         );
     }
