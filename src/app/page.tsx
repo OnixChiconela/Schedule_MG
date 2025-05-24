@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { IoMdArrowForward } from 'react-icons/io'
 import { FaCalendarAlt, FaChartLine, FaClock, FaMagic } from 'react-icons/fa'
 import { MdBusinessCenter, MdChecklist, MdLightbulbOutline, MdPeople, MdTrendingUp } from 'react-icons/md'
-import { BiGlobe } from 'react-icons/bi'
+import { BiGlobe, BiTask } from 'react-icons/bi'
 import Container from './components/Container'
 import { useTheme } from './themeContext'
 import ClientOnly from './components/ClientOnly'
@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useLocation } from './context/LocationContext'
 import FloatingWaitingButton from './components/buttons/FloationgWaitingButton'
+import { Map } from 'lucide-react'
 
 export default function LandingPage() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false)
@@ -116,13 +117,13 @@ export default function LandingPage() {
                   iconColor="fuchsia"
                 />
                 <InfoCard
-                  icon={BiGlobe}
+                  icon={BiTask}
                   title="Stay Aligned"
                   content="Organize tasks, routines, and reflections in one place to keep your day aligned with your purpose."
                   iconColor="fuchsia"
                 />
                 <InfoCard
-                  icon={MdPeople}
+                  icon={Map}
                   title="Build Habits That Sticks"
                   content="Track your progress and reinforce behaviors that move you forward, consistently."
                   iconColor="fuchsia"
@@ -147,7 +148,7 @@ export default function LandingPage() {
               {/* <div className="mt-16"> */}
               <div className="space-y-16 lg:space-y-20">
 
-                <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded hover:scale-102 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
+                <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-2 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                   <div className="flex-none md:flex-1 lg:max-w-xl">
                     <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
                       <Image
@@ -170,7 +171,7 @@ export default function LandingPage() {
                     </p>
                   </div>
                 </div>
-                <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded hover:scale-102 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
+                <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-2 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
 
                   <div className="flex-1 text-center lg:text-left">
                     <div className={`
@@ -194,7 +195,7 @@ export default function LandingPage() {
                     </div>
                   </div>
                 </div>
-                <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded hover:scale-102 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
+                <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-2 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                   <div className="flex-none md:flex-1 ">
                     <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
                       <Image
