@@ -68,9 +68,19 @@ export default function LandingPage() {
                           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <div
                               onClick={() => getStart()}
-                              className="text-sm font-semibold py-3 px-8 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-900 hover:gap-2 transition flex items-center justify-center cursor-pointer"
+                              className="text-sm font-semibold py-3 px-8 rounded-full bg-fuchsia-600 text-white flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out"
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.gap = '0.5rem';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.gap = '0.10rem'; 
+                              }}
                             >
-                              {`Get Started`} <IoMdArrowForward size={20} className="ml-2 hover:scale-120 transition" />
+                              {`Get Started`}
+                              <IoMdArrowForward
+                                size={20}
+                                className="ml-2 transition-transform duration-300 ease-in-out"
+                              />
                             </div>
                             <a
                               href="mailto:josechiconela@icloud.com"

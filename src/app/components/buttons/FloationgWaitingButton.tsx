@@ -39,12 +39,18 @@ const FloatingWaitingButton = () => {
     return (
         <>
             <motion.div
-                className="fixed bottom-6 right-6 z-50 flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 cursor-pointer"
+                className="fixed bottom-6 right-6 z-50 flex items-center justify-center gap-2 px-5 py-3 rounded-full border-2 cursor-pointer ease-in-out transition-all"
                 style={buttonStyle}
-                animate={{ y: [0, -2, 0] }}
+                animate={{ y: [0, -5, 0] }}
                 transition={{ duration: 1.5, repeat: Infinity, repeatType: 'reverse' }}
                 whileHover={hoverStyle}
                 onClick={() => setIsModalOpen(true)}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.gap = '0.5rem';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.gap = '0.10rem';
+                }}
             >
                 <span className="text-sm font-semibold text-white">Join the Waiting List</span>
                 <IoMdArrowForward size={20} className="text-white transition-transform hover:scale-120" />
