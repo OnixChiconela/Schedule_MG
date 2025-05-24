@@ -17,6 +17,7 @@ import LandingFooter from './components/footers/LandingFooter'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useLocation } from './context/LocationContext'
+import FloatingWaitingButton from './components/buttons/FloationgWaitingButton'
 
 export default function LandingPage() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false)
@@ -435,33 +436,7 @@ export default function LandingPage() {
         {/* Footer */}
         <LandingFooter />
 
-        {/* Register Modal (Simplified) */}
-        {isRegisterOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-          >
-            <div className="bg-white rounded-lg p-8 max-w-md w-full">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Sign Up</h2>
-              <p className="text-gray-600 mb-6">Start your journey with Scheuor!</p>
-              <div className="flex gap-4">
-                <Link
-                  href="/onboarding"
-                  className="flex-1 text-center text-sm font-semibold py-2 px-4 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition"
-                >
-                  Continue
-                </Link>
-                <button
-                  onClick={handleRegisterClose}
-                  className="flex-1 text-sm font-semibold py-2 px-4 rounded-full border border-gray-300 text-gray-900 hover:bg-gray-100 transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
+        <FloatingWaitingButton />
       </div>
     </ClientOnly>
   )
