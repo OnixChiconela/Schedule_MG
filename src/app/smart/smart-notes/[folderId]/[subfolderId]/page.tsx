@@ -307,7 +307,7 @@ const SubfolderNote = () => {
                             <motion.button
                                 onClick={openAIModal}
                                 className={`px-2 py-1 rounded-2xl font-semibold transition-colors ${theme === "light"
-                                    ? "bg-neutral-200 hover:bg-neutral-400 text-neutral-800"
+                                    ? "bg-neutral-100 hover:bg-neutral-400 text-neutral-800"
                                     : "bg-slate-700 hover:bg-slate-600 text-neutral-200"
                                     }`}
                                 whileHover={{ scale: 1.05 }}
@@ -327,9 +327,9 @@ const SubfolderNote = () => {
                     <div className="flex flex-col h-full -mt-7">
                         <div
                             ref={quillRef}
-                            className={`w-full h-screen rounded-xl border ${theme === "light"
-                                ? "border-gray-100 bg-white text-black"
-                                : "border-slate-600 bg-slate-800 text-white"
+                            className={`w-full h-screen rounded-xl  ${theme === "light"
+                                ? "border-gray-50/20 bg-white text-black"
+                                : "border-slate-800 bg-slate-900 text-white"
                                 } quill-editor`}
                             style={{ minHeight: "300px", maxHeight: "80vh", overflow: "auto" }}
                         />
@@ -421,8 +421,6 @@ const SubfolderNote = () => {
                     cursor: pointer;
                 }
 
-           
-
                 /* Rotacionar a seta quando o dropdown está aberto */
                 .ql-toolbar .ql-picker-label.ql-active::after {
                     transform: rotate(180deg);
@@ -443,10 +441,6 @@ const SubfolderNote = () => {
                     margin-top: 4px !important;
                     animation: fadeIn 0.2s ease;
                 }
-
-
-            
-           
 
                 .ql-color-picker .ql-picker-options .ql-picker-item {
                     width: 20px !important;

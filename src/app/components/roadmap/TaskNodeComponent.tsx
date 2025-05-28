@@ -9,15 +9,19 @@ import CustomDropdown from '../CustomDropdown';
 import { CategoryColors, TaskNodeData } from '@/app/types';
 import { Corner, Task } from '@/app/tasks/page';
 
+interface TaskNodeComponentProps {
+    data: TaskNodeData;
+    id: string;
+    categoryColors: CategoryColors;
+    categoryOptions: { value: string; label: string }[]; // Adiciona categoryOptions como prop
+}
+
 const TaskNodeComponent = ({
     data,
     id,
     categoryColors,
-}: {
-    data: TaskNodeData;
-    id: string;
-    categoryColors: CategoryColors;
-}) => {
+    categoryOptions, // Nova prop
+}: TaskNodeComponentProps) => {
     const { theme } = useTheme();
     const { setNodes } = useReactFlow();
     const [isEditing, setIsEditing] = useState(false);
@@ -39,7 +43,7 @@ const TaskNodeComponent = ({
                               dueDate: editData.dueDate || '',
                               priority: editData.priority,
                               isCompleted: editData.status === 'Done',
-                              category: editData.category, // Store category
+                              category: editData.category,
                           }
                         : task
                 ),
@@ -65,13 +69,6 @@ const TaskNodeComponent = ({
         { value: 'Low', label: 'Low' },
         { value: 'Medium', label: 'Medium' },
         { value: 'High', label: 'High' },
-    ];
-
-    const categoryOptions = [
-        { value: 'Work', label: 'Work' },
-        { value: 'Personal', label: 'Personal' },
-        { value: 'Study', label: 'Study' },
-        { value: 'Other', label: 'Other' },
     ];
 
     return (
@@ -122,7 +119,7 @@ const TaskNodeComponent = ({
                         placeholder="Select Priority"
                     />
                     <CustomDropdown
-                        options={categoryOptions}
+                        options={categoryOptions} // Usa a prop recebida
                         value={editData.category}
                         onChange={(value) => setEditData({ ...editData, category: value as TaskNodeData['category'] })}
                         placeholder="Select Category"

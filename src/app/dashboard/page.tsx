@@ -1,27 +1,27 @@
 'use client';
 
-import { useRouter } from "next/navigation";
-import ClientOnly from "../components/ClientOnly";
-import SideNavbar from "../components/navbars/SideNavbar";
-import { ThemeProvider, useTheme } from "../themeContext";
-import { motion } from "framer-motion";
+import { useRouter } from 'next/navigation';
+import ClientOnly from '../components/ClientOnly';
+import SideNavbar from '../components/navbars/SideNavbar';
+import { ThemeProvider, useTheme } from '../themeContext';
+import { motion } from 'framer-motion';
 import { format, getYear } from 'date-fns';
-import Navbar from "../components/navbars/Navbar";
-import { useEffect, useState } from "react";
-import { X } from "lucide-react";
-import CustomDropdown from "../components/CustomDropdown";
-import { initialSuggestions } from "../fake/suggestions";
-import { emojiOptions } from "../components/emojiOptions";
-import EventSuggestions from "../components/events/EventSuggestions";
-import { useLocation } from "../context/LocationContext";
+import Navbar from '../components/navbars/Navbar';
+import { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
+import EventSuggestions from '../components/events/EventSuggestions';
+import { useLocation } from '../context/LocationContext';
+import { initialSuggestions } from '../fake/suggestions';
+import { emojiOptions } from '../components/emojiOptions';
+import Notes from '../components/Notes'; 
 
 type Task = {
     id: number;
     title: string;
-    status: "To Do" | "In Progress" | "Done";
+    status: 'To Do' | 'In Progress' | 'Done';
     createdDate: string;
     dueDate: string;
-    priority: "Low" | "Medium" | "High";
+    priority: 'Low' | 'Medium' | 'High';
     isCompleted: boolean;
 };
 
@@ -46,33 +46,35 @@ type Note = {
     createdAt?: number;
 };
 
-export default function DashboardPPage() {
+export default function DashboardPage() {
     const { theme, toggleTheme } = useTheme();
-    // const {location} = useLocation()
     const router = useRouter();
+    const location = useLocation();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [corners] = useState<Corner[]>(() => {
-        if (typeof window !== "undefined") {
-            const saved = localStorage.getItem("corners");
-            return saved ? JSON.parse(saved) : [{ id: 1, title: "", tasks: [] }, { id: 2, title: "", tasks: [] }, { id: 3, title: "", tasks: [] }];
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('corners');
+            return saved ? JSON.parse(saved) : [{ id: 1, title: '', tasks: [] }, { id: 2, title: '', tasks: [] }, { id: 3, title: '', tasks: [] }];
         }
-        return [{ id: 1, title: "", tasks: [] }, { id: 2, title: "", tasks: [] }, { id: 3, title: "", tasks: [] }];
+        return [{ id: 1, title: '', tasks: [] }, { id: 2, title: '', tasks: [] }, { id: 3, title: '', tasks: [] }];
     });
 
     const [notes, setNotes] = useState<Note[]>(() => {
-        if (typeof window !== "undefined") {
-            const saved = localStorage.getItem("notes");
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('notes');
             return saved ? JSON.parse(saved) : [];
         }
         return [];
     });
     const [userInterests] = useState<string[]>(() => {
-        if (typeof window !== "undefined") {
-            const saved = localStorage.getItem("userPreferences");
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('userPreferences');
             return saved ? JSON.parse(saved).interests : [];
         }
         return [];
     });
+
+    const [suggestions, setSuggestions] = useState<Suggestion[]>(initialSuggestions);
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
@@ -82,11 +84,9 @@ export default function DashboardPPage() {
         const date = new Date(dateString);
         const currentYear = getYear(new Date());
         const eventYear = getYear(date);
-        const formatString = eventYear === currentYear ? "d MMM" : "d MMM yyyy";
+        const formatString = eventYear === currentYear ? 'd MMM' : 'd MMM yyyy';
         return format(date, formatString);
     };
-
-    const [suggestions, setSuggestions] = useState<Suggestion[]>(initialSuggestions);
 
     const removeSuggestion = (id: number) => {
         setSuggestions(suggestions.filter((s) => s.id !== id));
@@ -94,22 +94,22 @@ export default function DashboardPPage() {
 
     const addNote = () => {
         if (notes.length < 3) {
-            const newNote: Note = { id: Date.now(), title: `Note ${notes.length + 1}`, content: "", emoji: "📝", createdAt: Date.now() };
+            const newNote: Note = { id: Date.now(), title: `Note ${notes.length + 1}`, content: '', emoji: '📝', createdAt: Date.now() };
             setNotes([...notes, newNote]);
-            localStorage.setItem("notes", JSON.stringify([...notes, newNote]));
+            localStorage.setItem('notes', JSON.stringify([...notes, newNote]));
         }
     };
 
     const updateNote = (id: number, content: string) => {
         const updatedNotes = notes.map((note) => (note.id === id ? { ...note, content } : note));
         setNotes(updatedNotes);
-        localStorage.setItem("notes", JSON.stringify(updatedNotes));
+        localStorage.setItem('notes', JSON.stringify(updatedNotes));
     };
 
     const removeNote = (id: number) => {
         const updatedNotes = notes.filter((note) => note.id !== id);
         setNotes(updatedNotes);
-        localStorage.setItem("notes", JSON.stringify(updatedNotes));
+        localStorage.setItem('notes', JSON.stringify(updatedNotes));
     };
 
     const checkExpiredNotes = () => {
@@ -118,7 +118,7 @@ export default function DashboardPPage() {
         const updatedNotes = notes.filter((note) => now - note.createdAt! < twentyFourHours);
         if (updatedNotes.length !== notes.length) {
             setNotes(updatedNotes);
-            localStorage.setItem("notes", JSON.stringify(updatedNotes));
+            localStorage.setItem('notes', JSON.stringify(updatedNotes));
         }
     };
 
@@ -131,18 +131,16 @@ export default function DashboardPPage() {
     const updateEmoji = (id: number, emoji: string) => {
         const updatedNotes = notes.map((note) => (note.id === id ? { ...note, emoji } : note));
         setNotes(updatedNotes);
-        localStorage.setItem("notes", JSON.stringify(updatedNotes));
+        localStorage.setItem('notes', JSON.stringify(updatedNotes));
     };
 
     const getGreeting = () => {
         const hour = new Date().getHours();
-        if (hour < 5) return "Work while others sleep, but remember to rest!";
-        if (hour < 12) return "Good morning, ready for a great day?";
-        if (hour < 17) return "Good afternoon, how's it going?";
-        return "Good evening, how was your day?";
+        if (hour < 5) return 'Work while others sleep, but remember to rest!';
+        if (hour < 12) return 'Good morning, ready for a great day?';
+        if (hour < 17) return 'Good afternoon, how\'s it going?';
+        return 'Good evening, how was your day?';
     };
-
-    const location = useLocation()
 
     return (
         <ClientOnly>
@@ -184,49 +182,14 @@ export default function DashboardPPage() {
                         >
                             Quick notes!
                         </motion.div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
-                            {notes.map((note) => (
-                                <motion.div
-                                    key={note.id}
-                                    className={`p-3 sm:p-4 rounded-xl shadow-lg ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} relative min-h-[150px]`}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    <div className="absolute left-3 sm:left-4 top-2">
-                                        <CustomDropdown
-                                            options={emojiOptions.map((emoji) => ({ value: emoji, label: emoji }))}
-                                            value={note.emoji || ""}
-                                            onChange={(value) => updateEmoji(note.id, value)}
-                                        />
-                                    </div>
-                                    <button
-                                        className={`absolute right-2 top-2 ${theme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-slate-600 text-neutral-200'} rounded-md px-2 py-0 transition-colors`}
-                                        onClick={() => removeNote(note.id)}
-                                    >
-                                        <X size={16} />
-                                    </button>
-                                    <textarea
-                                        className={`w-full h-20 sm:h-24 p-2 rounded-md flex ${theme === 'light' ? 'bg-gray-50 text-gray-900' : 'bg-slate-700 text-gray-200'} border ${theme === 'light' ? 'border-gray-300' : 'border-slate-600'} focus:outline-none focus:ring-2 focus:ring-neutral-800 mt-10 sm:mt-10`}
-                                        value={note.content}
-                                        onChange={(e) => updateNote(note.id, e.target.value)}
-                                        placeholder={note.title || "Add a note or reminder..."}
-                                    />
-                                </motion.div>
-                            ))}
-                            {notes.length < 3 && (
-                                <motion.button
-                                    className={`p-3 sm:p-4 rounded-xl shadow-lg ${theme === 'light' ? 'bg-gray-200 text-gray-800 hover:bg-gray-300' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'} flex items-center justify-center min-h-[150px]`}
-                                    onClick={addNote}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    whileHover={{ scale: 1.05 }}
-                                    transition={{ duration: 0.2 }}
-                                >
-                                    Add Note
-                                </motion.button>
-                            )}
-                        </div>
+                        <Notes
+                            notes={notes}
+                            updateEmoji={updateEmoji}
+                            updateNote={updateNote}
+                            removeNote={removeNote}
+                            addNote={addNote}
+                            emojiOptions={emojiOptions}
+                        />
                     </section>
                     <section className="mb-6">
                         <h2 className={`text-xl sm:text-[22px] font-semibold mb-3 sm:mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-gray-100'}`}>
@@ -262,14 +225,14 @@ export default function DashboardPPage() {
                         </div>
                     </section>
                     <section className="mb-6">
-                        <EventSuggestions userCategories={userInterests} location={location}/>
+                        <EventSuggestions userCategories={userInterests} location={location} />
                         <motion.p
                             className={`mt-3 sm:mt-4 text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5 }}
                         >
-                            Smart notes. soon...
+                            Smart notes. try beta...
                         </motion.p>
                     </section>
                 </main>
@@ -279,11 +242,11 @@ export default function DashboardPPage() {
 }
 
 const categoryColors: { [key: string]: string } = {
-    Technology: "border-blue-500",
-    Art: "border-purple-500",
-    Finance: "border-green-500",
-    Education: "border-yellow-500",
-    Health: "border-red-500",
-    Travel: "border-teal-500",
-    Music: "border-pink-500",
+    Technology: 'border-blue-500',
+    Art: 'border-purple-500',
+    Finance: 'border-green-500',
+    Education: 'border-yellow-500',
+    Health: 'border-red-500',
+    Travel: 'border-teal-500',
+    Music: 'border-pink-500',
 };

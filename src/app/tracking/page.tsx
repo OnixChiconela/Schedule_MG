@@ -288,7 +288,7 @@ function TrackingPageContent() {
     const nodeTypes = useMemo(
         () => ({
             custom: (props: NodeProps<TaskNodeData>) => (
-                <TaskNodeComponent {...props} categoryColors={categoryColors} />
+                <TaskNodeComponent {...props} categoryColors={categoryColors} categoryOptions={categoryOptions}/>
             ),
         }),
         [categoryColors]

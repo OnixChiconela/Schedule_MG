@@ -14,9 +14,13 @@ import {
   PenBox,
   Sparkles,
   Sun,
+  User,
   X,
 } from 'lucide-react';
 import { IconType } from 'react-icons';
+import UserProfileItem from './UserProfilleItem';
+import { useRouter } from 'next/navigation';
+import { MdPeople, MdPeopleOutline } from 'react-icons/md';
 
 interface SideNavbarProps {
   theme: 'light' | 'dark';
@@ -35,12 +39,10 @@ export default function SideNavbar({
 }: SideNavbarProps) {
   const [isDesktop, setIsDesktop] = useState(false);
   const [localIsOpen, setLocalIsOpen] = useState(false);
-
-  // Use controlled or local state
+  const router = useRouter()
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : localIsOpen;
   const setIsOpen = controlledSetIsOpen || setLocalIsOpen;
 
-  // Handle window resize and SSR safety
   useEffect(() => {
     const updateIsDesktop = () => {
       if (typeof window !== 'undefined') {
@@ -60,6 +62,47 @@ export default function SideNavbar({
   const buttonVariants = {
     hover: { scale: 1.05, transition: { duration: 0.2 } },
     tap: { scale: 0.95 },
+  };
+
+  const [userVisual, setUserVisual] = useState<{
+    type: 'image' | 'icon' | 'emoji';
+    value: string | React.ReactNode
+  }>({ type: 'emoji', value: "🚀" })
+
+  useEffect(() => {
+    const savedVisual = localStorage.getItem('userVisual');
+    if (savedVisual) {
+      const parsed = JSON.parse(savedVisual);
+      if (parsed.type === 'icon') {
+        const iconMap: { [key: string]: React.ReactNode } = {
+          'User': <User />,
+        };
+        setUserVisual({ ...parsed, value: iconMap[parsed.value as string] || parsed.value });
+      } else {
+        setUserVisual(parsed);
+      }
+    }
+  }, []);
+
+  const handleVisualChange = (visual: { type: 'image' | 'icon' | 'emoji'; value: string | React.ReactNode }) => {
+    let valueToSave: string | React.ReactNode = visual.value;
+    if (visual.type === 'icon') {
+      valueToSave = visual.value === <User /> ? 'User' : visual.value!.toString();
+    }
+    const updatedVisual = { ...visual, value: valueToSave };
+    setUserVisual(updatedVisual);
+    localStorage.setItem('userVisual', JSON.stringify(updatedVisual));
+  };
+
+  const handleSettingsClick = () => {
+    router.push('/settings');
+  };
+  const handleProfileClick = () => {
+    router.push('/profile');
+  };
+  const handleLogoutClick = () => {
+    localStorage.removeItem('authToken');
+    // router.push('/');
   };
 
   return (
@@ -131,6 +174,28 @@ export default function SideNavbar({
               </div>
               <ul>
                 <li>
+                  <UserProfileItem
+                    name="Hmm, nickname"
+                    email=""
+                    imageUrl={userVisual.type === 'image' ? (userVisual.value as string) : undefined}
+                    icon={userVisual.type === 'icon' ? (userVisual.value as React.ReactNode) : undefined}
+                    emoji={userVisual.type === 'emoji' ? (userVisual.value as string) : undefined}
+                    onVisualChange={handleVisualChange}
+                    onSettingsClick={handleSettingsClick}
+                    onProfileClick={handleProfileClick}
+                    onLogoutClick={handleLogoutClick}
+                  />
+                </li>
+              </ul>
+              <Divider theme={theme} />
+              <ul>
+                <li>
+                  <SideNavButton title="Team space" link="team-space" icon={MdPeopleOutline} theme={theme}/>
+                </li>
+              </ul>
+              <Divider theme={theme}/>
+              <ul>
+                <li>
                   <SideNavButton title="Home" link="/dashboard" icon={Home} theme={theme} />
                 </li>
               </ul>
@@ -155,14 +220,14 @@ export default function SideNavbar({
                   <SideNavButton title="Roadmap" link="/tracking" icon={Car} theme={theme} />
                 </li>
                 <Divider theme={theme} />
-                  <li>
-                    <div className={`flex items-center gap-2 mb-2 ${theme == "light" ? "text-neutral-900" : "text-neutral-200"} font-semibold`}>
-                      AI Partner
-                      <Sparkles size={16}/>
-                    </div>
-                    <SideNavButton title='Smart notes' link='/smart/smart-notes' icon={Notebook} theme={theme}/>
-                  </li>
-                <Divider theme={theme}/>
+                <li>
+                  <div className={`flex items-center gap-2 mb-2 ${theme == "light" ? "text-neutral-900" : "text-neutral-200"} font-semibold`}>
+                    AI Partner
+                    <Sparkles size={16} />
+                  </div>
+                  <SideNavButton title='Smart notes' link='/smart/smart-notes' icon={Notebook} theme={theme} />
+                </li>
+                <Divider theme={theme} />
                 <li>
                   <SideNavButton title="Feedback" link="/feedback" icon={Mail} theme={theme} />
                 </li>
@@ -175,7 +240,7 @@ export default function SideNavbar({
   );
 }
 
-const Divider = ({ theme }: { theme: 'light' | 'dark' }) => (
+export const Divider = ({ theme }: { theme: 'light' | 'dark' }) => (
   <div className="py-2">
     <hr className={`${theme === 'light' ? 'text-gray-300' : 'text-neutral-700'}`} />
   </div>
