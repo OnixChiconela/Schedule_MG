@@ -154,6 +154,13 @@ function TrackingPageContent() {
         }
         return defaultCategoryColors;
     });
+
+    const categoryOptions = useMemo(() => {
+        return Object.keys(categoryColors)
+            .map((category) => ({ value: category, label: category }))
+            .sort((a, b) => (a.value.toLowerCase() === "other" ? 1 : b.value.toLowerCase() === "other" ? -1 : 0));
+    }, [categoryColors]);
+
     const [showAllCorners, setShowAllCorners] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isNavbarOpen, setIsNavbarOpen] = useState(false);
@@ -288,10 +295,10 @@ function TrackingPageContent() {
     const nodeTypes = useMemo(
         () => ({
             custom: (props: NodeProps<TaskNodeData>) => (
-                <TaskNodeComponent {...props} categoryColors={categoryColors} categoryOptions={categoryOptions}/>
+                <TaskNodeComponent {...props} categoryColors={categoryColors} categoryOptions={categoryOptions} />
             ),
         }),
-        [categoryColors]
+        [categoryColors, categoryOptions]
     );
 
     const generateId = () => Date.now().toString();
@@ -394,11 +401,7 @@ function TrackingPageContent() {
         if (isNavbarOpen) setIsNavbarOpen(false);
     };
 
-    const categoryOptions = useMemo(() => {
-        return Object.keys(categoryColors)
-            .map((category) => ({ value: category, label: category }))
-            .sort((a, b) => (a.value.toLowerCase() === "other" ? 1 : b.value.toLowerCase() === "other" ? -1 : 0));
-    }, [categoryColors]);
+
 
     const priorityOptions = [
         { value: "Low", label: "Low" },
@@ -413,19 +416,19 @@ function TrackingPageContent() {
 
     const removeCategory = (categoryToRemove: string) => {
         if (categoryToRemove.toLowerCase() === "other") return;
-    
+
         const updatedCategoryColors = { ...categoryColors };
         delete updatedCategoryColors[categoryToRemove];
         setCategoryColors(updatedCategoryColors);
         localStorage.setItem("categoryColors", JSON.stringify(updatedCategoryColors));
-    
+
         // setCategoryOptions((prev) =>
         //     prev
         //         .filter((opt) => opt.value !== categoryToRemove)
         //         .filter((opt) => opt.value.toLowerCase() !== "other")
         //         .concat({ value: "Other", label: "Other" })
         // );
-    
+
         const updatedNodes = nodes.map((node) => {
             if (node.data.category === categoryToRemove) {
                 return {
@@ -436,7 +439,7 @@ function TrackingPageContent() {
             return node;
         });
         setNodes(updatedNodes);
-    
+
         const savedCorners = localStorage.getItem("corners");
         if (savedCorners) {
             const parsed = JSON.parse(savedCorners);
@@ -454,7 +457,7 @@ function TrackingPageContent() {
 
     return (
         <div className={`flex flex-col min-h-screen ${theme === "light" ? "bg-gray-100" : "bg-slate-900"}`}>
-            <TrackingNav themeButton={true}/>
+            <TrackingNav themeButton={true} />
             <main className="flex-1 py-12">
                 <Container>
                     <div className="max-w-screen-4xl mx-auto">

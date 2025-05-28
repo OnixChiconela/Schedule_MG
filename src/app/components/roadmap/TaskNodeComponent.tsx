@@ -20,7 +20,7 @@ const TaskNodeComponent = ({
     data,
     id,
     categoryColors,
-    categoryOptions, // Nova prop
+    categoryOptions,
 }: TaskNodeComponentProps) => {
     const { theme } = useTheme();
     const { setNodes } = useReactFlow();
