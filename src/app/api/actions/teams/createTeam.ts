@@ -1,10 +1,12 @@
 import api from "../../api"
 
-interface createTeamData {
-    userId: string
-    encryptedName: string
-    description: string
-    encryptedKeys: Record<string, { encryptedKey: string; nonce: string }>
+export interface createTeamData {
+    userId: string;
+    encryptedName: string;
+    description: string;
+    encryptedKeys: Record<string, { encryptedKey: string; nonce: string }>;
+    nameNonce: string;
+    descriptionNonce: string; // Adicionar o descriptionNonce
 }
 export const createTeam = async (data: createTeamData) => {
     try {

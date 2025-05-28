@@ -5,10 +5,10 @@ import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import sodium from 'libsodium-wrappers';
 import { useTheme } from '@/app/themeContext';
-import { createTeam } from '@/app/api/actions/teams/createTeam';
 import { Team } from './TeamCards';
 import { User } from '@/app/types/back-front';
 import { getUsers } from '@/app/api/actions/user/getUsers';
+import { createTeam } from '@/app/api/actions/teams/createTeam';
 import { getMasterKey } from '@/app/api/actions/user/getMasterKey';
 
 interface CreateTeamModalProps {
@@ -36,7 +36,6 @@ export default function CreateTeamModal({ isOpen, onClose, onCreate, userId }: C
         console.error('Error fetching users:', error);
       }
     };
-
     fetchUsers();
   }, []);
 
@@ -94,61 +93,62 @@ export default function CreateTeamModal({ isOpen, onClose, onCreate, userId }: C
       console.log('Sodium ready, proceeding with encryption');
       console.log('Form data before encryption:', form);
 
-      // Gerar chave e nonce
+      // Gerar chave e nonces
       const key = sodium.randombytes_buf(sodium.crypto_secretbox_KEYBYTES);
-      const nonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
+      const nameNonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
+      const descriptionNonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
 
       // Criptografar nome e descrição
       const nameBuffer = Buffer.from(form.name, 'utf8');
-      const encryptedNameArray = sodium.crypto_secretbox_easy(nameBuffer, nonce, key);
-      if (!(encryptedNameArray instanceof Uint8Array)) {
-        throw new Error('Encryption failed: invalid encryptedNameArray');
-      }
-      const encryptedName = Buffer.from(encryptedNameArray.buffer).toString('base64');
-      console.log('Encrypted Name Base64:', encryptedName);
+      const encryptedNameArray = sodium.crypto_secretbox_easy(nameBuffer, nameNonce, key);
+      const encryptedName = Buffer.from(encryptedNameArray).toString('base64');
 
       const descriptionBuffer = form.description ? Buffer.from(form.description, 'utf8') : Buffer.from('');
-      const encryptedDescriptionArray = sodium.crypto_secretbox_easy(descriptionBuffer, nonce, key);
-      const encryptedDescription = Buffer.from(encryptedDescriptionArray.buffer).toString('base64');
-      console.log('Encrypted Description Base64:', encryptedDescription);
+      const encryptedDescriptionArray = sodium.crypto_secretbox_easy(descriptionBuffer, descriptionNonce, key);
+      const encryptedDescription = Buffer.from(encryptedDescriptionArray).toString('base64');
 
-      // Obter a masterKey (simulação, substitua por lógica real)
+      // Obter a masterKey
       const userPassword = 'testpassword'; // TODO: Substituir por autenticação real
-      const userMasterKey = await getMasterKey(userId, userPassword); // Implemente essa função
-      console.log("usermaster key: ", userMasterKey)
+      const userMasterKey = await getMasterKey(userId, userPassword);
+      if (!userMasterKey) throw new Error('Failed to retrieve master key');
       const masterKeyBuffer = Buffer.from(userMasterKey, 'base64');
-      console.log("master: ", masterKeyBuffer)
+
       // Gerar encryptedKeys para o owner e membros
       const encryptedKeys: Record<string, { encryptedKey: string; nonce: string }> = {};
-      const ownerNonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
+      const ownerKeyNonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
+      const ownerEncryptedKey = sodium.crypto_secretbox_easy(key, ownerKeyNonce, masterKeyBuffer);
       encryptedKeys[userId] = {
-        encryptedKey: Buffer.from(sodium.crypto_secretbox_easy(key, ownerNonce, masterKeyBuffer).buffer).toString('base64'),
-        nonce: Buffer.from(ownerNonce.buffer).toString('base64'),
+        encryptedKey: Buffer.from(ownerEncryptedKey).toString('base64'),
+        nonce: Buffer.from(ownerKeyNonce).toString('base64'),
       };
-      console.log("encry keys: ", encryptedKeys)
 
-      const memberIds = form.members.map((member) => {
-        const matchedUser = users.find((user) =>
-          `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase() === member.toLowerCase()
-        );
-        return matchedUser?._id || '';
-      }).filter((id) => id);
+      const memberIds = form.members
+        .map((member) => {
+          const matchedUser = users.find((user) =>
+            `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase() === member.toLowerCase()
+          );
+          return matchedUser?._id || '';
+        })
+        .filter((id) => id);
 
       for (const memberId of memberIds) {
         if (memberId && memberId !== userId) {
-          const memberNonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
+          const memberKeyNonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
+          const memberEncryptedKey = sodium.crypto_secretbox_easy(key, memberKeyNonce, masterKeyBuffer);
           encryptedKeys[memberId] = {
-            encryptedKey: Buffer.from(sodium.crypto_secretbox_easy(key, memberNonce, masterKeyBuffer).buffer).toString('base64'),
-            nonce: Buffer.from(memberNonce.buffer).toString('base64'),
+            encryptedKey: Buffer.from(memberEncryptedKey).toString('base64'),
+            nonce: Buffer.from(memberKeyNonce).toString('base64'),
           };
         }
       }
 
       const data = {
         userId,
-        encryptedName: encryptedName, // Usar o valor já convertido
+        encryptedName,
         description: encryptedDescription,
-        encryptedKeys
+        encryptedKeys,
+        nameNonce: Buffer.from(nameNonce).toString('base64'),
+        descriptionNonce: Buffer.from(descriptionNonce).toString('base64'), // Enviar descriptionNonce
       };
 
       console.log('Team creation data:', data);
@@ -161,9 +161,12 @@ export default function CreateTeamModal({ isOpen, onClose, onCreate, userId }: C
       const newTeam: Team = {
         id: response.teamId,
         encryptedName: data.encryptedName,
+        description: data.description, // Incluir a descrição criptografada
         encryptedKeys: data.encryptedKeys,
         role: 'OWNER',
         createdAt: new Date().toISOString(),
+        nameNonce: data.nameNonce,
+        descriptionNonce: data.descriptionNonce, // Incluir descriptionNonce
       };
 
       onCreate(newTeam);

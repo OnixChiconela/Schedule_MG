@@ -29,8 +29,14 @@ export default function TeamSpace() {
     const fetchTeams = async () => {
       try {
         const response = await getTeamSpace(userId);
-        console.log('Fetched teams:', response);
-        setTeams(response || []);
+        console.log('Fetched teams with nonces:', response);
+        const teamsWithNonces = response.map((team: any) => ({
+          ...team,
+          nameNonce: team.nameNonce || '',
+          descriptionNonce: team.descriptionNonce || '', // Garantir que descriptionNonce esteja presente
+          description: team.description || '', // Garantir que description esteja presente
+        }));
+        setTeams(teamsWithNonces);
       } catch (error) {
         console.error('Error fetching teams:', error);
         setError('Failed to load teams. Please try again.');
@@ -57,7 +63,7 @@ export default function TeamSpace() {
   };
 
   const handleCreateSuccess = (newTeam: Team) => {
-    setTeams([...teams, newTeam]);
+    setTeams([...teams, newTeam]); // newTeam já inclui nameNonce e descriptionNonce
     setIsCreateModalOpen(false);
   };
 
@@ -156,7 +162,6 @@ export default function TeamSpace() {
                 </motion.button>
               </div>
             </div>
-            {/* Barra de Pesquisa Avançada */}
             <div className="flex justify-center px-20">
               <div
                 className={`flex flex-col gap-2 ${theme === 'light'
@@ -252,7 +257,6 @@ export default function TeamSpace() {
                 </div>
               </div>
             </div>
-            {/* Quadros de Equipes */}
             <div className="mt-12">
               {loading ? (
                 <p className={theme === 'light' ? 'text-neutral-600' : 'text-neutral-400'}>Loading teams...</p>
