@@ -162,7 +162,7 @@ export default function TeamSpace() {
                 </motion.button>
               </div>
             </div>
-            <div className="flex justify-center px-20">
+            <div className="flex justify-center md:px-20">
               <div
                 className={`flex flex-col gap-2 ${theme === 'light'
                   ? 'bg-neutral-100 text-neutral-700'
