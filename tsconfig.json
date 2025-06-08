@@ -39,7 +39,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "declarations.d.ts"
-  ],
+, "next.config.js"  ],
   "exclude": [
     "node_modules"
   ]

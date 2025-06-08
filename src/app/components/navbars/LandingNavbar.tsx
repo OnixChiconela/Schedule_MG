@@ -163,16 +163,15 @@ const LandingNavbar = () => {
                                 >
                                     Contact
                                 </a>
-                                <Link
-                                    href="/#"
+                                <div
+                                    onClick={() => router.push(`/my-space/auth/login`)}
                                     className={`text-base font-medium py-2 px-4 rounded-md ${theme === 'light'
                                         ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                         : 'hover:bg-slate-600 hover:text-fuchsia-400 text-neutral-200'
                                         } transition`}
-                                    onClick={toggleMenu}
                                 >
                                     Log In
-                                </Link>
+                                </div>
                                 <button
                                     onClick={() => router.push(`/my-space/auth/register`)}
                                     className="text-base font-semibold py-2 px-4 rounded-md bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition text-left"

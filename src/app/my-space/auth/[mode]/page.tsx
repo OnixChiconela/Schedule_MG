@@ -76,8 +76,8 @@ const Auth = () => {
   return (
     <div
       className={`min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center 
-        ${theme == "light" ? "bg-black" : ""}`}
-      style={{ backgroundImage: `url(/images/scheuor_final.png)` }}
+        ${theme == "light" ? "bg-neutral-200" : "bg-black/50"}`}
+      // style={{ backgroundImage: `url(/images/scheuor_final.png)` }}
     >
       <AnimatePresence mode="wait">
         {!isSwitching && (

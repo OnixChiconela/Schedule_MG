@@ -3,12 +3,11 @@
 import { useRouter } from 'next/navigation';
 import ClientOnly from '../components/ClientOnly';
 import SideNavbar from '../components/navbars/SideNavbar';
-import { ThemeProvider, useTheme } from '../themeContext';
+import { useTheme } from '../themeContext';
 import { motion } from 'framer-motion';
 import { format, getYear } from 'date-fns';
 import Navbar from '../components/navbars/Navbar';
 import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
 import EventSuggestions from '../components/events/EventSuggestions';
 import { useLocation } from '../context/LocationContext';
 import { initialSuggestions } from '../fake/suggestions';
