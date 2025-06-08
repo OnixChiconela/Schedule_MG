@@ -23,7 +23,7 @@ interface TeamPageProps {
     team: Team;
 }
 
-const TeamPage: React.FC<TeamPageProps> = ({ team }) => {
+export default function TeamPage({ team }: TeamPageProps) {
     const { teamId } = useParams();
     const { theme } = useTheme();
     const isSmallScreen = useMediaQuery({ maxWidth: 1024 });
@@ -313,4 +313,4 @@ const TeamPage: React.FC<TeamPageProps> = ({ team }) => {
     );
 };
 
-export default TeamPage;
+// export default TeamPage;
