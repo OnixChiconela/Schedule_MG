@@ -84,7 +84,6 @@ const SubfolderNote = () => {
     const [selectedText, setSelectedText] = useState("");
     const [selectionBounds, setSelectionBounds] = useState<{ top: number; left: number } | null>(null);
     const isInitialized = useRef(false);
-    const buttonRef = useRef<HTMLDivElement>(null);
     const [isGenerating, setIsGenerating] = useState(false);
 
     const [showSummarizeButton, setShowSummarizeButton] = useState(false);
