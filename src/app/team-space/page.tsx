@@ -76,6 +76,14 @@ export default function TeamSpace() {
     setIsCreateModalOpen(false);
   };
 
+  const openCreateModal = () => {
+    if (!currentUser) {
+      toast.error("login to create your team")
+      router.push("/my-space/auth/login")
+    }
+    setIsCreateModalOpen(true)
+  }
+
   const handleCreateWithAI = () => {
     setActiveButton(activeButton === 'create' ? null : 'create');
     if (activeButton !== 'create') {
@@ -155,7 +163,7 @@ export default function TeamSpace() {
                   variants={buttonVariants}
                   whileHover="hover"
                   whileTap="tap"
-                  onClick={() => setIsCreateModalOpen(true)}
+                  onClick={() => openCreateModal()}
                 >
                   <Plus />
                 </motion.button>
@@ -166,6 +174,7 @@ export default function TeamSpace() {
                   variants={buttonVariants}
                   whileHover="hover"
                   whileTap="tap"
+                  onClick={() => toast.error("disabled!")}
                 >
                   more <MoreHorizontal />
                 </motion.button>
