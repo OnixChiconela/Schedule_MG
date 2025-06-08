@@ -19,11 +19,11 @@ import NotesFolders from "@/app/components/teams/NoteFolder";
 import TeamChatView from "@/app/components/teams/TeamChatView";
 import { useUser } from "@/app/context/UserContext";
 
-interface TeamProps {
+interface TeamPageProps {
     team: Team;
 }
 
-const TeamPage: React.FC<TeamProps> = ({ team }) => {
+export default function TeamPage({ team }: TeamPageProps) {
     const { teamId } = useParams();
     const { theme } = useTheme();
     const isSmallScreen = useMediaQuery({ maxWidth: 1024 });
@@ -313,4 +313,4 @@ const TeamPage: React.FC<TeamProps> = ({ team }) => {
     );
 };
 
-export default TeamPage;
+// export default TeamPage;
