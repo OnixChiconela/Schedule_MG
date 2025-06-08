@@ -7,7 +7,7 @@ export const getUserWithToken = async (): Promise<{ token: string | null; user: 
         const userData = localStorage.getItem('user_data')
 
         if (!token || !userData) {
-            toast.error("You're not logged in")
+            // toast.error("You're not logged in")
             return { token: null, user: null }
         }
         let user

@@ -12,6 +12,7 @@ import TeamCards, { Team } from '../components/teams/TeamCards';
 import CreateTeamModal from '../components/teams/CreateTeamModal';
 import { getTeamSpace } from '../api/actions/teams/getTeamSpace';
 import { useUser } from '../context/UserContext';
+import toast from 'react-hot-toast';
 
 export default function TeamSpace() {
   const { theme, toggleTheme } = useTheme();
@@ -29,6 +30,11 @@ export default function TeamSpace() {
 
 
   useEffect(() => {
+    if (!currentUser) {
+      setLoading(false)
+      toast.error("Oops, seems like you're not logged in")
+      return
+    }
     const fetchTeams = async () => {
       try {
         const response = await getTeamSpace(currentUser!.id);
