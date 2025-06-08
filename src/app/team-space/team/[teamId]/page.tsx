@@ -1,6 +1,5 @@
 "use client"
 
-import { Team } from "@/app/components/teams/TeamCards";
 import { useTheme } from "@/app/themeContext";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -17,13 +16,14 @@ import TeamTasks from "@/app/components/teams/TeamTasks";
 import NoteEditor from "@/app/components/teams/NoteEditor";
 import NotesFolders from "@/app/components/teams/NoteFolder";
 import TeamChatView from "@/app/components/teams/TeamChatView";
+import { Team } from "@/app/components/teams/TeamCards";
 import { useUser } from "@/app/context/UserContext";
 
-interface TeamPageProps {
-    team: Team;
-}
+// interface TeamPageProps {
+//     team: Team;
+// }
 
-export default function TeamPage({ team }: TeamPageProps) {
+export default function TeamPage() {
     const { teamId } = useParams();
     const { theme } = useTheme();
     const isSmallScreen = useMediaQuery({ maxWidth: 1024 });
@@ -37,6 +37,8 @@ export default function TeamPage({ team }: TeamPageProps) {
     const [activePanelIndex, setActivePanelIndex] = useState(0);
     const [panelContents, setPanelContents] = useState<string[]>(["Calendar"]);
     const [previousState, setPreviousState] = useState({ panelSizes: [100], panelCount: 1, panelContents: ["Calendar"] });
+
+    const [team, setTeam] = useState<Team | null>(null)
     const isOwner = team?.role === "OWNER";
     const [panelWidths, setPanelWidths] = useState<number[]>([0]);
 
@@ -44,6 +46,9 @@ export default function TeamPage({ team }: TeamPageProps) {
 
     useEffect(() => {
         const decryptedData = async () => {
+            if (!team) {
+                return
+            }
             try {
                 await sodium.ready;
                 const userMasterKey = await getUserMasterKey(currentUser!.id);
