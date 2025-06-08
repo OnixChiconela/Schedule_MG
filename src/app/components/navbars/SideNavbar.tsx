@@ -190,7 +190,7 @@ export default function SideNavbar({
               <Divider theme={theme} />
               <ul>
                 <li>
-                  <SideNavButton title="Team space" link="team-space" icon={MdPeopleOutline} theme={theme}/>
+                  <SideNavButton title="Team space" link="/team-space" icon={MdPeopleOutline} theme={theme}/>
                 </li>
               </ul>
               <Divider theme={theme}/>

@@ -424,7 +424,7 @@ export default function LandingPage() {
           <Container>
             <h2 className={`text-3xl sm:text-4xl font-bold  ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`}>Join Scheuor Today!</h2>
             <p className={`text-lg mt-4 max-w-2xl mx-auto  ${theme == "light" ? "text-gray-600" : "text-neutral-300"}`}>
-              Sign up now to become part of the crew.
+              Sign up now to become one of us.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
               <Link

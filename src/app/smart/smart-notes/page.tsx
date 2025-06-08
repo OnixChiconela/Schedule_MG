@@ -22,6 +22,7 @@ type Subfolder = {
 export type Folder = {
   id: number;
   title: string;
+  description?: string
   titleColor: string;
   bgColor: string;
   borderColor: string;

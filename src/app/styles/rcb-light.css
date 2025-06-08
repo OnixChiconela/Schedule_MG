@@ -1,0 +1,126 @@
+/* Estilos para Tema claro (rbc-light) */
+.rbc-light .rbc-calendar {
+  background-color: #1e293b;
+  color: #e5e7eb;
+}
+
+.rbc-light .rbc-header,
+.rbc-light .rbc-time-header-cell,
+.rbc-light .rbc-time-header-content {
+  background-color: #334155;
+  color: #e5e7eb;
+  border-color: #475569;
+}
+
+.rbc-light .rbc-day-bg,
+.rbc-light .rbc-time-content,
+.rbc-light .rbc-time-view {
+  background-color: #1e293b;
+  border-color: #475569;
+}
+
+.rbc-light .rbc-off-range-bg {
+  background-color: #4b5563;
+}
+
+.rbc-light .rbc-today {
+  background-color: #ad83ad32;
+}
+
+.rbc-light .rbc-event {
+  border: none !important;
+}
+
+.rbc-light .rbc-time-slot {
+  border-color: #374151;
+  min-height: 40px;
+  padding: 8px 4px;
+  border-radius: 6px;
+}
+
+.rbc-light .rbc-btn-group button {
+  background-color: #334155;
+  color: #e5e7eb;
+  border: 1px solid #475569;
+  border-radius: 8px;
+}
+
+.rbc-light .rbc-btn-group button:hover {
+  background-color: #4b5563;
+}
+
+.rbc-light .rbc-month-view .rbc-row,
+.rbc-light .rbc-time-view .rbc-time-content,
+.rbc-light .rbc-agenda-view .rbc-agenda-content {
+  border-radius: 10px;
+  overflow: auto;
+}
+
+/* Estilos para Tema Claro (rbc-light) */
+.rbc-light .rbc-calendar {
+  background-color: #ffffff; /* Fundo branco */
+  color: #32373e; /* Texto cinza escuro */
+}
+
+.rbc-light .rbc-header,
+.rbc-light .rbc-time-header-cell,
+.rbc-light .rbc-time-header-content {
+  background-color: #f3f4f6; /* Cinza claro para cabeçalhos */
+  color: #2f3235;
+  border-color: #d1d5db; /* Cinza claro para bordas */
+}
+
+.rbc-light .rbc-day-bg,
+.rbc-light .rbc-time-content,
+.rbc-light .rbc-time-view {
+  background-color: #ffffff;
+  border-color: #d1d5db;
+}
+
+.rbc-light .rbc-off-range-bg {
+  background-color: #e5e7eb; /* Cinza mais claro para dias fora do intervalo */
+}
+
+.rbc-light .rbc-today {
+  background-color: #dbeafe80; /* Azul claro para o dia atual */
+}
+
+.rbc-light .rbc-event {
+  border: none !important;
+}
+
+.rbc-light .rbc-time-slot {
+  border-color: #d1d5db; /* Cinza claro para linhas de separação */
+  min-height: 40px; /* Mesmo tamanho dos slots do tema escuro */
+  padding: 8px 4px;
+  border-radius: 6px; /* Bordas arredondadas nos slots */
+}
+
+.rbc-light .rbc-btn-group button {
+  background-color: #f3f4f6; /* Cinza claro para botões */
+  color: #1f2937;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.rbc-light .rbc-btn-group button:hover {
+  background-color: #e5e7eb; /* Cinza mais claro ao passar o mouse */
+}
+
+.rbc-light  .rbc-month-view {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+.rbc-light .rbc-time-view {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+.rbc-light .rbc-month-view .rbc-row,
+.rbc-light .rbc-time-view .rbc-time-content,
+.rbc-light .rbc-agenda-view .rbc-agenda-content {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  overflow: auto;
+}

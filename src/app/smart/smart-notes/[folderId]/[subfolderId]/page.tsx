@@ -15,6 +15,8 @@ import "quill/dist/quill.core.css";
 import AIModal from "@/app/components/smart/smartnotes/subfolders/AIModal";
 import { Save, Sparkles } from "lucide-react";
 import { generateText, simulateStreaming } from "@/app/api/actions/AI/hugging_face/generateText";
+import { createPortal } from "react-dom";
+import { marked } from "marked"
 import { canUseAI } from "@/app/api/actions/AI/CanUseAI";
 
 type Subfolder = {
@@ -85,6 +87,20 @@ const SubfolderNote = () => {
     const buttonRef = useRef<HTMLDivElement>(null);
     const [isGenerating, setIsGenerating] = useState(false);
 
+    const [showSummarizeButton, setShowSummarizeButton] = useState(false);
+    const MIN_WORDS_FOR_SUMMARIZE = 50;
+    const portalContainerRef = useRef<HTMLElement | null>(null)
+
+    useEffect(() => {
+        portalContainerRef.current = document.createElement("div");
+        document.body.appendChild(portalContainerRef.current);
+        return () => {
+            if (portalContainerRef.current) {
+                document.body.removeChild(portalContainerRef.current);
+            }
+        };
+    }, []);
+
     // Inicializa o Quill Editor
     useEffect(() => {
         if (quill && !isInitialized.current) {
@@ -121,23 +137,40 @@ const SubfolderNote = () => {
     useEffect(() => {
         if (quill) {
             const handleSelectionChange = () => {
+                // console.log("Evento de seleção disparado");
                 const selection = quill.getSelection();
                 if (selection && selection.length > 0) {
                     const selectedContent = quill.getText(selection.index, selection.length);
+                    // console.log("Texto selecionado:", selectedContent);
                     setSelectedText(selectedContent);
+
+                    const wordCount = selectedContent.trim().split(/\s+/).filter(word => word.length > 0).length;
+                    // console.log("Contagem de palavras:", wordCount);
                     setShowEnhanceButton(true);
+                    setShowSummarizeButton(wordCount >= MIN_WORDS_FOR_SUMMARIZE);
+                    // console.log("Estado dos botões:", { showEnhanceButton: true, showSummarizeButton: wordCount >= MIN_WORDS_FOR_SUMMARIZE });
 
                     const bounds = quill.getBounds(selection.index, selection.length);
+                    // console.log("Bounds da seleção:", bounds);
                     const editor = quillRef.current?.querySelector(".ql-editor");
                     if (editor) {
                         const editorRect = editor.getBoundingClientRect();
+                        // console.log("Editor rect:", editorRect);
                         setSelectionBounds({
-                            top: editorRect.top + bounds!.top - 40,
-                            left: editorRect.left + bounds!.left + bounds!.width / 2 - 50,
+                            top: Math.max(0, editorRect.top + bounds!.top - 40),
+                            left: Math.max(0, editorRect.left + bounds!.left + bounds!.width / 2 - (wordCount >= MIN_WORDS_FOR_SUMMARIZE ? 150 : 75)),
                         });
+                        // console.log("Selection bounds! definidos:", {
+                        //     top: Math.max(0, editorRect.top + bounds!.top - 40),
+                        //     left: Math.max(0, editorRect.left + bounds!.left + bounds!.width / 2 - (wordCount >= MIN_WORDS_FOR_SUMMARIZE ? 150 : 75)),
+                        // });
+                    } else {
+                        console.error("Elemento .ql-editor não encontrado");
                     }
                 } else {
+                    // console.log("Nenhuma seleção detectada");
                     setShowEnhanceButton(false);
+                    setShowSummarizeButton(false);
                     setSelectedText("");
                     setSelectionBounds(null);
                 }
@@ -196,77 +229,215 @@ const SubfolderNote = () => {
     }, [isGenerating, quill]);
 
     const handleAISubmit = async (prompt: string) => {
-        setIsModalOpen(false); // Fecha o modal imediatamente após o envio
+        // console.log("handleAISubmit chamado com prompt:", prompt);
+        const sendPrompt = `Provide an objective answer, without conversational introductions: ${prompt}`;
+        setIsModalOpen(false);
         setIsGenerating(true);
-        const response = await generateText(prompt);
+        try {
+            const response = await generateText(prompt);
+            // console.log("Resposta da API:", response);
+            if (!response) {
+                toast.error("No response from AI. Please try again.");
+                setIsGenerating(false);
+                return;
+            }
 
-        if (!response) {
-            toast.error("Oops. Please try again.");
+            if (quill) {
+                const selection = quill.getSelection();
+                const insertIndex = selection ? selection.index : quill.getLength() - 1;
+                quill.insertText(insertIndex, "\n<p><span style=\"opacity: 0.5;\">Creating...</span> </p>\n");
+
+                // Converter Markdown para HTML
+                const htmlContent = marked.parse(response) as string;
+                let currentContent = "";
+                await simulateStreaming(
+                    htmlContent,
+                    (chunk: string) => {
+                        currentContent += chunk;
+                        quill.deleteText(insertIndex, quill.getLength() - insertIndex);
+                        quill.clipboard.dangerouslyPasteHTML(insertIndex, currentContent);
+                        setNoteContent(quill.root.innerHTML);
+                    },
+                    5,
+                    200
+                );
+            }
+        } catch (err) {
+            console.error("Erro em handleAISubmit:", err);
+            toast.error("Failed to generate AI content.");
+        } finally {
             setIsGenerating(false);
-            return;
         }
-
-        if (quill) {
-            const selection = quill.getSelection();
-            const insertIndex = selection ? selection.index : quill.getLength() - 1;
-
-            // Adiciona o prefixo "Creating..." com opacidade reduzida
-            quill.insertText(insertIndex, '\n<p><span style="opacity: 0.5;">Creating...</span> </p>\n');
-
-            let currentContent = '';
-
-            // Simula o streaming do texto a partir da posição do cursor
-            await simulateStreaming(
-                response,
-                (chunk: string) => {
-                    currentContent += chunk;
-                    quill.deleteText(insertIndex, currentContent.length); // Remove o texto temporário anterior
-                    quill.insertText(insertIndex, currentContent);
-                    setNoteContent(quill.root.innerHTML);
-                },
-                5, // Tamanho do chunk (5 palavras por vez)
-                200 // Atraso entre chunks (200ms)
-            );
-
-            // Remove o prefixo após a geração (já feito no useEffect)
-            setNoteContent(quill.root.innerHTML);
-        }
-
-        setIsGenerating(false);
     };
 
     const handleEnhanceText = async () => {
-        if (!selectedText || !quill) return;
-
-        const prompt = `Enhance this text: ${selectedText}`;
-        setIsGenerating(true);
-        const response = await generateText(prompt);
-        if (!response) {
-            toast.error("Oops. Please try again.");
-            setIsGenerating(false);
+        if (!selectedText || !quill) {
+            toast.error("Please select text to enhance.");
             return;
         }
 
-        const selection = quill.getSelection();
-        if (selection) {
-            const insertIndex = selection.index;
-            quill.deleteText(insertIndex, selection.length);
+        setIsGenerating(true);
+        try {
+            const prompt = `Enhance this text: ${selectedText}`;
+            // console.log("Enhance prompt:", prompt);
+            const response = await generateText(prompt);
+            // console.log("Resposta da API (enhance):", response);
+            if (!response) {
+                toast.error("Failed to enhance text.");
+                return;
+            }
 
-            await simulateStreaming(
-                response,
-                (chunk: string) => {
-                    quill.insertText(insertIndex, chunk);
-                    setNoteContent(quill.root.innerHTML);
-                },
-                5,
-                200
-            );
+            const selection = quill.getSelection();
+            if (selection) {
+                const insertIndex = selection.index;
+                const selectionLength = selection.length
+                // quill.deleteText(insertIndex, selection.length);
+
+                // Converter Markdown para HTML
+                const htmlContent = marked.parse(response) as string;
+                let currentContent = "";
+                await simulateStreaming(
+                    htmlContent,
+                    (chunk: string) => {
+                        currentContent += chunk;
+                        quill.deleteText(insertIndex, selectionLength);
+                        quill.clipboard.dangerouslyPasteHTML(insertIndex, currentContent);
+                        setNoteContent(quill.root.innerHTML);
+                    },
+                    5,
+                    200
+                );
+            }
+        } catch (err) {
+            console.error("Erro em handleEnhanceText:", err);
+            toast.error("Error enhancing text.");
+        } finally {
+            setShowEnhanceButton(false);
+            setShowSummarizeButton(false);
+            setSelectedText("");
+            setSelectionBounds(null);
+            setIsGenerating(false);
+        }
+    };
+
+    const handleSummarizeText = async () => {
+        if (!selectedText || !quill) {
+            toast.error("Please select text to summarize.");
+            return;
         }
 
-        setIsGenerating(false);
-        setShowEnhanceButton(false);
-        setSelectedText("");
-        setSelectionBounds(null);
+        setIsGenerating(true);
+        try {
+            const prompt = `Summarize this text in a concise manner: ${selectedText}`;
+            // console.log("Summarize prompt:", prompt);
+            const response = await generateText(prompt);
+            // console.log("Resposta da API (summarize):", response);
+            if (!response) {
+                toast.error("Failed to summarize text.");
+                return;
+            }
+
+            const selection = quill.getSelection();
+            if (selection) {
+                const insertIndex = selection.index;
+                const selectionLength = selection.length
+                // quill.deleteText(insertIndex, selection.length);
+
+                // Converter Markdown para HTML
+                const htmlContent = marked.parse(response) as string;
+                let currentContent = "";
+                await simulateStreaming(
+                    htmlContent,
+                    (chunk: string) => {
+                        currentContent += chunk;
+                        quill.deleteText(insertIndex, selectionLength);
+                        quill.clipboard.dangerouslyPasteHTML(insertIndex, currentContent);
+                        setNoteContent(quill.root.innerHTML);
+                    },
+                    5,
+                    200
+                );
+            }
+        } catch (err) {
+            console.error("Erro em handleSummarizeText:", err);
+            toast.error("Error summarizing text.");
+        } finally {
+            setShowEnhanceButton(false);
+            setShowSummarizeButton(false);
+            setSelectedText("");
+            setSelectionBounds(null);
+            setIsGenerating(false);
+        }
+    };
+
+    // Componente dos botões renderizado via Portal
+    const ButtonsOverlay = () => {
+        if (!showEnhanceButton || !selectionBounds || !portalContainerRef.current) {
+            return null;
+        }
+
+        return createPortal(
+            <div
+                className="flex space-x-2"
+                style={{
+                    position: "absolute",
+                    top: `${selectionBounds.top}px`,
+                    left: `${selectionBounds.left}px`,
+                    zIndex: 1000000, // Aumentado
+                    pointerEvents: "auto",
+                }}
+            >
+                <button
+                    type="button"
+                    className={`px-4 py-2 rounded-full shadow-md cursor-pointer transition-colors ${theme === "light"
+                        ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                        : "bg-slate-700 text-gray-200 hover:bg-gray-600"
+                        }`}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // console.log("Botão Enhance clicado");
+                        handleEnhanceText();
+                    }}
+                    aria-label="Enhance selected text with AI"
+                >
+                    Enhance with AI
+                </button>
+                {showSummarizeButton && (
+                    <button
+                        type="button"
+                        className={`px-4 py-2 rounded-full shadow-md cursor-pointer transition-colors ${theme === "light"
+                            ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            : "bg-slate-700 text-gray-200 hover:bg-slate-600"
+                            }`}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // console.log("Botão Summarize clicado");
+                            handleSummarizeText();
+                        }}
+                        aria-label="Summarize selected text with AI"
+                    >
+                        Summarize with AI
+                    </button>
+                )}
+                {/* Botão de teste fixo */}
+                {/* <button
+                    type="button"
+                    className="px-4 py-2 bg-red-500 text-white rounded-full cursor-pointer"
+                    style={{ position: "fixed", top: "100px", left: "100px", zIndex: 1000000, pointerEvents: "auto" }}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toast.error("Calma!");
+                        console.log("Botão de teste clicado");
+                    }}
+                >
+                    Botão de Teste
+                </button> */}
+            </div>,
+            portalContainerRef.current
+        );
     };
 
     return (
@@ -293,17 +464,6 @@ const SubfolderNote = () => {
                             {folder.title} / {subfolder.title}
                         </h1>
                         <div className="flex space-x-2">
-                            {/* <motion.button
-                                onClick={handleSave}
-                                className={`px-2 py-1 rounded-2xl font-semibold transition-colors ${theme === "light"
-                                    ? "bg-neutral-800 hover:bg-black text-white"
-                                    : "bg-slate-700 hover:bg-slate-600 text-neutral-200"
-                                    }`}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                            >
-                                <Save />
-                            </motion.button> */}
                             <motion.button
                                 onClick={openAIModal}
                                 className={`px-2 py-1 rounded-2xl font-semibold transition-colors ${theme === "light"
@@ -318,70 +478,92 @@ const SubfolderNote = () => {
                         </div>
                     </div>
                 </header>
+
                 <main
-                    className="flex-1 p-6 lg:ml-[240px] overscroll-y-contain"
-                    style={{
-                        paddingTop: `calc(5rem + env(safe-area-inset-top, 0px) + 105px)`,
-                    }}
+                    className="flex-1 lg:ml-[240px] overscroll-y-contain"
+                    style={{ paddingTop: `calc(5rem + env(safe-area-inset-top, 0px) + 105px)`, position: "relative" }}
                 >
-                    <div className="flex flex-col h-full -mt-7">
+                    {isGenerating && (
+                        <div className="-mt-10 flex items-center space-x-2">
+                            <svg
+                                className="animate-spin h-5 w-5 text-blue-500"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                            </svg>
+                            <span className={theme === "light" ? "text-gray-600" : "text-gray-400"}>Generating...</span>
+                        </div>
+                    )}
+                    <div className="relative flex flex-col h-full">
                         <div
                             ref={quillRef}
-                            className={`w-full h-screen rounded-xl  ${theme === "light"
-                                ? "border-gray-50/20 bg-white text-black"
-                                : "border-slate-800 bg-slate-900 text-white"
+                            className={`w-full h-screen rounded-xl ${theme === "light" ? "border-gray-50/20 bg-white text-black" : "border-slate-800 bg-slate-900 text-white"
                                 } quill-editor`}
-                            style={{ minHeight: "300px", maxHeight: "80vh", overflow: "auto" }}
+                            style={{ minHeight: "300px", maxHeight: "80vh", overflow: "auto", zIndex: 0 }}
+                            spellCheck="false"
                         />
-                        {showEnhanceButton && selectionBounds && (
-                            <div
-                                ref={buttonRef}
-                                className={`absolute px-3 py-1 rounded-full shadow-md cursor-pointer transition-colors ${theme === "light"
-                                    ? "bg-neutral-200 text-gray-700 hover:bg-neutral-300"
-                                    : "bg-slate-700 text-gray-200 hover:bg-slate-600"
-                                    }`}
-                                style={{
-                                    position: "absolute",
-                                    zIndex: 20,
-                                    top: `${selectionBounds.top}px`,
-                                    left: `${selectionBounds.left}px`,
-                                }}
-                                onClick={handleEnhanceText}
-                            >
-                                Enhance with AI
-                            </div>
-                        )}
-                        {isGenerating && (
-                            <div className="mt-4 flex items-center space-x-2">
-                                <svg
-                                    className="animate-spin h-5 w-5 text-blue-500"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
+                        {/* Botões renderizados em um contêiner separado */}
+                        <ButtonsOverlay />
+                        {/* <div className="buttons-overlay" style={{
+                            position: "fixed",
+                            top: 0,
+                            left: 0,
+                            width: "100vw",
+                            height: "100%",
+                            zIndex: 10000,
+                            pointerEvents: "none",
+                        }}
+                        >
+                            {showEnhanceButton && selectionBounds && (
+                                <div
+                                    className="flex space-x-2"
+                                    style={{
+                                        position: "absolute",
+                                        top: `${selectionBounds.top}px`,
+                                        left: `${selectionBounds.left}px`,
+                                        pointerEvents: "auto",
+                                    }}
                                 >
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                    />
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8v8H4z"
-                                    />
-                                </svg>
-                                <span
-                                    className={theme === "light" ? "text-gray-600" : "text-gray-400"}
-                                >
-                                    Generating...
-                                </span>
-                            </div>
-                        )}
+                                    <div
+                                        ref={buttonRef}
+                                        className={`rounded-full shadow-md cursor-pointer transition-colors px-4 py-2 ${theme === "light"
+                                            ? "bg-neutral-200 text-gray-700 hover:bg-neutral-300"
+                                            : "bg-slate-700 text-gray-200 hover:bg-slate-600"
+                                            }`}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            console.log("Botão Enhance clicado");
+                                            handleEnhanceText();
+                                        }}
+                                        aria-label="Enhance selected text with AI"
+                                    >
+                                        Enhance with AI
+                                    </div>
+                                    {showSummarizeButton && (
+                                        <div
+                                            className={`summarize-button px-4 py-1 rounded-full shadow-md cursor-pointer transition-colors ${theme === "light"
+                                                ? "bg-neutral-200 text-gray-700 hover:bg-neutral-300"
+                                                : "bg-slate-700 text-gray-200 hover:bg-slate-600"
+                                                }`}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                console.log("Botão Summarize clicado");
+                                                handleSummarizeText();
+                                            }}
+                                            aria-label="Summarize selected text with AI"
+                                        >
+                                            Summarize with AI
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div> */}
                     </div>
-
                     <AIModal
                         isOpen={isModalOpen}
                         onClose={() => setIsModalOpen(false)}
@@ -398,20 +580,18 @@ const SubfolderNote = () => {
                     display: flex;
                     border-radius: 12px;
                     padding: 6px 8px;
-                    box-shadow: ${
-                      theme === "light"
-                        ? "0 1px 3px rgba(0, 0, 0, 0.1)"
-                        : "0 1px 3px rgba(0, 0, 0, 0.3)"
-                    };
+                    box-shadow: ${theme === "light"
+                    ? "0 1px 3px rgba(0, 0, 0, 0.1)"
+                    : "0 1px 3px rgba(0, 0, 0, 0.3)"
+                };
                 }
 
                 /* Estilizando o botão/label do dropdown */
                 .ql-toolbar .ql-picker-label {
                     color: ${theme === "light" ? "#111827" : "#e5e7eb"} !important;
                     background: ${theme === "light" ? "#ffffff" : "#2d3748"} !important;
-                    border: 1px solid ${
-                      theme === "light" ? "#d1d5db" : "#4b5563"
-                    } !important;
+                    border: 1px solid ${theme === "light" ? "#d1d5db" : "#4b5563"
+                } !important;
                     border-radius: 8px !important;
                     padding: 4px 8px !important;
                     transition: all 0.2s ease !important;
@@ -429,15 +609,13 @@ const SubfolderNote = () => {
                 /* Estilizando o dropdown aberto */
                 .ql-toolbar .ql-picker-options {
                     background: ${theme === "light" ? "#ffffff" : "#2d3748"} !important;
-                    border: 1px solid ${
-                      theme === "light" ? "#d1d5db" : "#4b5563"
-                    } !important;
+                    border: 1px solid ${theme === "light" ? "#d1d5db" : "#4b5563"
+                } !important;
                     border-radius: 8px !important;
-                    box-shadow: ${
-                      theme === "light"
-                        ? "0 2px 8px rgba(0, 0, 0, 0.15)"
-                        : "0 2px 8px rgba(0, 0, 0, 0.3)"
-                    } !important;
+                    box-shadow: ${theme === "light"
+                    ? "0 2px 8px rgba(0, 0, 0, 0.15)"
+                    : "0 2px 8px rgba(0, 0, 0, 0.3)"
+                } !important;
                     margin-top: 4px !important;
                     animation: fadeIn 0.2s ease;
                 }
@@ -446,9 +624,8 @@ const SubfolderNote = () => {
                     width: 20px !important;
                     height: 20px !important;
                     padding: 0 !important;
-                    border: 1px solid ${
-                      theme === "light" ? "#d1d5db" : "#4b5563"
-                    } !important;
+                    border: 1px solid ${theme === "light" ? "#d1d5db" : "#4b5563"
+                } !important;
                     border-radius: 4px !important;
                 }
 

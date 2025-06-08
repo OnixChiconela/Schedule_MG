@@ -1,3 +1,13 @@
+export type Users = {
+    id: string
+    email: string
+    firstName: string
+    lastName: string
+    role: string
+
+    createdAt: Date
+}
+
 export type TaskNodeData = {
     title: string;
     status: 'Todo' | 'Done';

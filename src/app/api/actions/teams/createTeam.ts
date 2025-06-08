@@ -3,7 +3,7 @@ import api from "../../api"
 export interface createTeamData {
     userId: string;
     encryptedName: string;
-    description: string;
+    encryptedDescription: string;
     encryptedKeys: Record<string, { encryptedKey: string; nonce: string }>;
     nameNonce: string;
     descriptionNonce: string; // Adicionar o descriptionNonce

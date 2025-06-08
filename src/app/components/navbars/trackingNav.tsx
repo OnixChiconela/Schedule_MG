@@ -16,7 +16,7 @@ const TrackingNav = ({ themeButton }: { themeButton?: boolean }) => {
             transition-colors duration-300`}
     >
       <Container>
-        <div className="flex flex-row items-center justify-between py-6 mx-auto">
+        <div className="flex flex-row items-center justify-between py-4 mx-auto">
           {/*main buttons */}
           <div className="flex items-center gap-2">
             {themeButton && (

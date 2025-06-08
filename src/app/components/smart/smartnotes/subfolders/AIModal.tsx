@@ -100,13 +100,13 @@ export default function AIModal({
             </label>
             <div className="flex space-x-2">
               <button
-                onClick={() => handleToneChange("dynamic")}
+                onClick={() => handleToneChange("fun and short")}
                 className={`px-4 py-1 flex items-center gap-2 rounded-full border-2 cursor-pointer transition-colors ${
                   safeTheme === "light"
                     ? "border-gray-300 text-gray-700 hover:border-neutral-500"
                     : "border-slate-600 text-gray-300 hover:border-neutral-400"
                 } ${
-                  tone === "dynamic"
+                  tone === "fun and short"
                     ? safeTheme === "light"
                       ? "border-purple-500 bg-neutral-100"
                       : "border-purple-200 bg-slate-700"

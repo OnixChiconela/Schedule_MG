@@ -11,6 +11,7 @@ import { Edit, MoreHorizontal, Plus, Sparkles, Trash, X } from 'lucide-react';
 import TeamCards, { Team } from '../components/teams/TeamCards';
 import CreateTeamModal from '../components/teams/CreateTeamModal';
 import { getTeamSpace } from '../api/actions/teams/getTeamSpace';
+import { useUser } from '../context/UserContext';
 
 export default function TeamSpace() {
   const { theme, toggleTheme } = useTheme();
@@ -23,12 +24,14 @@ export default function TeamSpace() {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [activeButton, setActiveButton] = useState<'create' | 'edit' | 'remove' | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const userId = '6836d333b32f9e7199d4c265';
+  const {currentUser} = useUser()
+  // const userId = '68378fd4582c276f96fa8dd1';
+
 
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const response = await getTeamSpace(userId);
+        const response = await getTeamSpace(currentUser!.id);
         console.log('Fetched teams with nonces:', response);
         const teamsWithNonces = response.map((team: any) => ({
           ...team,
@@ -45,11 +48,11 @@ export default function TeamSpace() {
       }
     };
     fetchTeams();
-  }, [userId]);
+  }, [currentUser]);
 
   const filteredTeams = teams.filter((team) => {
     const teamName = team.encryptedName || '';
-    console.log(`Filtering team ${team.id}: ${teamName}`);
+    // console.log(`Filtering team ${team.id}: ${teamName}`);
     return teamName.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
@@ -173,10 +176,10 @@ export default function TeamSpace() {
                     activeButton === 'create'
                       ? 'Create a new team...'
                       : activeButton === 'edit'
-                      ? 'Edit team name...'
-                      : activeButton === 'remove'
-                      ? 'Remove team...'
-                      : 'Search or enter command (e.g., "delete where user X exists")...'
+                        ? 'Edit team name...'
+                        : activeButton === 'remove'
+                          ? 'Remove team...'
+                          : 'Search or enter command (e.g., "delete where user X exists")...'
                   }
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -192,22 +195,22 @@ export default function TeamSpace() {
                   }}
                   whileFocus={{ scale: 1.005 }}
                 />
-                <div className="flex gap-1 mt-1">
+                <div className="flex items-center gap-1 mt-2">
                   <motion.button
                     className={`px-2 py-1 cursor-pointer rounded-full items-center ${theme === 'light'
                       ? activeButton === 'create'
                         ? 'bg-neutral-200 border-2 border-neutral-500'
                         : 'bg-neutral-100 hover:bg-neutral-200'
                       : activeButton === 'create'
-                      ? 'bg-neutral-950/50 border-2 border-fuchsia-300/20'
-                      : 'bg-slate-800/50 hover:bg-neutral-800'} flex gap-1`}
+                        ? 'bg-neutral-950/50 border-2 border-fuchsia-300/20'
+                        : 'bg-slate-800/50 hover:bg-neutral-800'} flex gap-1`}
                     variants={buttonVariants}
                     whileHover="hover"
                     whileTap="tap"
                     onClick={handleCreateWithAI}
                   >
                     <Plus size={16} />
-                    <span className="text-sm">Create</span>
+                    <span className="text-base">Create</span>
                   </motion.button>
                   <motion.button
                     className={`px-2 py-1 cursor-pointer rounded-full items-center ${theme === 'light'
@@ -215,15 +218,15 @@ export default function TeamSpace() {
                         ? 'bg-neutral-200 border-2 border-neutral-500'
                         : 'bg-neutral-100 hover:bg-neutral-200'
                       : activeButton === 'edit'
-                      ? 'bg-neutral-950/50 border-2 border-fuchsia-300/20'
-                      : 'bg-slate-800/50 hover:bg-neutral-800'} flex gap-1`}
+                        ? 'bg-neutral-950/50 border-2 border-fuchsia-300/20'
+                        : 'bg-slate-800/50 hover:bg-neutral-800'} flex gap-1`}
                     variants={buttonVariants}
                     whileHover="hover"
                     whileTap="tap"
                     onClick={handleEditWithAI}
                   >
                     <Edit size={16} />
-                    <span className="text-sm">Edit</span>
+                    <span className="text-base">Edit</span>
                   </motion.button>
                   <motion.button
                     className={`px-2 py-1 cursor-pointer rounded-full items-center ${theme === 'light'
@@ -231,15 +234,15 @@ export default function TeamSpace() {
                         ? 'bg-neutral-200 border-2 border-neutral-500'
                         : 'bg-neutral-100 hover:bg-neutral-200'
                       : activeButton === 'remove'
-                      ? 'bg-neutral-950/50 border-2 border-fuchsia-300/20'
-                      : 'bg-slate-800/50 hover:bg-neutral-800'} flex gap-1`}
+                        ? 'bg-neutral-950/50 border-2 border-fuchsia-300/20'
+                        : 'bg-slate-800/50 hover:bg-neutral-800'} flex gap-1`}
                     variants={buttonVariants}
                     whileHover="hover"
                     whileTap="tap"
                     onClick={handleRemoveWithAI}
                   >
                     <Trash size={16} />
-                    <span className="text-sm">Remove</span>
+                    <span className="text-base">Remove</span>
                   </motion.button>
                   {searchQuery && (
                     <motion.button
@@ -265,9 +268,8 @@ export default function TeamSpace() {
               ) : (
                 <TeamCards
                   teams={filteredTeams}
-                  userId={userId}
+                  userId={currentUser!.id}
                   theme={theme}
-                  onSelectTeam={(team) => setSelectedTeam(team)}
                 />
               )}
             </div>
@@ -278,7 +280,7 @@ export default function TeamSpace() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateSuccess}
-        userId={userId}
+        userId={currentUser!.id}
       />
     </ClientOnly>
   );

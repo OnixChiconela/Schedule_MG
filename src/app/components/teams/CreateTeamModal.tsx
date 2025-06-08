@@ -1,3 +1,4 @@
+// /components/CreateTeamModal.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,7 +10,7 @@ import { Team } from './TeamCards';
 import { User } from '@/app/types/back-front';
 import { getUsers } from '@/app/api/actions/user/getUsers';
 import { createTeam } from '@/app/api/actions/teams/createTeam';
-import { getMasterKey } from '@/app/api/actions/user/getMasterKey';
+import { getUserMasterKey } from '@/app/api/actions/user/getUserMasterkey';
 
 interface CreateTeamModalProps {
   isOpen: boolean;
@@ -65,7 +66,7 @@ export default function CreateTeamModal({ isOpen, onClose, onCreate, userId }: C
 
   const handleAddMember = (user: User) => {
     const fullName = `${user.firstName} ${user.lastName}`;
-    if (!form.members.includes(fullName)) {
+    if (!form.members.includes(fullName) && user.id !== userId) {
       setForm({
         ...form,
         members: [...form.members, fullName],
@@ -93,62 +94,70 @@ export default function CreateTeamModal({ isOpen, onClose, onCreate, userId }: C
       console.log('Sodium ready, proceeding with encryption');
       console.log('Form data before encryption:', form);
 
-      // Gerar chave e nonces
-      const key = sodium.randombytes_buf(sodium.crypto_secretbox_KEYBYTES);
+      // Obter a masterKey do owner
+      const ownerMasterKey = await getUserMasterKey(userId);
+      if (!ownerMasterKey) throw new Error('Failed to retrieve owner master key');
+      const ownerMasterKeyBuffer = Buffer.from(ownerMasterKey, 'base64');
+
+      // Gerar chave e nonces para a equipe
+      const teamKey = sodium.randombytes_buf(sodium.crypto_secretbox_KEYBYTES);
       const nameNonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
       const descriptionNonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
 
-      // Criptografar nome e descrição
+      // Criptografar nome e descrição com a teamKey
       const nameBuffer = Buffer.from(form.name, 'utf8');
-      const encryptedNameArray = sodium.crypto_secretbox_easy(nameBuffer, nameNonce, key);
-      const encryptedName = Buffer.from(encryptedNameArray).toString('base64');
+      const encryptedName = Buffer.from(
+        sodium.crypto_secretbox_easy(nameBuffer, nameNonce, teamKey)
+      ).toString('base64');
 
       const descriptionBuffer = form.description ? Buffer.from(form.description, 'utf8') : Buffer.from('');
-      const encryptedDescriptionArray = sodium.crypto_secretbox_easy(descriptionBuffer, descriptionNonce, key);
-      const encryptedDescription = Buffer.from(encryptedDescriptionArray).toString('base64');
-
-      // Obter a masterKey
-      const userPassword = 'testpassword'; // TODO: Substituir por autenticação real
-      const userMasterKey = await getMasterKey(userId, userPassword);
-      if (!userMasterKey) throw new Error('Failed to retrieve master key');
-      const masterKeyBuffer = Buffer.from(userMasterKey, 'base64');
+      const encryptedDescription = Buffer.from(
+        sodium.crypto_secretbox_easy(descriptionBuffer, descriptionNonce, teamKey)
+      ).toString('base64');
 
       // Gerar encryptedKeys para o owner e membros
       const encryptedKeys: Record<string, { encryptedKey: string; nonce: string }> = {};
+
+      // Criptografar a teamKey para o owner
       const ownerKeyNonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
-      const ownerEncryptedKey = sodium.crypto_secretbox_easy(key, ownerKeyNonce, masterKeyBuffer);
+      const ownerEncryptedKey = sodium.crypto_secretbox_easy(teamKey, ownerKeyNonce, ownerMasterKeyBuffer);
       encryptedKeys[userId] = {
         encryptedKey: Buffer.from(ownerEncryptedKey).toString('base64'),
         nonce: Buffer.from(ownerKeyNonce).toString('base64'),
       };
 
+      // Obter os userIds dos membros
       const memberIds = form.members
         .map((member) => {
           const matchedUser = users.find((user) =>
             `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase() === member.toLowerCase()
           );
-          return matchedUser?._id || '';
+          return matchedUser?.id || '';
         })
-        .filter((id) => id);
+        .filter((id) => id && id !== userId);
 
+      // Criptografar a teamKey para cada membro com sua própria masterKey
       for (const memberId of memberIds) {
-        if (memberId && memberId !== userId) {
-          const memberKeyNonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
-          const memberEncryptedKey = sodium.crypto_secretbox_easy(key, memberKeyNonce, masterKeyBuffer);
-          encryptedKeys[memberId] = {
-            encryptedKey: Buffer.from(memberEncryptedKey).toString('base64'),
-            nonce: Buffer.from(memberKeyNonce).toString('base64'),
-          };
-        }
+        const memberMasterKey = await getUserMasterKey(memberId);
+        if (!memberMasterKey) throw new Error(`Failed to retrieve master key for member ${memberId}`);
+        const memberMasterKeyBuffer = Buffer.from(memberMasterKey, 'base64');
+
+        const memberKeyNonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
+        const memberEncryptedKey = sodium.crypto_secretbox_easy(teamKey, memberKeyNonce, memberMasterKeyBuffer);
+        encryptedKeys[memberId] = {
+          encryptedKey: Buffer.from(memberEncryptedKey).toString('base64'),
+          nonce: Buffer.from(memberKeyNonce).toString('base64'),
+        };
       }
 
+      // Enviar os dados para o backend
       const data = {
         userId,
         encryptedName,
-        description: encryptedDescription,
+        encryptedDescription,
         encryptedKeys,
         nameNonce: Buffer.from(nameNonce).toString('base64'),
-        descriptionNonce: Buffer.from(descriptionNonce).toString('base64'), // Enviar descriptionNonce
+        descriptionNonce: Buffer.from(descriptionNonce).toString('base64'),
       };
 
       console.log('Team creation data:', data);
@@ -160,13 +169,13 @@ export default function CreateTeamModal({ isOpen, onClose, onCreate, userId }: C
 
       const newTeam: Team = {
         id: response.teamId,
-        encryptedName: data.encryptedName,
-        description: data.description, // Incluir a descrição criptografada
-        encryptedKeys: data.encryptedKeys,
+        encryptedName,
+        description: encryptedDescription,
+        encryptedKeys,
         role: 'OWNER',
         createdAt: new Date().toISOString(),
         nameNonce: data.nameNonce,
-        descriptionNonce: data.descriptionNonce, // Incluir descriptionNonce
+        descriptionNonce: data.descriptionNonce,
       };
 
       onCreate(newTeam);
@@ -207,6 +216,7 @@ export default function CreateTeamModal({ isOpen, onClose, onCreate, userId }: C
             className={`w-full p-2 rounded-lg ${theme === 'light'
               ? 'bg-neutral-100 text-neutral-700'
               : 'bg-slate-700 text-white'} focus:outline-none`}
+            required
           />
           <input
             type="text"
@@ -231,7 +241,7 @@ export default function CreateTeamModal({ isOpen, onClose, onCreate, userId }: C
               <div className={`absolute top-full left-0 w-full mt-1 ${theme === 'light' ? 'bg-white' : 'bg-slate-700'} rounded-lg shadow-lg z-10`}>
                 {suggestions.map((user) => (
                   <div
-                    key={user._id || `suggestion-${Math.random()}`}
+                    key={user.id || `suggestion-${Math.random()}`}
                     className={`p-2 cursor-pointer ${theme === 'light' ? 'hover:bg-neutral-100' : 'hover:bg-slate-600'}`}
                     onClick={() => handleAddMember(user)}
                   >
@@ -247,25 +257,20 @@ export default function CreateTeamModal({ isOpen, onClose, onCreate, userId }: C
                 Selected Members:
               </h3>
               <ul className="mt-1">
-                {form.members.map((member) => {
-                  const matchedUser = users.find((user) =>
-                    `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase() === member.toLowerCase()
-                  );
-                  return (
-                    <li
-                      key={matchedUser?._id || member}
-                      className={`flex justify-between items-center p-1 rounded ${theme === 'light' ? 'bg-neutral-100' : 'bg-slate-700'}`}
+                {form.members.map((member) => (
+                  <li
+                    key={member}
+                    className={`flex justify-between items-center p-1 rounded ${theme === 'light' ? 'bg-neutral-100' : 'bg-slate-700'}`}
+                  >
+                    <span>{member}</span>
+                    <button
+                      onClick={() => handleRemoveMember(member)}
+                      className={`p-1 rounded-full ${theme === 'light' ? 'hover:bg-neutral-200' : 'hover:bg-slate-600'}`}
                     >
-                      <span>{member}</span>
-                      <button
-                        onClick={() => handleRemoveMember(member)}
-                        className={`p-1 rounded-full ${theme === 'light' ? 'hover:bg-neutral-200' : 'hover:bg-slate-600'}`}
-                      >
-                        <X size={16} />
-                      </button>
-                    </li>
-                  );
-                })}
+                      <X size={16} />
+                    </button>
+                  </li>
+                ))}
               </ul>
             </div>
           )}

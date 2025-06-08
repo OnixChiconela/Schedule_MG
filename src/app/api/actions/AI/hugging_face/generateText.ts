@@ -1,6 +1,7 @@
 import api from "@/app/api/api"
 
 export const generateText = async (prompt: string) => {
+  console.log("generateText chamado com prompt:", prompt);
     try {
         const res = await api.post("/huggingface/generate", {prompt} )
         return res.data

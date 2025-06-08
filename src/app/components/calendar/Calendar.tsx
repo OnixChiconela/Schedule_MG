@@ -207,7 +207,7 @@ export default function Calendar({ events, onSelectSlot, onSelectEvent, theme }:
         }
         @media (max-width: 320px) {
           .rbc-month-view .rbc-header {
-            min-width: 100px; /* Sincroniza com .rbc-day-bg */
+            min-width: 100px; 
           }
           .rbc-month-view .rbc-day-bg {
             min-width: 100px; /* Reduz ligeiramente em telas muito pequenas */
@@ -218,6 +218,18 @@ export default function Calendar({ events, onSelectSlot, onSelectEvent, theme }:
           .rbc-time-view .rbc-day-slot {
             min-width: 120px; /* Reduz ligeiramente em telas muito pequenas */
           }
+        }
+          .rbc-month-view {
+           border: 1px solid #ddd;
+           border-radius: 10px;
+          }
+
+        .rbc-light .rbc-time-view {
+          border: 1px solid #ddd;
+          border-radius: 10px;
+        }
+          .rbc-light .rbc-today {
+           background-color: #ad83ad32;
         }
       `}</style>
       <BigCalendar
@@ -235,7 +247,7 @@ export default function Calendar({ events, onSelectSlot, onSelectEvent, theme }:
         step={30}
         timeslots={2}
         views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
-        className={theme === 'dark' ? 'rbc-dark text-white' : ''}
+        className={`${theme === "light" ? "rbc-light text-neutral-700" : "rbc-dark text-neutral-200"}`}
         eventPropGetter={eventPropGetter}
         components={{
           toolbar: (toolbarProps: any) => (

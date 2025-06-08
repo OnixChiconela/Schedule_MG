@@ -16,8 +16,6 @@ const LandingNavbar = () => {
     const router = useRouter()
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const handleRegisterOpen = () => { }
-
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
@@ -79,18 +77,18 @@ const LandingNavbar = () => {
                             >
                                 Contact
                             </a>
-                            <Link
-                                href="/#"
+                            <div
+                                onClick={() => router.push(`/my-space/auth/login`)}
                                 className={`px-3 py-2 rounded-md ${theme === 'light'
                                     ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                     : 'hover:bg-slate-600 hover:text-fuchsia-400'
                                     } transition`}
                             >
                                 Log In
-                            </Link>
+                            </div>
                         </div>
                         <button
-                            onClick={handleRegisterOpen}
+                            onClick={() => router.push(`/my-space/auth/register`)}
                             className="text-sm font-semibold py-2 px-6 rounded-full bg-fuchsia-700 text-white hover:bg-fuchsia-800 transition hover:scale-105"
                         >
                             Sign Up
@@ -176,7 +174,7 @@ const LandingNavbar = () => {
                                     Log In
                                 </Link>
                                 <button
-                                    onClick={handleRegisterOpen}
+                                    onClick={() => router.push(`/my-space/auth/register`)}
                                     className="text-base font-semibold py-2 px-4 rounded-md bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition text-left"
                                 >
                                     Sign Up

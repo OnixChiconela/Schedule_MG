@@ -6,6 +6,7 @@ import ToasterProvider from './providers/ToasterProvider'
 import { Metadata } from 'next';
 import { SubfolderProvider } from './context/SubfolderContext';
 import { LocationProvider } from './context/LocationContext';
+import { UserProvider } from './context/UserContext';
 
 export const metadata: Metadata = {
   title: 'Scheuor',
@@ -43,16 +44,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
       </head>
       <body>
-        <ClientOnly>
-          <ToasterProvider />
-          <LocationProvider>
-            <ThemeProvider>
-              <SubfolderProvider>
-                {children}
-              </SubfolderProvider>
-            </ThemeProvider>
-          </LocationProvider>
-        </ClientOnly>
+        <UserProvider>
+          <ClientOnly>
+            <ToasterProvider />
+            <LocationProvider>
+              <ThemeProvider>
+                <SubfolderProvider>
+                  {children}
+                </SubfolderProvider>
+              </ThemeProvider>
+            </LocationProvider>
+          </ClientOnly>
+        </UserProvider>
       </body>
     </html>
   )
