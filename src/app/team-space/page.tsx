@@ -25,7 +25,7 @@ export default function TeamSpace() {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [activeButton, setActiveButton] = useState<'create' | 'edit' | 'remove' | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const {currentUser} = useUser()
+  const { currentUser } = useUser()
   // const userId = '68378fd4582c276f96fa8dd1';
 
 
@@ -270,11 +270,13 @@ export default function TeamSpace() {
               {loading ? (
                 <p className={theme === 'light' ? 'text-neutral-600' : 'text-neutral-400'}>Loading teams...</p>
               ) : error ? (
-                <p className="text-red-500">{error}</p>
+                <p className="text-neutral-500">{error}</p>
+              ) : !currentUser ? (
+                <p className="text-neutral-500">Please log in to view teams.</p>
               ) : (
                 <TeamCards
                   teams={filteredTeams}
-                  userId={currentUser!.id}
+                  userId={currentUser.id} // Safe: currentUser is checked
                   theme={theme}
                 />
               )}
@@ -282,12 +284,14 @@ export default function TeamSpace() {
           </div>
         </main>
       </div>
-      <CreateTeamModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onCreate={handleCreateSuccess}
-        userId={currentUser!.id}
-      />
+      {currentUser && (
+        <CreateTeamModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onCreate={handleCreateSuccess}
+          userId={currentUser.id} // Safe: currentUser is checked
+        />
+      )}
     </ClientOnly>
   );
 }
