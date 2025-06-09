@@ -13,6 +13,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { TeamTask } from "./TeamTasks";
 import { useSortable } from "@dnd-kit/sortable";
 
+type Option = { value: string; label: string };
 
 const SortableTeamTask = ({
   task,
@@ -40,7 +41,7 @@ const SortableTeamTask = ({
   isMenuOpen: boolean;
   selectedTasks: number[];
   onTaskSelect: (taskId: number) => void;
-  teamMembers: string[];
+  teamMembers: Option[];
   theme: "light" | "dark";
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: task.id });
@@ -202,8 +203,7 @@ const SortableTeamTask = ({
               disabled={isSelecting}
               className={`w-full cursor-pointer max-w-[280px] px-4 py-2 border rounded-md text-sm animate-pulse ${isSelecting ? "opacity-50 cursor-not-allowed" : ""} ${theme === "light" ? "bg-white border-gray-300 text-gray-700" : "bg-slate-700 border-slate-500 text-gray-200"}`}
             >
-              {editValues.assignedTo ?? task.assignedTo}
-            </MenuButton>
+              {(editValues.assignedTo as Option)?.label ?? task.assignedTo.label}            </MenuButton>
             {isAssignedToMenuOpen && (
               <Transition
                 as={Fragment}
@@ -221,17 +221,17 @@ const SortableTeamTask = ({
                 >
                   <div className="p-2 space-y-2">
                     {teamMembers.map((member) => (
-                      <MenuItem key={member} disabled={isSelecting}>
+                      <MenuItem key={member.value} disabled={isSelecting}>
                         {({ active }) => (
                           <button
                             type="button"
                             onClick={() => {
-                              handleOptionSelect("assignedTo", member);
+                              handleOptionSelect("assignedTo", member.value);
                               setIsAssignedToMenuOpen(false);
                             }}
                             className={`w-[93%] text-left px-4 py-1.5 rounded-md text-sm mx-2 ${active && !isSelecting ? (theme === "light" ? "bg-gray-100 text-gray-700" : "bg-slate-600 text-gray-200") : (theme === "light" ? "text-gray-700" : "text-gray-200")}`}
                           >
-                            {member}
+                            {member.label}
                           </button>
                         )}
                       </MenuItem>
@@ -245,11 +245,11 @@ const SortableTeamTask = ({
           <span
             onClick={(e) => {
               e.stopPropagation();
-              startEditing(task.id, "assignedTo", task.assignedTo);
+              startEditing(task.id, "assignedTo", task.assignedTo.value);
             }}
             className={`inline-block px-3 py-1.5 rounded-md text-sm mx-2 ${theme === "light" ? "text-gray-700" : "text-gray-200"}`}
           >
-            {task.assignedTo}
+            {task.assignedTo.label}
           </span>
         )}
       </div>

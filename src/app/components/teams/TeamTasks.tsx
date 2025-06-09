@@ -8,6 +8,7 @@ import { GripVertical, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import SortableTeamTask from "./SortableTeamTask";
 import { motion } from "framer-motion"
+import CustomDropdown from "../CustomDropdown";
 
 export type TeamTask = {
     id: number;
@@ -16,39 +17,45 @@ export type TeamTask = {
     createdDate: string;
     dueDate: string;
     priority: "Low" | "Medium" | "High";
-    assignedTo: string; // Novo campo para responsável
+    assignedTo: { value: string; label: string; }
     isCompleted: boolean;
-    slot: string; // Novo campo para associar a um slot
-
+    slot: string;
 };
+
+export type Member = {
+    id: string
+    name: string
+}
 
 const TeamTasks = () => {
     const { theme } = useTheme();
+    // const [filterMember, setFilterMember] = useState<string | null>(null);
+    // const [teamMembers, setTeamMembers] = useState<Member[]>([]);
     const [tasks, setTasks] = useState<TeamTask[]>([
         {
             id: 1,
             title: "Plan Team Meeting",
             status: "To Do",
             createdDate: new Date().toISOString(),
-            dueDate: new Date(2025, 5, 2).toISOString(), // Segunda, 2 de Jun
+            dueDate: new Date(2025, 5, 2).toISOString(), // June 2, 2025 (Monday)
             priority: "Medium",
-            assignedTo: "João",
+            assignedTo: { value: "João", label: "João" },
             isCompleted: false,
-            slot: "Segunda",
+            slot: "Mon",
         },
         {
             id: 2,
             title: "Review Code",
             status: "In Progress",
             createdDate: new Date().toISOString(),
-            dueDate: new Date(2025, 5, 3).toISOString(), // Terça, 3 de Jun
+            dueDate: new Date(2025, 5, 3).toISOString(), // June 3, 2025 (Tuesday)
             priority: "High",
-            assignedTo: "Maria",
+            assignedTo: { value: "Maria", label: "Maria" },
             isCompleted: false,
-            slot: "Terça",
+            slot: "Fri",
         },
     ]);
-    const [slots, setSlots] = useState<string[]>(["Segunda", "Terça"]); // Lista de slots
+    const [slots, setSlots] = useState<string[]>(["Mon", "Fri"]); // Lista de slots
     const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
     const [editingField, setEditingField] = useState<keyof TeamTask | null>(null);
     const [editValues, setEditValues] = useState<Partial<TeamTask>>({});
@@ -58,7 +65,25 @@ const TeamTasks = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [filterMember, setFilterMember] = useState<string | null>(null);
 
-    const teamMembers = ["João", "Maria", "Ana"];
+    const teamMembers = [
+        { value: "All Members", label: "All Members" },
+        { value: "John", label: "John" },
+        { value: "Maria", label: "Maria" },
+        { value: "Ana", label: "Ana" },
+    ]
+
+    // const options = [
+    //     { value: "", label: "All Members" },
+    //     ...teamMembers.map((member) => ({ value: member.id, label: member.name })),
+    // ];
+
+    // useEffect(() => {
+    //     const teamMembers = async() => {
+    //         try {
+    //             const data = await getTeamMembers()
+    //         }
+    //     }
+    // })
 
     const startEditing = useCallback((taskId: number, field: keyof TeamTask, value: string) => {
         setEditingTaskId(taskId);
@@ -181,7 +206,7 @@ const TeamTasks = () => {
     };
 
     const filteredTasks = filterMember
-        ? tasks.filter((task) => task.assignedTo === filterMember)
+        ? tasks.filter((task) => task.assignedTo.value === filterMember)
         : tasks;
 
     const menuRef = useRef<HTMLDivElement>(null);
@@ -200,7 +225,7 @@ const TeamTasks = () => {
         <div className={`w-full p-4 ${theme === "light" ? "bg-white" : "bg-slate-900"}`}>
             <div className="flex items-center justify-between mb-4">
                 <h2 className={`text-xl font-semibold ${theme === "light" ? "text-neutral-800" : "text-neutral-200"}`}>Team Tasks</h2>
-                <div className="flex gap-2">
+                {/* <div className="flex gap-2">
                     <select
                         value={filterMember || ""}
                         onChange={(e) => setFilterMember(e.target.value || null)}
@@ -211,6 +236,14 @@ const TeamTasks = () => {
                             <option key={member} value={member}>{member}</option>
                         ))}
                     </select>
+                </div> */}
+                <div className="z-50">
+                    <CustomDropdown
+                        options={teamMembers}
+                        value={filterMember || ""}
+                        onChange={(value) => setFilterMember(value || null)}
+                        placeholder="All Members"
+                    />
                 </div>
             </div>
             {slots.map((slot) => {

@@ -220,7 +220,7 @@ const Auth = () => {
                       : "bg-neutral-900 text-white hover:bg-black"
                   } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                  {mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : "Send Reset Link"}
+                  {mode === "login" ? "Continue" : mode === "register" ? "Continue" : "Send Reset Link"}
                 </button>
               </form>
               <div className="mt-6"></div>

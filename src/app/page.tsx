@@ -150,7 +150,7 @@ export default function LandingPage() {
 
                 <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-2 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                   <div className="flex-none md:flex-1 lg:max-w-xl">
-                    <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
+                    <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300">
                       <Image
                         alt="calendar"
                         src={require("@/../public/images/mybss.png")}
@@ -187,7 +187,7 @@ export default function LandingPage() {
                     </p>
                   </div>
                   <div className="flex-1 lg:max-w-xl">
-                    <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
+                    <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 ">
                       <Image
                         alt="calendar"
                         src={require("@/../public/images/calendar.png")}
@@ -197,7 +197,7 @@ export default function LandingPage() {
                 </div>
                 <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-2 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                   <div className="flex-none md:flex-1 ">
-                    <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
+                    <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 ">
                       <Image
                         alt="calendar"
                         src={require("@/../public/images/road.png")}

@@ -96,7 +96,7 @@ const TeamChatView = ({ teamId }: { teamId: string }) => {
       toast.error("No authentication token found. Please log in.", {
         duration: 3000,
       });
-      router.push("/login");
+      router.push("/my-space/auth/login");
       return;
     }
 
@@ -242,7 +242,7 @@ const TeamChatView = ({ teamId }: { teamId: string }) => {
     (chat) =>
       chat.visibleTo.includes(currentUser?.id || "") ||
       (teamDetails?.members?.find((member) => member.userId === currentUser?.id)?.role === "OWNER" ||
-       teamDetails?.members?.find((member) => member.userId === currentUser?.id)?.role === "ADMIN")
+        teamDetails?.members?.find((member) => member.userId === currentUser?.id)?.role === "ADMIN")
   );
 
   const createChat = async () => {
@@ -381,9 +381,10 @@ const TeamChatView = ({ teamId }: { teamId: string }) => {
           {isAuthorized && (
             <button
               onClick={createChat}
-              className={`flex items-center p-2 mb-2 rounded-full ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-slate-700 hover:bg-slate-600"}`}
+              className={`flex gap-0.5 items-center p-2 mb-2 rounded-full ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-slate-700 hover:bg-slate-600"}`}
             >
-              <Plus size={18} />
+              <Plus size={18} className="font-bold"/>
+              {/* <div className="hidden lg:flex">create chat</div> */}
             </button>
           )}
           <ul className="space-y-2">
@@ -394,7 +395,7 @@ const TeamChatView = ({ teamId }: { teamId: string }) => {
                     setSelectedChatId(chat.id);
                     setIsMobileChatListVisible(false);
                   }}
-                  className={`w-full text-left p-2 rounded ${theme === "light" ? "hover:bg-neutral-200" : "hover:bg-slate-700"} ${selectedChatId === chat.id ? "bg-blue-100 dark:bg-blue-900" : ""}`}
+                  className={`w-full text-left p-2 rounded ${theme === "light" ? "hover:bg-neutral-200" : "hover:bg-slate-700"} ${selectedChatId === chat.id ? "bg-neutral-200" : ""}`}
                 >
                   {chat.name}
                 </button>
