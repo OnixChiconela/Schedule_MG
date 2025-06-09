@@ -20,7 +20,8 @@ import {
 import { IconType } from 'react-icons';
 import UserProfileItem from './UserProfilleItem';
 import { useRouter } from 'next/navigation';
-import { MdPeople, MdPeopleOutline } from 'react-icons/md';
+import { MdPeopleOutline } from 'react-icons/md';
+import { useUser } from '@/app/context/UserContext';
 
 interface SideNavbarProps {
   theme: 'light' | 'dark';
@@ -38,6 +39,7 @@ export default function SideNavbar({
   isVisible = true,
 }: SideNavbarProps) {
   const [isDesktop, setIsDesktop] = useState(false);
+  const { currentUser } = useUser()
   const [localIsOpen, setLocalIsOpen] = useState(false);
   const router = useRouter()
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : localIsOpen;
@@ -188,12 +190,16 @@ export default function SideNavbar({
                 </li>
               </ul>
               <Divider theme={theme} />
-              <ul>
-                <li>
-                  <SideNavButton title="Team space" link="/team-space" icon={MdPeopleOutline} theme={theme}/>
-                </li>
-              </ul>
-              <Divider theme={theme}/>
+              {currentUser && (
+                <div>
+                  <ul>
+                    <li>
+                      <SideNavButton title="Team space" link="/team-space" icon={MdPeopleOutline} theme={theme} />
+                    </li>
+                  </ul>
+                  <Divider theme={theme} />
+                </div>
+              )}
               <ul>
                 <li>
                   <SideNavButton title="Home" link="/dashboard" icon={Home} theme={theme} />
