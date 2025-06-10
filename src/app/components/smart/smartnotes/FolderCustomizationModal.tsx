@@ -242,8 +242,8 @@ const CustomizeFolderModal: React.FC<CustomizeFolderModalProps> = ({
                       key={option.value}
                       className={`flex-1 text-center p-2 rounded-lg cursor-pointer transition-colors ${customShadow === option.value
                         ? theme === "light"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-blue-900 text-blue-300"
+                          ? "bg-neutral-300 text-neutral-700"
+                          : "bg-neutral-900 text-neutral-300"
                         : theme === "light"
                           ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
                           : "bg-slate-900 text-gray-400 hover:bg-slate-800"
@@ -274,7 +274,7 @@ const CustomizeFolderModal: React.FC<CustomizeFolderModalProps> = ({
                     step="0.1"
                     value={customOpacity}
                     onChange={(e) => setCustomOpacity(parseFloat(e.target.value))}
-                    className="w-full accent-blue-500"
+                    className="w-full accent-neutral-500"
                   />
                   <span className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
                     {customOpacity.toFixed(1)}
@@ -300,8 +300,8 @@ const CustomizeFolderModal: React.FC<CustomizeFolderModalProps> = ({
             <motion.button
               onClick={handleSaveCustomization}
               className={`px-5 py-2 rounded-lg font-semibold transition-colors ${theme === "light"
-                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                : "bg-blue-500 hover:bg-blue-600 text-white"
+                ? "bg-neutral-800 hover:bg-neutral-900 text-white"
+                : "bg-neutral-900 hover:bg-black text-white"
                 }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
