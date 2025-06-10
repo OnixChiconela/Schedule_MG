@@ -7,15 +7,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import CustomizeFolderModal from "../smart/smartnotes/FolderCustomizationModal";
 
 export type Folder = {
-    id: number;
-    title: string;
-    description?: string
-    titleColor: string;
-    bgColor: string;
-    borderColor: string;
-    imageUrl: string | null;
-    shadow: string;
-    opacity: number;
+  id: number;
+  title: string;
+  description?: string;
+  titleColor: string;
+  bgColor: string;
+  borderColor: string;
+  imageUrl: string | null;
+  shadow: number; // Changed from string to number to match CustomizeFolderModal
+  opacity: number;
 };
 
 type NotesFoldersProps = {
@@ -33,7 +33,7 @@ const NotesFolders = ({ onOpenFolder, panelWidth }: NotesFoldersProps) => {
             imageUrl: null,
             bgColor: theme === "light" ? "#F3F4F6" : "#1F2937",
             borderColor: '',
-            shadow: theme === "light" ? "0px 4px 6px rgba(0, 0, 0, 0.1)" : "0px 4px 6px rgba(0, 0, 0, 0.3)",
+            shadow: 1,
             opacity: 1,
             titleColor: theme === "light" ? "#1F2937" : "#FFFFFF",
         },
@@ -44,7 +44,7 @@ const NotesFolders = ({ onOpenFolder, panelWidth }: NotesFoldersProps) => {
             imageUrl: null,
             borderColor: '',
             bgColor: theme === "light" ? "#F3F4F6" : "#1F2937",
-            shadow: theme === "light" ? "0px 4px 6px rgba(0, 0, 0, 0.1)" : "0px 4px 6px rgba(0, 0, 0, 0.3)",
+            shadow: 1,
             opacity: 1,
             titleColor: theme === "light" ? "#1F2937" : "#FFFFFF",
         },
@@ -57,7 +57,7 @@ const NotesFolders = ({ onOpenFolder, panelWidth }: NotesFoldersProps) => {
     const [customBgColor, setCustomBgColor] = useState("#ffffff");
     const [customBorderColor, setCustomBorderColor] = useState("#F5F5F5");
     const [customImageUrl, setCustomImageUrl] = useState<string | null>(null);
-    const [customShadow, setCustomShadow] = useState("0px 4px 6px rgba(0, 0, 0, 0.1)");
+    const [customShadow, setCustomShadow] = useState(1); // Default to "Light" shadow
     const [customOpacity, setCustomOpacity] = useState(1);
 
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
@@ -146,30 +146,30 @@ const NotesFolders = ({ onOpenFolder, panelWidth }: NotesFoldersProps) => {
     };
 
     const handleSaveCustomization = () => {
-    const updatedFolders = folders.map((folder) =>
-      folder.id === customizingFolderId
-        ? {
-          ...folder,
-          title: customTitle || folder.title, // Evitar sobrescrever com vazio
-          bgColor: customBgColor || folder.bgColor,
-          borderColor: customBorderColor || folder.borderColor,
-          imageUrl: customImageUrl !== undefined ? customImageUrl : folder.imageUrl,
-          shadow: customShadow || folder.shadow,
-          opacity: customOpacity !== undefined ? customOpacity : folder.opacity,
-          titleColor: customTitleColor || (theme === "light" ? "#1F2937" : "#FFFFFF"),
-        }
-        : folder
-    );
+        const updatedFolders = folders.map((folder) =>
+            folder.id === customizingFolderId
+                ? {
+                    ...folder,
+                    title: customTitle || folder.title, // Evitar sobrescrever com vazio
+                    bgColor: customBgColor || folder.bgColor,
+                    borderColor: customBorderColor || folder.borderColor,
+                    imageUrl: customImageUrl !== undefined ? customImageUrl : folder.imageUrl,
+                    shadow: customShadow || folder.shadow,
+                    opacity: customOpacity !== undefined ? customOpacity : folder.opacity,
+                    titleColor: customTitleColor || (theme === "light" ? "#1F2937" : "#FFFFFF"),
+                }
+                : folder
+        );
 
-    setFolders(updatedFolders);
+        setFolders(updatedFolders);
 
-    // Persistir no localStorage com a versão atualizada
-    // if (typeof window !== "undefined") {
-    //   localStorage.setItem("smartNotesFolders", JSON.stringify(updatedFolders));
-    // }
+        // Persistir no localStorage com a versão atualizada
+        // if (typeof window !== "undefined") {
+        //   localStorage.setItem("smartNotesFolders", JSON.stringify(updatedFolders));
+        // }
 
-    setCustomizingFolderId(null);
-  };
+        setCustomizingFolderId(null);
+    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -205,7 +205,7 @@ const NotesFolders = ({ onOpenFolder, panelWidth }: NotesFoldersProps) => {
                             className="rounded-xl transition border-2 flex flex-col overflow-hidden h-full"
                             style={{
                                 backgroundColor: folder.bgColor,
-                                boxShadow: folder.shadow,
+                                // boxShadow: folder.shadow,
                                 opacity: folder.opacity,
                                 borderColor: theme === "light" ? "#F5F5F5" : "#94a3b8",
                             }}
@@ -329,9 +329,10 @@ const NotesFolders = ({ onOpenFolder, panelWidth }: NotesFoldersProps) => {
                     setCustomTitle={setCustomTitle}
                     customBgColor={customBgColor}
                     setCustomBgColor={setCustomBgColor}
+                    // customBorderColor={customBorderColor}
+                    // setCustomBorderColor={setCustomBorderColor}
                     customImageUrl={customImageUrl}
-                    handleImageUpload={handleImageUpload}
-                    handleRemoveImage={handleRemoveImage}
+                    setCustomImageUrl={setCustomImageUrl}
                     customShadow={customShadow}
                     setCustomShadow={setCustomShadow}
                     customOpacity={customOpacity}
