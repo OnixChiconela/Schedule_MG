@@ -19,10 +19,6 @@ import TeamChatView from "@/app/components/teams/TeamChatView";
 import { Team } from "@/app/components/teams/TeamCards";
 import { useUser } from "@/app/context/UserContext";
 
-// interface TeamPageProps {
-//     team: Team;
-// }
-
 export default function TeamPage() {
     const { teamId } = useParams();
     const { theme } = useTheme();
@@ -153,7 +149,9 @@ export default function TeamPage() {
 
         return (
             <div
-                className={`p-2 h-full ${theme === "light" ? "bg-white" : "bg-slate-900"} ${index === activePanelIndex ? "relative before:absolute before:top-2 before:left-2 before:w-3 before:h-3 before:bg-blue-500 before:rounded-full" : ""} ${index < panelCount - 1 && !isExpanded ? "border-r border-gray-200" : ""}`}
+                className={`p-2 h-full ${theme === "light" ? "bg-white" : "bg-slate-900"} 
+                ${index === activePanelIndex ? "relative before:absolute before:top-2 before:left-[50%] before:w-10 before:h-3 before:bg-fuchsia-500 before:rounded-full" : ""} 
+                ${index < panelCount - 1 && !isExpanded ? "border-r border-gray-200" : ""}`}
                 onClick={() => setActivePanelIndex(index)}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
@@ -165,7 +163,7 @@ export default function TeamPage() {
                     panelRefs.current[index] = el;
                 }}
             >
-                <div className="flex justify-end -mt-2">
+                <div className="flex justify-end mt-0">
                     {!isSmallScreen && panelCount > 1 && (
                         <button
                             onClick={() => removePanel(index)}
@@ -184,7 +182,7 @@ export default function TeamPage() {
                     )}
                     {!isSmallScreen && isExpanded && (
                         <button
-                            onClick={() => desexpandPanel()}
+                            onClick={() => deexpandPanel()}
                             className={`p-1 ml-1 rounded-xl ${theme === "light" ? "text-neutral-800 hover:bg-neutral-100" : "text-white hover:bg-slate-700"}`}
                         >
                             <Minimize size={15.5} />
@@ -207,12 +205,14 @@ export default function TeamPage() {
                             <NoteEditor folderId={selectedFolderId} onBack={() => setSelectedFolderId(null)} />
                         )}
                     </div>
-                ) : panelContents[index] === "Quick Notes" ? (
-                    "Quick Notes Content"
+                ) : panelContents[index] === "Projects" ? (
+                    "Projects"
                 ) : panelContents[index] === "Chat" ? (
                     <div>
                         {teamId !== undefined ? <TeamChatView teamId={teamId as string} /> : <p>Team ID not available</p>}
                     </div>
+                ) : panelContents[index] === "Overview" ? (
+                    "Overview"
                 ) : null}
             </div>
         );
@@ -253,7 +253,7 @@ export default function TeamPage() {
         setPreviousState({ panelSizes, panelCount, panelContents });
     };
 
-    const desexpandPanel = () => {
+    const deexpandPanel = () => {
         setPanelSizes(previousState.panelSizes);
     };
 
@@ -265,7 +265,11 @@ export default function TeamPage() {
                 isSidebarOpen={isSidebarOpen}
                 toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
             />
-            <TeamSideNavbar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} isSmallScreen={isSmallScreen} onSectionSelect={handleSectionSelect} />
+            <TeamSideNavbar
+                isOpen={isSidebarOpen}
+                setIsOpen={setIsSidebarOpen}
+                isSmallScreen={isSmallScreen}
+                onSectionSelect={handleSectionSelect} />
             <main
                 className={`flex-1 p-4 sm:p-6 ${isSmallScreen ? "" : ""} max-w-screen-2xl mx-auto h-screen overflow-auto`}
                 style={{ paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}
@@ -317,5 +321,3 @@ export default function TeamPage() {
         </div>
     );
 };
-
-// export default TeamPage;

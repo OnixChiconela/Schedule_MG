@@ -18,6 +18,7 @@ import { generateText, simulateStreaming } from "@/app/api/actions/AI/hugging_fa
 import { createPortal } from "react-dom";
 import { marked } from "marked"
 import { canUseAI } from "@/app/api/actions/AI/CanUseAI";
+import { Delta } from "quill";
 
 type Subfolder = {
     id: number;
@@ -33,7 +34,7 @@ type Folder = {
     bgColor: string;
     borderColor: string;
     imageUrl: string | null;
-    shadow: string;
+    shadow: number;
     opacity: number;
     subfolders: Subfolder[];
 };
@@ -227,13 +228,45 @@ const SubfolderNote = () => {
         }
     }, [isGenerating, quill]);
 
+    const markdownToDelta = (markdown: string): Delta => {
+        const html = marked.parse(markdown) as string;
+        const delta = new Delta();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(`<div>${html}</div>`, "text/html");
+        const nodes = Array.from(doc.body.firstChild?.childNodes || []);
+
+        nodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                const element = node as HTMLElement;
+                if (element.tagName === "H1") {
+                    delta.insert(element.textContent || "", { header: 1 });
+                    delta.insert("\n");
+                } else if (element.tagName === "H2") {
+                    delta.insert(element.textContent || "", { header: 2 });
+                    delta.insert("\n");
+                } else if (element.tagName === "UL") {
+                    const items = Array.from(element.querySelectorAll("li"));
+                    items.forEach((li) => {
+                        delta.insert(li.textContent || "", { list: "bullet" });
+                        delta.insert("\n");
+                    });
+                } else if (element.tagName === "P") {
+                    delta.insert(element.textContent || "");
+                    delta.insert("\n");
+                }
+            }
+        });
+
+        return delta;
+    };
+
     const handleAISubmit = async (prompt: string) => {
         // console.log("handleAISubmit chamado com prompt:", prompt);
-        const sendPrompt = `Provide an objective answer, without conversational introductions: ${prompt}`;
+        const sendPrompt = `without conversational introductions: ${prompt}`;
         setIsModalOpen(false);
         setIsGenerating(true);
         try {
-            const response = await generateText(prompt);
+            const response = await generateText(sendPrompt);
             // console.log("Resposta da API:", response);
             if (!response) {
                 toast.error("No response from AI. Please try again.");
@@ -444,9 +477,9 @@ const SubfolderNote = () => {
             <TrackingNav themeButton={true} />
             <div
                 className={`min-h-screen flex ${theme === "light" ? "bg-white" : "bg-slate-900"} transition-colors duration-300`}
-                style={{
-                    paddingTop: "env(safe-area-inset-top, 0px)",
-                }}
+            // style={{
+            //     paddingTop: "env(safe-area-inset-top, 0px)",
+            // }}
             >
                 <div className="">
                     <ToolsNavbar />
@@ -480,7 +513,7 @@ const SubfolderNote = () => {
 
                 <main
                     className="flex-1 lg:ml-[240px] overscroll-y-contain"
-                    style={{ paddingTop: `calc(5rem + env(safe-area-inset-top, 0px) + 105px)`, position: "relative" }}
+                    style={{ paddingTop: isGenerating ? `calc(5rem + env(safe-area-inset-top, 0px) + 95px)` : `calc(5rem + env(safe-area-inset-top, 0px) + 65px)`, position: "relative" }}
                 >
                     {isGenerating && (
                         <div className="-mt-10 flex items-center space-x-2">
@@ -506,62 +539,7 @@ const SubfolderNote = () => {
                         />
                         {/* Botões renderizados em um contêiner separado */}
                         <ButtonsOverlay />
-                        {/* <div className="buttons-overlay" style={{
-                            position: "fixed",
-                            top: 0,
-                            left: 0,
-                            width: "100vw",
-                            height: "100%",
-                            zIndex: 10000,
-                            pointerEvents: "none",
-                        }}
-                        >
-                            {showEnhanceButton && selectionBounds && (
-                                <div
-                                    className="flex space-x-2"
-                                    style={{
-                                        position: "absolute",
-                                        top: `${selectionBounds.top}px`,
-                                        left: `${selectionBounds.left}px`,
-                                        pointerEvents: "auto",
-                                    }}
-                                >
-                                    <div
-                                        ref={buttonRef}
-                                        className={`rounded-full shadow-md cursor-pointer transition-colors px-4 py-2 ${theme === "light"
-                                            ? "bg-neutral-200 text-gray-700 hover:bg-neutral-300"
-                                            : "bg-slate-700 text-gray-200 hover:bg-slate-600"
-                                            }`}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            console.log("Botão Enhance clicado");
-                                            handleEnhanceText();
-                                        }}
-                                        aria-label="Enhance selected text with AI"
-                                    >
-                                        Enhance with AI
-                                    </div>
-                                    {showSummarizeButton && (
-                                        <div
-                                            className={`summarize-button px-4 py-1 rounded-full shadow-md cursor-pointer transition-colors ${theme === "light"
-                                                ? "bg-neutral-200 text-gray-700 hover:bg-neutral-300"
-                                                : "bg-slate-700 text-gray-200 hover:bg-slate-600"
-                                                }`}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                console.log("Botão Summarize clicado");
-                                                handleSummarizeText();
-                                            }}
-                                            aria-label="Summarize selected text with AI"
-                                        >
-                                            Summarize with AI
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div> */}
+
                     </div>
                     <AIModal
                         isOpen={isModalOpen}
@@ -678,13 +656,28 @@ const SubfolderNote = () => {
                 }
 
                 .quill-editor :global(.ql-editor h1) {
-                    font-size: 18px;
+                    font-size: 1.8rem;
                     font-weight: bold;
-                }
+                    margin: 1rem 0 0.5rem;
+                    color: ${theme === "light" ? "#1f2937" : "#ffffff"};
+                    line-height: 1.5;
 
+                }
                 .quill-editor :global(.ql-editor h2) {
-                    font-size: 16px;
-                    font-weight: bold;
+                    font-size: 1.4rem;
+                    font-weight: 600;
+                    margin: 0.8rem 0 0.4rem;
+                    color: ${theme === "light" ? "#1f2937" : "#ffffff"};
+                    line-height: 1.5;
+
+                }
+                .quill-editor :global(.ql-editor ul) {
+                    margin: 0.5rem 0;
+                    padding-left: 1.5rem;
+                }
+                .quill-editor :global(.ql-editor li) {
+                    margin-bottom: 0.3rem;
+                    line-height: 1.5;
                 }
 
                 .quill-editor :global(.ql-editor) {

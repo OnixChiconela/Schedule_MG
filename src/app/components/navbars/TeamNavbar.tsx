@@ -18,7 +18,7 @@ const TeamSideNavbar = ({
 }) => {
   const { theme } = useTheme();
 
-  const items = ["Tasks", "Notes", "Quick Notes", "Chat", "Private"];
+  const items = ["Overview","Projects", "Tasks", "Notes", "Chat", "Private"];
 
   return (
     <div

@@ -4,7 +4,6 @@ import { useTheme } from "@/app/themeContext";
 import useAuthStore from "../authStore";
 import authConfig, { defaultImageConfig } from "../authConfig";
 import { motion, AnimatePresence } from "framer-motion";
-import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { Divider } from "@/app/components/navbars/SideNavbar";
 import { useParams, useRouter } from "next/navigation";
