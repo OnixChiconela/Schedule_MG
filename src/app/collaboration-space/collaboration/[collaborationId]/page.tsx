@@ -97,7 +97,7 @@ export default function CollaborationPage() {
           panelRefs.current[index] = el;
         }}
       >
-        <div className="flex justify-end mt-0">
+        <div className="flex justify-end -mt-1">
           {!isSmallScreen && panelCount > 1 && (
             <button
               onClick={() => removePanel(index)}
@@ -124,26 +124,15 @@ export default function CollaborationPage() {
           )}
         </div>
         {panelContents[index] === "Chat" ? (
-          <div>
-            {/* <TeamChatView partnershipId={collaborationId} /> */}
-            <CollaborationChatView partnershipId={collaborationId}/>
+          <div className="h-full">
+            <CollaborationChatView partnershipId={collaborationId} />
           </div>
         ) : panelContents[index] === "Notes" ? (
           <div className="overflow-y-auto h-[84vh] w-full p-4">
             {selectedFolderId === null ? (
-            //   <NotesFolders
-            //     onOpenFolder={handleOpenFolder}
-            //     panelWidth={panelWidths[index] || 0}
-            //     partnershipId={collaborationId}
-            //   />
-            <div>chamaaa</div>
+              <div>chamaaa</div>
             ) : (
-            //   <NoteEditor
-            //     folderId={selectedFolderId}
-            //     onBack={() => setSelectedFolderId(null)}
-            //     partnershipId={collaborationId}
-            //   />
-            "ahh"
+              "ahh"
             )}
           </div>
         ) : panelContents[index] === "Emails" ? (
@@ -203,7 +192,7 @@ export default function CollaborationPage() {
   }
 
   return (
-    <div className={`flex ${theme === "light" ? "bg-white" : "bg-slate-900"} transition-colors duration-300`}>
+    <div className={`flex min-h-screen w-full ${theme === "light" ? "bg-white" : "bg-slate-900"} transition-colors duration-300`}>
       <Navbar
         themeButton={true}
         showToggleSidebarButton={false}
@@ -217,12 +206,11 @@ export default function CollaborationPage() {
         partnership={partnership}
       />
       <main
-        className={`flex-1 p-4 sm:p-6 max-w-screen-2xl mx-auto h-screen overflow-auto transition-all duration-300 ${
-          isSidebarOpen && !isSmallScreen ? "ml-48" : "ml-0"
+        className={`flex-1 p-4 sm:p-6 transition-all duration-300 w-full ${
+          isSidebarOpen && !isSmallScreen ? "lg:max-w-[calc(100%-12rem)] ml-40" : "max-w-full"
         }`}
         style={{ paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}
       >
-        {/* <h1 className="text-2xl font-semibold mb-4">{partnership.name}</h1> */}
         <div className="h-full w-full">
           {panelCount > 0 ? (
             <SplitPane
@@ -235,12 +223,12 @@ export default function CollaborationPage() {
               }}
               sashRender={() => <div className="bg-gray-400 w-2 cursor-col-resize" />}
               allowResize={true}
-              style={{ height: "100%", width: "100%" }}
+              style={{ height: "100%", width: "100%", position: "relative" }}
             >
               {Array.from({ length: panelCount }, (_, index) => (
                 <div
                   key={index}
-                  className="h-full w-full"
+                  className="h-full w-full overflow-hidden"
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
                     e.preventDefault();

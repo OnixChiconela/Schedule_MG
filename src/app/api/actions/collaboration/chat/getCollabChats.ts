@@ -6,7 +6,6 @@ export const getCollabChats = async(id: string) => {
         const res = await api(`/collab-chat/partnership-chat/${id}`, {
             withCredentials: true
         })
-        toast.success("In the APi")
         return res.data
     } catch (error) {
         console.error("error: ", error)

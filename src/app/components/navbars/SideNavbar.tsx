@@ -22,6 +22,8 @@ import UserProfileItem from './UserProfilleItem';
 import { useRouter } from 'next/navigation';
 import { MdPeopleOutline } from 'react-icons/md';
 import { useUser } from '@/app/context/UserContext';
+import toast from 'react-hot-toast';
+import { updateUserProfile } from '@/app/api/actions/user/updateUserProfile';
 
 interface SideNavbarProps {
   theme: 'light' | 'dark';
@@ -39,7 +41,7 @@ export default function SideNavbar({
   isVisible = true,
 }: SideNavbarProps) {
   const [isDesktop, setIsDesktop] = useState(false);
-  const { currentUser } = useUser()
+  const { currentUser, setCurrentUser } = useUser()
   const [localIsOpen, setLocalIsOpen] = useState(false);
   const router = useRouter()
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : localIsOpen;
@@ -66,34 +68,47 @@ export default function SideNavbar({
     tap: { scale: 0.95 },
   };
 
-  const [userVisual, setUserVisual] = useState<{
-    type: 'image' | 'icon' | 'emoji';
-    value: string | React.ReactNode
-  }>({ type: 'emoji', value: "🚀" })
+  // const [userVisual, setUserVisual] = useState<{
+  //   // type: 'image' | 'icon' | 'emoji';
+  //   type: "emoji" | "initial";
+  //   value: string | React.ReactNode
+  // }>({ type: 'emoji', value: "🚀" })
 
-  useEffect(() => {
-    const savedVisual = localStorage.getItem('userVisual');
-    if (savedVisual) {
-      const parsed = JSON.parse(savedVisual);
-      if (parsed.type === 'icon') {
-        const iconMap: { [key: string]: React.ReactNode } = {
-          'User': <User />,
-        };
-        setUserVisual({ ...parsed, value: iconMap[parsed.value as string] || parsed.value });
-      } else {
-        setUserVisual(parsed);
-      }
-    }
-  }, []);
+  // useEffect(() => {
+  //   const savedVisual = localStorage.getItem('userVisual');
+  //   if (savedVisual) {
+  //     const parsed = JSON.parse(savedVisual);
+  //     if (parsed.type === 'icon') {
+  //       const iconMap: { [key: string]: React.ReactNode } = {
+  //         'User': <User />,
+  //       };
+  //       setUserVisual({ ...parsed, value: iconMap[parsed.value as string] || parsed.value });
+  //     } else {
+  //       setUserVisual(parsed);
+  //     }
+  //   }
+  // }, []);
 
-  const handleVisualChange = (visual: { type: 'image' | 'icon' | 'emoji'; value: string | React.ReactNode }) => {
-    let valueToSave: string | React.ReactNode = visual.value;
-    if (visual.type === 'icon') {
-      valueToSave = visual.value === <User /> ? 'User' : visual.value!.toString();
+  const handleVisualChange = async (visual: { type: "emoji" | "initial"; value: string }) => {
+    if (!currentUser) {
+      toast.error("User not logged in");
+      return;
     }
-    const updatedVisual = { ...visual, value: valueToSave };
-    setUserVisual(updatedVisual);
-    localStorage.setItem('userVisual', JSON.stringify(updatedVisual));
+    try {
+      const updatedUser = await updateUserProfile(currentUser.id, {
+        visualType: visual.type,
+        visualValue: visual.value,
+      });
+      setCurrentUser({
+        ...currentUser,
+        visualType: updatedUser.visualType,
+        visualValue: updatedUser.visualValue,
+      });
+      toast.success("Profile visual updated successfully");
+    } catch (error: any) {
+      console.error("Error updating visual:", error);
+      toast.error("Failed to update profile visual");
+    }
   };
 
   const handleSettingsClick = () => {
@@ -119,20 +134,18 @@ export default function SideNavbar({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            onClick={() => {
-              setIsOpen(false);
-            }}
+            onClick={() => setIsOpen(false)}
           />
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
       <AnimatePresence>
         {(isOpen || isDesktop) && (
           <motion.nav
             key="sidebar"
-            className={`fixed w-[260px] h-screen p-4 ${theme === 'light' ? 'bg-gray-100' : 'bg-slate-950'
-              } z-[900] flex flex-col top-0 left-0`}
+            className={`fixed w-[260px] h-screen p-4 ${
+              theme === "light" ? "bg-gray-100" : "bg-slate-950"
+            } z-[900] flex flex-col top-0 left-0`}
             initial={{ x: (isDesktop && !isVisible) || (!isDesktop && !isOpen) ? -260 : 0 }}
             animate={{ x: (isDesktop && !isVisible) || (!isDesktop && !isOpen) ? -260 : 0 }}
             exit={{ x: (isDesktop && !isVisible) || (!isDesktop && !isOpen) ? -260 : 0 }}
@@ -141,29 +154,29 @@ export default function SideNavbar({
             <div className="flex flex-col w-full h-full">
               <div className="flex mb-6 items-center justify-between">
                 <h2
-                  className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-gray-100'
-                    }`}
+                  className={`text-2xl font-bold ${
+                    theme === "light" ? "text-gray-900" : "text-gray-100"
+                  }`}
                 >
                   Scheuor
                 </h2>
                 <div className="flex items-center gap-2">
                   <motion.button
-                    onClick={() => {
-                      toggleTheme();
-                    }}
+                    onClick={toggleTheme}
                     whileHover="hover"
                     whileTap="tap"
                     variants={buttonVariants}
-                    className={`px-3 py-2 rounded-lg ${theme === 'light' ? 'bg-gray-200 text-gray-900' : 'bg-slate-800 text-gray-200'
-                      }`}
+                    className={`px-3 py-2 rounded-lg ${
+                      theme === "light"
+                        ? "bg-gray-200 text-gray-900"
+                        : "bg-slate-800 text-gray-200"
+                    }`}
                   >
-                    {theme === 'light' ? <Sun size={20} /> : <MoonStar size={20} />}
+                    {theme === "light" ? <Sun size={20} /> : <MoonStar size={20} />}
                   </motion.button>
                   {!isDesktop && (
                     <motion.button
-                      onClick={() => {
-                        setIsOpen(false);
-                      }}
+                      onClick={() => setIsOpen(false)}
                       className="lg:hidden p-2 rounded-lg bg-fuchsia-600 text-white shadow-md border border-fuchsia-700 hover:shadow-lg hover:shadow-fuchsia-500/50"
                       variants={buttonVariants}
                       whileHover="hover"
@@ -177,11 +190,15 @@ export default function SideNavbar({
               <ul>
                 <li>
                   <UserProfileItem
-                    name="Hmm, nickname"
-                    email=""
-                    imageUrl={userVisual.type === 'image' ? (userVisual.value as string) : undefined}
-                    icon={userVisual.type === 'icon' ? (userVisual.value as React.ReactNode) : undefined}
-                    emoji={userVisual.type === 'emoji' ? (userVisual.value as string) : undefined}
+                    userId={currentUser?.id || ""}
+                    name={
+                      currentUser
+                        ? `${currentUser.firstName} ${currentUser.lastName}`
+                        : "Guest"
+                    }
+                    email={currentUser?.email}
+                    visualType={currentUser?.visualType}
+                    visualValue={currentUser?.visualValue}
                     onVisualChange={handleVisualChange}
                     onSettingsClick={handleSettingsClick}
                     onProfileClick={handleProfileClick}
@@ -194,7 +211,12 @@ export default function SideNavbar({
                 <div>
                   <ul>
                     <li>
-                      <SideNavButton title="Team space" link="/team-space" icon={MdPeopleOutline} theme={theme} />
+                      <SideNavButton
+                        title="Team space"
+                        link="/team-space"
+                        icon={MdPeopleOutline}
+                        theme={theme}
+                      />
                     </li>
                   </ul>
                   <Divider theme={theme} />
@@ -211,7 +233,12 @@ export default function SideNavbar({
                   <SideNavButton title="Tasks" link="/tasks" icon={PenBox} theme={theme} />
                 </li>
                 <li>
-                  <SideNavButton title="Calendar" link="/calendar" icon={Calendar} theme={theme} />
+                  <SideNavButton
+                    title="Calendar"
+                    link="/calendar"
+                    icon={Calendar}
+                    theme={theme}
+                  />
                 </li>
                 <Divider theme={theme} />
                 <li>
@@ -227,15 +254,29 @@ export default function SideNavbar({
                 </li>
                 <Divider theme={theme} />
                 <li>
-                  <div className={`flex items-center gap-2 mb-2 ${theme == "light" ? "text-neutral-900" : "text-neutral-200"} font-semibold`}>
+                  <div
+                    className={`flex items-center gap-2 mb-2 ${
+                      theme == "light" ? "text-neutral-900" : "text-neutral-200"
+                    } font-semibold`}
+                  >
                     AI Partner
                     <Sparkles size={16} />
                   </div>
-                  <SideNavButton title='Smart notes' link='/smart/smart-notes' icon={Notebook} theme={theme} />
+                  <SideNavButton
+                    title="Smart notes"
+                    link="/smart/smart-notes"
+                    icon={Notebook}
+                    theme={theme}
+                  />
                 </li>
                 <Divider theme={theme} />
                 <li>
-                  <SideNavButton title="Feedback" link="/feedback" icon={Mail} theme={theme} />
+                  <SideNavButton
+                    title="Feedback"
+                    link="/feedback"
+                    icon={Mail}
+                    theme={theme}
+                  />
                 </li>
               </ul>
             </div>

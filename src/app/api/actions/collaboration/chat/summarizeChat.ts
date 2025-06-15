@@ -1,11 +1,13 @@
 import api from "@/app/api/api"
 
 
-export const summarizeChat = async () => {
+export const summarizeChat = async (partnershipId: string, chatId: string, userId: string) => {
     try {
-        const res = await api.get(`/huggingface/summarizeChat`)
+        const res = await api.post(`/collab-chat/summarize`, {partnershipId, chatId, userId}, {
+            withCredentials: true
+        })
         return res.data
     } catch (error) {
-
+        console.error("failed to summarize:", error)
     }
 }

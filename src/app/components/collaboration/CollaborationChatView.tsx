@@ -10,10 +10,17 @@ import toast from "react-hot-toast";
 import { io, Socket } from "socket.io-client";
 import { createCollabChat } from "@/app/api/actions/collaboration/chat/createCollabChat";
 import { getCollabMembers } from "@/app/api/actions/collaboration/getCollabMembers";
-import { ArrowLeft, Mic, Plus, Send, Settings } from "lucide-react";
+import { ArrowLeft, Mic, Plus, Send, Settings, Sparkles, X } from "lucide-react";
 import { summarizeChat } from "@/app/api/actions/collaboration/chat/summarizeChat";
+import PermissionModal from "./modals/PermissionModal";
+import SummaryModal from "./modals/SummaryModal";
+import ChatActionModal from "./modals/ChatActionModal";
+import { answerChat, createScheduledMessage } from "@/app/api/actions/collaboration/chat/AIChatActions";
+import AnswerModal from "./modals/AnswerModal";
+import MessageBubble from "./MessageBubble";
+import { AnimatePresence, motion } from "framer-motion";
 
-type Message = {
+export type Message = {
     id: string;
     chatId: string;
     userId: string;
@@ -57,8 +64,15 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
     const [isMobileChatListVisible, setIsMobileChatListVisible] = useState(true)
     const [partnershipUsers, setPartnershipUsers] = useState<Users[]>([])
     const [partnershipDetails, setPartnershipDetails] = useState<PartnershipDetails | null>(null)
+
     const [summary, setSummary] = useState<string | null>(null)
+    const [answer, setAnswer] = useState<string | null>(null)
     const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false)
+    const [showActionModal, setShowActionModal] = useState(false);
+
+    const [showCreateChatModal, setShowCreateChatModal] = useState(false);
+    const [newChatName, setNewChatName] = useState("");
+
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const socketRef = useRef<Socket | null>(null)
     const hasJoinedPartnership = useRef(false)
@@ -122,6 +136,22 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
             }
         });
 
+        socket.on("newChat", (newChat) => {
+            if (isMounted) {
+                setChats((prev) => [
+                    ...prev,
+                    {
+                        id: newChat.id,
+                        name: newChat.name,
+                        partnershipId: newChat.partnershipId,
+                        visibleTo: newChat.visibleTo || [],
+                        createdBy: newChat.createdBy || "",
+                        messages: [],
+                    },
+                ]);
+            }
+        });
+
         if (!hasJoinedPartnership.current) {
             socket.emit("joinPartnership", { partnershipId, userId: currentUser.id })
             hasJoinedPartnership.current = true
@@ -140,7 +170,6 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
 
         const loadData = async () => {
             if (userLoading || !currentUser || !isMounted) {
-                toast.error("back")
                 return
             }
 
@@ -157,9 +186,8 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                     return
                 }
 
-                toast.success("here")
                 const members = await getCollabMembers(partnershipId)
-                
+
                 if (isMounted) {
                     setPartnershipDetails({
                         id: details.id,
@@ -174,15 +202,13 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                         }))
                     })
                 }
-                toast.success("here---1")
-                
+
                 if (members && isMounted) {
                     const memberIds = members.map((member: PartnershipMembership) => member.userId)
                     const filteredUsers = users.filter((user: Users) => memberIds.includes(user.id))
                     setPartnershipUsers(filteredUsers)
                 }
-                
-                toast.success("here---22")
+
                 const chatsRes = await getCollabChats(partnershipId)
                 console.log("chat", chatsRes)
                 if (chatsRes && isMounted) {
@@ -224,26 +250,44 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
 
     const createChat = async () => {
         if (!currentUser) {
-            toast.error("Cannot create chat: user not authenticated", {
-                duration: 3000
-            })
-            return
+            toast.error("Cannot create chat: user not authenticated", { duration: 3000 });
+            return;
         }
+        if (!newChatName.trim()) {
+            toast.error("Chat name is required", { duration: 3000 });
+            return;
+        }
+
         const data = {
             partnershipId,
             userId: currentUser.id,
-            name: `Chat ${chats.length + 1}`,
-            visibleTo: [currentUser.id]
-        }
-        try {
-            const res = await createCollabChat(data)
-            toast.success("Chat created successfully", { duration: 4000 })
-        } catch (error) {
-            toast.error("Failded to create chat", { duration: 3000 })
-            console.error(error)
-        }
+            name: newChatName,
+            visibleTo: [currentUser.id],
+        };
 
-    }
+        try {
+            const res = await createCollabChat(data);
+            setChats((prev) => [
+                ...prev,
+                {
+                    id: res.id,
+                    name: res.name,
+                    partnershipId: res.partnershipId,
+                    visibleTo: res.visibleTo || [],
+                    createdBy: res.createdBy || currentUser.id,
+                    messages: [],
+                },
+            ]);
+            setSelectedChatId(res.id);
+            setShowCreateChatModal(false);
+            setNewChatName("");
+            socketRef.current?.emit("createChat", { data }); // Notificar outros clientes
+            toast.success("Chat created successfully", { duration: 4000 });
+        } catch (error) {
+            toast.error("Failed to create chat", { duration: 3000 });
+            console.error("Error creating chat:", error);
+        }
+    };
 
     const updateChatPermissions = (chatId: string) => {
         setChats((prev) =>
@@ -256,16 +300,36 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
     }
 
     //send m
-    const sendMessage = async () => {
-        if (!messageInput.trim() || !selectedChatId || !currentUser) {
+    const sendMessage = async (content: string) => {
+        if (!content.trim() || !selectedChatId || !currentUser) {
             toast.error("Cannot send message: missing required data", { duration: 3000 })
             return
         }
 
+        const tempMessage: Message = {
+            id: `temp-${Date.now()}`,
+            chatId: selectedChatId,
+            userId: currentUser.id,
+            content,
+            timestamp: new Date(),
+        };
+
+        // Atualização otimista
+        setChats((prev) =>
+            prev.map((chat) =>
+                chat.id === selectedChatId
+                    ? { ...chat, messages: [...chat.messages, tempMessage] }
+                    : chat
+            )
+        );
+        setShouldScrollToBottom(true);
+        setMessageInput("");
+
+
         try {
             socketRef.current?.emit("sendMessage", {
                 chatId: selectedChatId,
-                content: messageInput,
+                content,
                 userId: currentUser.id,
                 partnershipId
             })
@@ -274,6 +338,14 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
         } catch (error) {
             toast.error("Failed to send message", { duration: 3000 })
             console.log(error)
+
+            setChats((prev) =>
+                prev.map((chat) =>
+                    chat.id === selectedChatId
+                        ? { ...chat, messages: chat.messages.filter((msg) => msg.id !== tempMessage.id) }
+                        : chat
+                )
+            );
         }
     }
 
@@ -285,73 +357,169 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
         }
 
         try {
-            const selectedChat = chats.find((chat) => chat.id === selectedChatId)
+            const selectedChat = chats.find((chat) => chat.id === selectedChatId);
             if (!selectedChat || selectedChat.messages.length === 0) {
                 toast.error("No messages to summarize", { duration: 3000 });
                 return;
             }
-            const messageToSummarize = selectedChat.messages
-                .slice(-200)
-                .map((message) => ({
-                    userId: message.userId,
-                    content: message.content,
-                    timestamp: message.timestamp
-                }))
-
-            const res = await summarizeChat()
-            setSummary(res)
-            toast.success("You're summarized chat", { duration: 3000 })
+            const res = await summarizeChat(partnershipId, selectedChatId, currentUser.id);
+            console.log("Summarize response:", res);
+            setSummary(res);
+            toast.success("Chat summarized successfully", { duration: 3000 });
         } catch (error) {
             toast.error("Failed to summarize chat", { duration: 3000 });
+            console.error("Summarize error:", error);
+        }
+    }
+
+    const answerCht = async () => {
+        if (!selectedChatId || !currentUser) {
+            toast.error("Cannot answer: no chat selected or user not authenticated", { duration: 3000 });
+            return;
+        }
+
+        try {
+            const selectedChat = chats.find((chat) => chat.id === selectedChatId)
+            if (!selectedChat || selectedChat.messages.length === 0) {
+                toast.error("No messages to answer", { duration: 3000 });
+                return;
+            }
+            const res = await answerChat(partnershipId, selectedChatId, currentUser.id)
+            setAnswer(res)
+            toast.success("Chat answered successfully", { duration: 3000 });
+        } catch (error) {
+            toast.error("Failed to answer chat", { duration: 3000 });
             console.error(error);
         }
     }
 
+    const createScheduled = async (prompt: string, scheduledTime: string) => {
+        if (!selectedChatId || !currentUser) {
+            toast.error("Cannot create message: no chat selected or user not authenticated", { duration: 3000 });
+            return;
+        }
+
+        try {
+            await createScheduledMessage(partnershipId, selectedChatId, currentUser.id, prompt, scheduledTime);
+            toast.success("Message scheduled successfully", { duration: 3000 });
+        } catch (error) {
+            toast.error("Failed to schedule message", { duration: 3000 });
+            console.error(error);
+        }
+    };
+
     const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            sendMessage();
+            sendMessage(messageInput);
         }
+    };
+
+    const handleConfirmAnswer = async (editedAnswer: string) => {
+        await sendMessage(editedAnswer);
+    };
+
+    const handleReplyWithSummary = async (summary: string) => {
+        await sendMessage(summary);
+        setSummary(null); // Fecha o modal após enviar
     };
 
     const selectedChat = chats.find((chat) => chat.id === selectedChatId);
 
     useEffect(() => {
-    if (shouldScrollToBottom && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-      setShouldScrollToBottom(false);
-    }
-  }, [selectedChat?.messages, shouldScrollToBottom]);
-
-    console.log(selectedChat?.messages)
-    console.log(chats.map((ct) => ct.messages))
+        if (shouldScrollToBottom && messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+            setShouldScrollToBottom(false);
+        }
+    }, [selectedChat?.messages, shouldScrollToBottom]);
 
     return (
         <div
-            className={`p-4 ${theme === "light" ? "bg-white text-neutral-800" : "bg-slate-900 text-neutral-200"} h-[100vh]`}
+            className={`p-4 ${theme === "light" ? "bg-white text-neutral-800" : "bg-slate-900 text-neutral-200"} h-[92.5vh] lg:h-[88.5vh]`}
         >
-            <h2 className="text-xl font-semibold mb-4 flex items-center justify-between">
-                Partnership Chats
-                {selectedChat && (
-                    <button
-                        onClick={summarizeChat}
-                        className={`px-3 py-1 rounded ${theme === "light" ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-blue-600 hover:bg-blue-700"}`}
+            <AnimatePresence>
+                {showCreateChatModal && (
+                    <motion.div
+                        className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-50`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                     >
-                        Summarize Chat
-                    </button>
+                        <motion.div
+                            className={`rounded-lg p-6 w-full max-w-md ${theme === "light" ? "bg-white" : "bg-gray-800"
+                                }`}
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <div className="flex justify-between items-center mb-3">
+                                <h2 className="text-lg font-semibold">Create New Chat</h2>
+                                <button
+                                    onClick={() => setShowCreateChatModal(false)}
+                                    className={`p-1 rounded-full ${theme === "light" ? "hover:bg-gray-200" : "hover:bg-gray-700"
+                                        }`}
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <input
+                                type="text"
+                                value={newChatName}
+                                onChange={(e) => setNewChatName(e.target.value)}
+                                placeholder="Enter chat name"
+                                maxLength={50}
+                                className={`w-full p-2 rounded-lg mb-3 ${theme === "light"
+                                    ? "bg-gray-100 text-gray-900 border-gray-300"
+                                    : "bg-gray-700 text-gray-100 border-gray-600"
+                                    }`}
+                            />
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    onClick={() => setShowCreateChatModal(false)}
+                                    className={`px-4 py-2 rounded-lg ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-gray-700 hover:bg-gray-600"
+                                        }`}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={createChat}
+                                    className={`px-4 py-2 rounded-lg ${theme === "light" ? "bg-neutral-800 hover:bg-neutral-900 text-white" : "bg-neutral-900 hover:bg-black text-white"
+                                        }`}
+                                >
+                                    Create
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
                 )}
-            </h2>
+            </AnimatePresence>
+            {/* <h2 className="text-xl font-semibold mb-3 flex items-center justify-between"> */}
+            {/* {selectedChat && (
+                <button
+                    onClick={() => setShowActionModal(true)}
+                    className={` absolute px-3 py-1 right-7 lg:top-4 rounded border-[1px] ${theme === "light" ? "text-neutral-900 border-gray-200 hover:bg-gray-200"
+                        : "text-gray-100 border-gray-600 hover:bg-gray-700"
+                        } z-50 ${showCreateChatModal == true ? "hidden" : ""}`}
+                    data-testid="sparkles-button"
+                >
+                    <Sparkles />
+                </button>
+            )} */}
+            {/* </h2> */}
             <div className="flex flex-col md:flex-row h-[calc(100%-2rem)]">
                 <div
-                    className={`${selectedChatId && !isMobileChatListVisible ? "hidden md:block" : "block"} w-full md:w-1/3 lg:w-1/4 p-2 border-r ${theme === "light" ? "border-gray-200" : "border-blue-700"} overflow-auto`}
+                    className={`${selectedChatId && !isMobileChatListVisible ? "hidden md:block" : "block"} w-full md:w-1/3 lg:w-1/4 p-2 border-r ${theme === "light" ? "border-gray-200" : "border-gray-600"
+                        } overflow-auto`}
                 >
                     {isAuthorized && (
                         <button
-                            onClick={createChat}
-                            className={`flex items-center gap-2 p-2 mb-2 rounded-full ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-neutral-950 hover:bg-black"}`}
+                            onClick={() => setShowCreateChatModal(true)} // Abrir modal
+                            className={`flex items-center gap-2 p-2 mb-3 rounded-lg w-full ${theme === "light" ? "bg-gray-200 hover:bg-gray-300 text-gray-900" : "bg-gray-700 hover:bg-gray-600 text-gray-100"
+                                }`}
                         >
                             <Plus size={18} />
-                            New Chat
+                            <span className={`${!isMobileChatListVisible ? "hidden" : ""}`}>New Chat</span>
                         </button>
                     )}
                     <ul className="space-y-2">
@@ -362,7 +530,10 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                                         setSelectedChatId(chat.id);
                                         setIsMobileChatListVisible(false);
                                     }}
-                                    className={`w-full text-left p-2 rounded ${theme === "light" ? "hover:bg-gray-200" : "hover:bg-blue-700"} ${selectedChatId === chat.id ? (theme === "light" ? "bg-gray-100" : "bg-blue-800") : ""}`}
+                                    className={`w-full text-left p-2 rounded-lg ${theme === "light"
+                                        ? "hover:bg-gray-200 text-gray-600"
+                                        : "hover:bg-gray-700 text-gray-200"
+                                        } ${selectedChatId === chat.id ? (theme === "light" ? "bg-gray-100" : "bg-gray-800") : ""}`}
                                 >
                                     {chat.name}
                                 </button>
@@ -372,7 +543,7 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                                             setShowPermissionModal(chat.id);
                                             setSelectedUsers([...chat.visibleTo]);
                                         }}
-                                        className={`p-1 rounded ${theme === "light" ? "hover:bg-gray-200" : "hover:bg-blue-700"}`}
+                                        className={`p-1 rounded ${theme === "light" ? "hover:bg-gray-200" : "hover:bg-gray-700"}`}
                                     >
                                         <Settings size={14} />
                                     </button>
@@ -386,46 +557,70 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                 >
                     {selectedChat ? (
                         <div className="flex flex-col h-full">
-                            <div className="flex items-center mb-2 p-4">
+                            <div className={`flex items-center pb-3 px-4 border-b ${theme === "light" ? "border-gray-200" : "border-gray-600"}`}>
                                 <button
                                     onClick={() => setIsMobileChatListVisible(true)}
-                                    className={`md:hidden mr-2 p-2 rounded ${theme === "light" ? "hover:bg-gray-200" : "hover:bg-blue-600"}`}
+                                    className={`md:hidden mr-2 p-2 rounded-lg ${theme === "light" ? "hover:bg-gray-200" : "hover:bg-gray-700"}`}
                                 >
                                     <ArrowLeft size={20} />
                                 </button>
-                                <h3 className="text-lg font-medium">{selectedChat.name}</h3>
+                                <h3 className="text-base font-medium flex lg:hidden">{selectedChat.name}</h3>
+                                {selectedChat && (
+                                    <button
+                                        onClick={() => setShowActionModal(true)}
+                                        className={` absolute px-3 py-1 right-7 lg:-top-7 rounded border-[1px] ${theme === "light" ? "text-neutral-900 border-gray-200 hover:bg-gray-200"
+                                            : "text-gray-100 border-gray-600 hover:bg-gray-700"
+                                            } z-50 ${showCreateChatModal == true ? "hidden" : ""}`}
+                                        data-testid="sparkles-button"
+                                    >
+                                        <Sparkles />
+                                    </button>
+                                )}
                             </div>
-                            <div className="flex-1 overflow-y-auto p-4">
-                                {selectedChat.messages.map((message) => {
-                                    const isCurrentUser = message.userId === currentUser?.id;
-                                    return (
-                                        <p
-                                            key={message.id}
-                                            className={`p-2 mb-2 rounded ${theme === "light" ? (isCurrentUser ? "bg-blue-100 ml-auto" : "bg-gray-100") : (isCurrentUser ? "bg-blue-500 ml-auto" : "bg-blue-700")} max-w-[70%] ${isCurrentUser ? "text-right" : "text-left"}`}
-                                        >
-                                            {message.content}
-                                        </p>
-                                    );
-                                })}
+                            <div className="flex-1 overflow-y-auto p-4 pb-4">
+                                {selectedChat.messages.length > 0 ? (
+                                    selectedChat.messages.map((message) => {
+                                        const isCurrentUser = message.userId === currentUser?.id;
+                                        const user = partnershipUsers.find((u) => u.id === message.userId);
+                                        return (
+                                            <MessageBubble
+                                                key={message.id}
+                                                message={message}
+                                                isCurrentUser={isCurrentUser}
+                                                user={user}
+                                                data-testid="message-bubble"
+                                            />
+                                        );
+                                    })
+                                ) : (
+                                    <p className="text-center text-gray-400">No messages yet.</p>
+                                )}
+                                {/* {answer} */}
                                 <div ref={messagesEndRef} />
                             </div>
-                            <div className="relative p-4">
+                            <div className={`p-4 bottom-0 relative border-t-1 ${theme === "light" ? "border-gray-200" : "border-gray-600"}`}>
+                                <div className="mt-5" />
                                 <div className="absolute bottom-0 left-4 right-0 flex items-center gap-2">
                                     <textarea
                                         value={messageInput}
                                         onChange={(e) => setMessageInput(e.target.value)}
                                         onKeyPress={handleKeyPress}
-                                        className={`flex-1 p-2 rounded ${theme === "light" ? "bg-gray-100 border-gray-300" : "bg-blue-700 border-blue-200"} resize-none h-12`}
+                                        className={`flex-1 p-3 rounded-lg ${theme === "light"
+                                            ? "bg-gray-100 text-gray-900 border-gray-300"
+                                            : "bg-gray-800 text-gray-100 border-gray-600"
+                                            } resize-none h-12 focus:ring-1 focus:ring-fuchsia-500`}
                                         placeholder="Type a message..."
                                     />
                                     <button
-                                        onClick={sendMessage}
-                                        className={`p-2 rounded ${theme === "light" ? "bg-blue-500 hover:bg-blue-600 text-white" : "bg-blue-600 hover:bg-blue-700"}`}
+                                        onClick={() => sendMessage(messageInput)}
+                                        className={`p-3 rounded-lg ${theme === "light" ? "bg-fuchsia-500 hover:bg-blue-600 text-white" : "bg-fuchsia-700 hover:bg-fuchsia-800 text-white"
+                                            }`}
                                     >
                                         <Send size={20} />
                                     </button>
                                     <button
-                                        className={`p-2 rounded ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-blue-700 hover:bg-blue-600"}`}
+                                        className={`p-3 rounded-lg ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-gray-700 hover:bg-gray-600"
+                                            }`}
                                     >
                                         <Mic size={20} />
                                     </button>
@@ -440,67 +635,37 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                 </div>
             </div>
 
-            {showPermissionModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div
-                        className={`w-80 rounded-lg p-4 ${theme === "light" ? "bg-white text-black" : "bg-blue-900 text-white"}`}
-                    >
-                        <h3 className="text-lg font-semibold mb-4">Manage Chat Permissions</h3>
-                        <div className="space-y-2 mb-4">
-                            {partnershipUsers.map((user) => (
-                                <div key={user.id} className="flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedUsers.includes(user.id)}
-                                        onChange={(e) => {
-                                            if (e.target.checked) {
-                                                setSelectedUsers((prev) => [...prev, user.id]);
-                                            } else {
-                                                setSelectedUsers((prev) => prev.filter((id) => id !== user.id));
-                                            }
-                                        }}
-                                        className="mr-2"
-                                    />
-                                    <label>{`${user.firstName} ${user.lastName}`}</label>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="mt-4 flex justify-end space-x-2">
-                            <button
-                                onClick={() => setShowPermissionModal(null)}
-                                className={`px-3 py-1 rounded ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-blue-700 hover:bg-blue-600"}`}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={() => updateChatPermissions(showPermissionModal)}
-                                className={`px-3 py-1 rounded ${theme === "light" ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-blue-600 hover:bg-blue-500"}`}
-                            >
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <PermissionModal
+                isOpen={!!showPermissionModal}
+                onClose={() => setShowPermissionModal(null)}
+                partnershipUsers={partnershipUsers}
+                selectedUsers={selectedUsers}
+                setSelectedUsers={setSelectedUsers}
+                onSave={updateChatPermissions}
+                chatId={showPermissionModal || ""}
+            />
 
-            {summary && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div
-                        className={`w-96 p-4 rounded ${theme === "light" ? "bg-white text-gray-900" : "bg-blue-900 text-white"}`}
-                    >
-                        <h3 className="text-lg font-semibold mb-4">Chat Summary</h3>
-                        <p className="mb-4">{summary}</p>
-                        <div className="flex justify-end">
-                            <button
-                                onClick={() => setSummary(null)}
-                                className={`px-3 py-1 rounded ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-blue-700 hover:bg-blue-600"}`}
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <SummaryModal
+                isOpen={!!summary}
+                onClose={() => setSummary(null)}
+                summary={summary}
+            />
+
+            <AnswerModal
+                isOpen={!!answer}
+                onClose={() => setAnswer(null)}
+                answer={answer}
+                onConfirm={handleConfirmAnswer}
+            />
+
+            <ChatActionModal
+                isOpen={showActionModal}
+                onClose={() => setShowActionModal(false)}
+                onAnswer={answerCht}
+                onSummarize={summarize}
+                onCreate={createScheduled}
+                messages={selectedChat?.messages || []}
+            />
         </div>
     );
 }

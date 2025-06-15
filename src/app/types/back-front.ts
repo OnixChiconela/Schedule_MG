@@ -7,4 +7,7 @@ export type User = {
     role: string
     createdAt: string
     updatedAt: string
+
+    visualType: "emoji" | "initial" | undefined
+    visualValue: string
 }
