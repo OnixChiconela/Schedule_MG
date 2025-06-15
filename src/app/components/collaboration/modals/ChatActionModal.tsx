@@ -23,21 +23,28 @@ const ChatActionModal = ({
   const [prompt, setPrompt] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [sendOption, setSendOption] = useState<"now" | "schedule">("now");
 
-  const {theme} = useTheme()
+  const { theme } = useTheme();
 
   if (!isOpen) return null;
 
   const handleCreate = async () => {
-    if (!prompt.trim() || !scheduledTime) {
-      toast.error("Prompt and scheduled time are required", { duration: 3000 });
+    if (!prompt.trim()) {
+      toast.error("Prompt is required", { duration: 3000 });
+      return;
+    }
+    if (sendOption === "schedule" && !scheduledTime) {
+      toast.error("Scheduled time is required", { duration: 3000 });
       return;
     }
     try {
-      await onCreate(prompt, scheduledTime);
+      const timeToSend = sendOption === "now" ? new Date().toISOString() : scheduledTime;
+      await onCreate(prompt, timeToSend);
       setPrompt("");
       setScheduledTime("");
       setShowCreateForm(false);
+      setSendOption("now");
       onClose();
     } catch (error) {
       toast.error("Failed to schedule message", { duration: 3000 });
@@ -49,7 +56,7 @@ const ChatActionModal = ({
       <div
         className={`w-80 rounded-lg p-4 ${theme === "light" ? "bg-white text-black" : "bg-blue-900 text-white"}`}
       >
-         <h3 className="text-lg font-semibold mb-4">Chat Actions</h3>
+        <h3 className="text-lg font-semibold mb-4">Chat Actions</h3>
         {!showCreateForm ? (
           <div className="space-y-2 mb-4">
             <button
@@ -91,13 +98,39 @@ const ChatActionModal = ({
               placeholder="Enter your prompt..."
               data-testid="prompt-input"
             />
-            <input
-              type="datetime-local"
-              value={scheduledTime}
-              onChange={(e) => setScheduledTime(e.target.value)}
-              className={`w-full p-2 rounded ${theme === "light" ? "bg-gray-100 border-gray-300" : "bg-blue-700 border-blue-200"}`}
-              data-testid="schedule-input"
-            />
+            <div className="flex space-x-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  value="now"
+                  checked={sendOption === "now"}
+                  onChange={() => setSendOption("now")}
+                  className="mr-2"
+                  data-testid="send-now-toggle"
+                />
+                Enviar Agora
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  value="schedule"
+                  checked={sendOption === "schedule"}
+                  onChange={() => setSendOption("schedule")}
+                  className="mr-2"
+                  data-testid="schedule-toggle"
+                />
+                Agendar
+              </label>
+            </div>
+            {sendOption === "schedule" && (
+              <input
+                type="datetime-local"
+                value={scheduledTime}
+                onChange={(e) => setScheduledTime(e.target.value)}
+                className={`w-full p-2 rounded ${theme === "light" ? "bg-gray-100 border-gray-300" : "bg-blue-700 border-blue-200"}`}
+                data-testid="schedule-input"
+              />
+            )}
             <div className="flex justify-end space-x-2">
               <button
                 onClick={() => setShowCreateForm(false)}
@@ -110,7 +143,7 @@ const ChatActionModal = ({
                 className={`px-3 py-1 rounded ${theme === "light" ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-blue-600 hover:bg-blue-500"}`}
                 data-testid="schedule-button"
               >
-                Schedule
+                {sendOption === "now" ? "Send" : "Schedule"}
               </button>
             </div>
           </div>

@@ -24,7 +24,7 @@ interface ProfileVisualProps {
   emojis?: string[]; // Lista de emojis configurável
   // icons?: Item[]; // Lista de ícones configurável
   // images?: Item[];
-  name: string; // Lista de imagens configurável
+  name?: string; // Lista de imagens configurável
 }
 
 const colorPalette = [
@@ -59,7 +59,7 @@ const ProfileVisualDropdown: React.FC<ProfileVisualProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
-  const initial = getAvatarFallback(name);
+  const initial = getAvatarFallback(name!);
 
   // return (
   //   <AnimatePresence>
