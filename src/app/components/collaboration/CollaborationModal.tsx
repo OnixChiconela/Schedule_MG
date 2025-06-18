@@ -113,7 +113,8 @@ export default function CreatePartnershipModal({
                 name: form.name,
                 description: form.description,
                 ownerId: userId,
-                role: "OWNER",
+                // role: "OWNER",
+                members: [],
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
             };
@@ -135,7 +136,7 @@ export default function CreatePartnershipModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50">
             <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}

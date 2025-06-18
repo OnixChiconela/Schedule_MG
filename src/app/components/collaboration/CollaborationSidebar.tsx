@@ -21,7 +21,7 @@ export default function CollaborationSidebar({
   partnership,
 }: CollaborationSidebarProps) {
   const { theme } = useTheme();
-  const sections = ["Chat", "Notes", "Emails", "Call", "Summary"];
+  const sections = ["Chat", "Notes", "Emails", "Video call", "Summary"];
 
   return (
     <>

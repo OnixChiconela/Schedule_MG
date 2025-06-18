@@ -19,6 +19,9 @@ import { answerChat, createScheduledMessage } from "@/app/api/actions/collaborat
 import AnswerModal from "./modals/AnswerModal";
 import MessageBubble from "./MessageBubble";
 import { AnimatePresence, motion } from "framer-motion";
+import ScheduleMessageModal from "./modals/ScheduleMessageModal";
+import ScheduleReviewModal from "./modals/ScheduleReviewModal";
+import { updateChatpermissions } from "@/app/api/actions/collaboration/chat/updateChatPermissions";
 
 export type Message = {
     id: string;
@@ -72,6 +75,10 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
 
     const [showCreateChatModal, setShowCreateChatModal] = useState(false);
     const [newChatName, setNewChatName] = useState("");
+    const [showScheduleModal, setShowScheduleModal] = useState(false);
+
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [scheduledMessage, setScheduledMessage] = useState<string | null>(null);
 
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const socketRef = useRef<Socket | null>(null)
@@ -79,6 +86,7 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
 
     const isAuthorized = partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "OWNER"
         || partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "ADMIN"
+        || partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "COLABORATOR"
         || false
 
     //WS
@@ -94,7 +102,7 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
         }
 
         if (!socketRef.current || !socketRef.current.connected) {
-            socketRef.current = io("http://localhost:8050/partnership/chat", {
+            socketRef.current = io(`${process.env.NEXT_PUBLIC_WS}/partnership/chat`, {
                 query: { userId: currentUser.id, token },
                 transports: ["websocket"],
                 reconnection: true,
@@ -105,13 +113,6 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
 
         const socket = socketRef.current
 
-        socket.on("connect", () => console.log("socket connected:", socket.id))
-        socket.on("connect_error", (err) => {
-            if (isMounted) {
-                toast.error("Failed to connect to chat server", { duration: 3000 });
-                console.error("WebSocket connection error:", err.message);
-            }
-        });
         socket.on("error", (err) => {
             if (isMounted) {
                 toast.error(err.message || "Connection failed", { duration: 3000 });
@@ -151,6 +152,23 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                 ]);
             }
         });
+
+        socket.on('reviewMessage', (data: { message: string; scheduledMessageId: string }) => {
+            if (isMounted) {
+                setScheduledMessage(data.message);
+                // setScheduledMessageId(data.scheduledMessageId);
+                setShowReviewModal(true);
+            }
+        });
+
+        socket.on("connected", () => console.log("socket connected!!:", socket.id))
+        socket.on("connect_error", (err) => {
+            if (isMounted) {
+                toast.error("Failed to connect to chat server", { duration: 3000 });
+                console.error("WebSocket connection error:", err.message);
+            }
+        });
+
 
         if (!hasJoinedPartnership.current) {
             socket.emit("joinPartnership", { partnershipId, userId: currentUser.id })
@@ -289,14 +307,20 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
         }
     };
 
-    const updateChatPermissions = (chatId: string) => {
-        setChats((prev) =>
-            prev.map((chat) =>
-                chat.id === chatId ? { ...chat, visibleTo: selectedUsers } : chat)
-        )
-        setShowPermissionModal(null);
-        setSelectedUsers([])
-        toast.success("Chat permission updated successfully", { duration: 3000 })
+    const updateChatPermission = async (chatId: string) => {
+        if (!currentUser) return
+        try {
+            await updateChatpermissions(chatId, currentUser?.id, selectedUsers)
+            setChats((prev) =>
+                prev.map((chat) =>
+                    chat.id === chatId ? { ...chat, visibleTo: selectedUsers } : chat)
+            )
+            setShowPermissionModal(null);
+            setSelectedUsers([])
+            toast.success("Chat permission updated successfully", { duration: 3000 })
+        } catch (error) {
+
+        }
     }
 
     //send m
@@ -393,14 +417,14 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
         }
     }
 
-    const createScheduled = async (prompt: string, scheduledTime: string) => {
+    const createScheduled = async (prompt: string, scheduledTime: string, requiresReview: boolean) => {
         if (!selectedChatId || !currentUser) {
             toast.error("Cannot create message: no chat selected or user not authenticated", { duration: 3000 });
             return;
         }
 
         try {
-            await createScheduledMessage(partnershipId, selectedChatId, currentUser.id, prompt, scheduledTime);
+            await createScheduledMessage(partnershipId, selectedChatId, currentUser.id, prompt, scheduledTime, requiresReview);
             toast.success("Message scheduled successfully", { duration: 3000 });
         } catch (error) {
             toast.error("Failed to schedule message", { duration: 3000 });
@@ -419,6 +443,10 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
         await sendMessage(editedAnswer);
     };
 
+    const handleConfirmReview = async (editedAnswer: string) => {
+        await sendMessage(editedAnswer)
+    }
+
     const handleReplyWithSummary = async (summary: string) => {
         await sendMessage(summary);
         setSummary(null); // Fecha o modal após enviar
@@ -432,6 +460,8 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
             setShouldScrollToBottom(false);
         }
     }, [selectedChat?.messages, shouldScrollToBottom]);
+
+    console.log("chats", chats)
 
     return (
         <div
@@ -494,19 +524,7 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                     </motion.div>
                 )}
             </AnimatePresence>
-            {/* <h2 className="text-xl font-semibold mb-3 flex items-center justify-between"> */}
-            {/* {selectedChat && (
-                <button
-                    onClick={() => setShowActionModal(true)}
-                    className={` absolute px-3 py-1 right-7 lg:top-4 rounded border-[1px] ${theme === "light" ? "text-neutral-900 border-gray-200 hover:bg-gray-200"
-                        : "text-gray-100 border-gray-600 hover:bg-gray-700"
-                        } z-50 ${showCreateChatModal == true ? "hidden" : ""}`}
-                    data-testid="sparkles-button"
-                >
-                    <Sparkles />
-                </button>
-            )} */}
-            {/* </h2> */}
+
             <div className="flex flex-col md:flex-row h-[calc(100%-2rem)]">
                 <div
                     className={`${selectedChatId && !isMobileChatListVisible ? "hidden md:block" : "block"} w-full md:w-1/3 lg:w-1/4 p-2 border-r ${theme === "light" ? "border-gray-200" : "border-gray-600"
@@ -568,12 +586,12 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                                 {selectedChat && (
                                     <button
                                         onClick={() => setShowActionModal(true)}
-                                        className={` absolute px-3 py-1 right-7 lg:-top-7 rounded border-[1px] ${theme === "light" ? "text-neutral-900 border-gray-200 hover:bg-gray-200"
+                                        className={` absolute px-2 py-1 right-7 lg:-top-6 rounded border-[1px] ${theme === "light" ? "text-neutral-900 border-gray-200 hover:bg-gray-200"
                                             : "text-gray-100 border-gray-600 hover:bg-gray-700"
-                                            } z-50 ${showCreateChatModal == true ? "hidden" : ""}`}
+                                            } z-40 ${showCreateChatModal == true ? "hidden" : ""}`}
                                         data-testid="sparkles-button"
                                     >
-                                        <Sparkles />
+                                        <Sparkles size={20} />
                                     </button>
                                 )}
                             </div>
@@ -641,7 +659,7 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                 partnershipUsers={partnershipUsers}
                 selectedUsers={selectedUsers}
                 setSelectedUsers={setSelectedUsers}
-                onSave={updateChatPermissions}
+                onSave={updateChatPermission}
                 chatId={showPermissionModal || ""}
             />
 
@@ -663,8 +681,21 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                 onClose={() => setShowActionModal(false)}
                 onAnswer={answerCht}
                 onSummarize={summarize}
-                onCreate={createScheduled}
+                onOpenSchedule={() => setShowScheduleModal(true)}
                 messages={selectedChat?.messages || []}
+            />
+
+            <ScheduleMessageModal
+                isOpen={showScheduleModal}
+                onClose={() => setShowScheduleModal(false)}
+                onCreate={createScheduled}
+            />
+
+            <ScheduleReviewModal
+                isOpen={showReviewModal}
+                onClose={() => setShowReviewModal(false)}
+                message={scheduledMessage}
+                onConfirm={handleConfirmReview}
             />
         </div>
     );

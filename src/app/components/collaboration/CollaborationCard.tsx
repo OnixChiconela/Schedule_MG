@@ -5,16 +5,18 @@ import { motion } from "framer-motion";
 import { useTheme } from "@/app/themeContext";
 import { Trash } from "lucide-react";
 import toast from "react-hot-toast";
+import { PartnershipMembers, User } from "@/app/types/back-front";
 
 export interface Partnership {
   id: string;
   name: string;
   description?: string;
   ownerId: string;
-  role: "OWNER" | "ADMIN" | "COLABORATOR" | "GUEST";
+  // role: "OWNER" | "ADMIN" | "COLABORATOR" | "GUEST";
+  status?: "pending" | "accepted" | "invited";
+  members: PartnershipMembers[]
   createdAt: string;
   updatedAt: string;
-  status?: "pending" | "accepted";
 }
 
 interface CollaborationTeamCardsProps {

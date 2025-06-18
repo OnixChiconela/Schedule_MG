@@ -13,6 +13,35 @@ export type Users = {
     visualValue: string
 }
 
+export interface Invite {
+  id: string;
+  partnership: { id: string; name: string };
+  role: string;
+  status: string;
+  invitedAt: string;
+  acceptedAt: string
+}
+
+export interface NotificationMessage {
+  id: string;
+  chat: { id: string; name: string };
+  user: { id: string; firstName: string; lastName: string };
+  content: string;
+  createdAt: string;
+  read: boolean;
+}
+
+export interface SystemAlert {
+  id: string;
+  type: string;
+  content: string;
+  read: boolean;
+  createdAt: string;
+}
+
+
+//------------------------------------------------------
+
 export type TaskNodeData = {
     title: string;
     status: 'Todo' | 'Done';

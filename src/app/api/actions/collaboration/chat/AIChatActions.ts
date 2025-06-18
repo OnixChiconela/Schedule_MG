@@ -15,10 +15,18 @@ export const createScheduledMessage = async (
     chatId: string,
     userId: string,
     prompt: string,
-    scheduledTime: string
+    scheduledTime: string,
+    requiresReview: boolean
 ) => {
     try {
-        const res = await api.post(``)
+        const res = await api.post(`collab-chat/schedule-message`, {
+            partnershipId,
+            chatId,
+            userId,
+            prompt,
+            scheduledTime,
+            requiresReview
+        })
         return res.data
     } catch (error) {
         console.error('Error answering chat:', error);

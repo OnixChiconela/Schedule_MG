@@ -148,6 +148,7 @@ export default function DashboardPage() {
                 showToggleSidebarButton={true}
                 isSidebarOpen={isSidebarOpen}
                 toggleSidebar={toggleSidebar}
+                showNotificationBell={true}
             />
             <div
                 className={`min-h-screen flex ${theme === 'light' ? 'bg-white' : 'bg-slate-900'} transition-colors duration-300`}

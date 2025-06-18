@@ -17,6 +17,8 @@ import TeamChatView from "@/app/components/teams/TeamChatView";
 import NotesFolders from "@/app/components/teams/NoteFolder";
 import NoteEditor from "@/app/components/teams/NoteEditor";
 import CollaborationChatView from "@/app/components/collaboration/CollaborationChatView";
+import CollabMemberBar from "@/app/components/collaboration/CollaborationMemberBar";
+import CollaborationVideoCallView from "@/app/components/collaboration/video call/CollaborationVideoCallView";
 
 export default function CollaborationPage() {
   const { collaborationId } = useParams<{ collaborationId: string }>();
@@ -25,7 +27,7 @@ export default function CollaborationPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isSmallScreen);
   const { currentUser } = useUser();
   const [partnership, setPartnership] = useState<Partnership | null>(null);
-  const isOwner = partnership?.role === "OWNER";
+  const isOwner = partnership?.ownerId === currentUser?.id;
   const [layoutType, setLayoutType] = useState<"custom" | "free">("custom");
   const [panelSizes, setPanelSizes] = useState<number[]>([100]);
   const [panelCount, setPanelCount] = useState(1);
@@ -129,19 +131,16 @@ export default function CollaborationPage() {
           </div>
         ) : panelContents[index] === "Notes" ? (
           <div className="overflow-y-auto h-[84vh] w-full p-4">
-            {selectedFolderId === null ? (
-              <div>chamaaa</div>
-            ) : (
-              "ahh"
-            )}
+            {selectedFolderId === null ? <div>chamaaa</div> : "ahh"}
           </div>
         ) : panelContents[index] === "Emails" ? (
           <div className="text-gray-500">Emails (Coming Soon)</div>
-        ) : panelContents[index] === "Call" ? (
-          <div className="text-gray-500">Call (Coming Soon)</div>
-        ) : panelContents[index] === "Summary" ? (
-          <div className="text-gray-500">Summary (Coming Soon)</div>
-        ) : (
+        ) : panelContents[index] === "Video call" ? (
+          <div className="h-full">
+            <CollaborationVideoCallView partnershipId={collaborationId} />
+          </div>) : panelContents[index] === "Summary" ? (
+            <div className="text-gray-500">Summary (Coming Soon)</div>
+          ) : (
           <div className="text-gray-500">Select a section</div>
         )}
       </div>
@@ -187,6 +186,8 @@ export default function CollaborationPage() {
     setPanelSizes(previousState.panelSizes);
   };
 
+  console.log("partnership: ", partnership)
+
   if (!partnership) {
     return <div>Loading...</div>;
   }
@@ -197,6 +198,7 @@ export default function CollaborationPage() {
         themeButton={true}
         showToggleSidebarButton={false}
         isSidebarOpen={isSidebarOpen}
+        showNotificationBell={true}
       />
       <CollaborationSidebar
         isOpen={isSidebarOpen}
@@ -206,11 +208,11 @@ export default function CollaborationPage() {
         partnership={partnership}
       />
       <main
-        className={`flex-1 p-4 sm:p-6 transition-all duration-300 w-full ${
-          isSidebarOpen && !isSmallScreen ? "lg:max-w-[calc(100%-12rem)] ml-40" : "max-w-full"
-        }`}
+        className={`flex-1 p-4 sm:p-6 transition-all duration-300 w-full ${isSidebarOpen && !isSmallScreen ? "lg:max-w-[calc(100%-12rem)] ml-40" : "max-w-full"
+          }`}
         style={{ paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}
       >
+        <CollabMemberBar partnership={partnership} />
         <div className="h-full w-full">
           {panelCount > 0 ? (
             <SplitPane

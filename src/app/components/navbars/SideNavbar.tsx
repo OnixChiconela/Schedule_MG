@@ -20,7 +20,7 @@ import {
 import { IconType } from 'react-icons';
 import UserProfileItem from './UserProfilleItem';
 import { useRouter } from 'next/navigation';
-import { MdPeopleOutline } from 'react-icons/md';
+import { MdPeopleOutline, MdPerson } from 'react-icons/md';
 import { useUser } from '@/app/context/UserContext';
 import toast from 'react-hot-toast';
 import { updateUserProfile } from '@/app/api/actions/user/updateUserProfile';
@@ -207,6 +207,12 @@ export default function SideNavbar({
                 </li>
               </ul>
               <Divider theme={theme} />
+              <ul>
+                <li>
+                  <SideNavButton title="Home" link="/dashboard" icon={Home} theme={theme} />
+                </li>
+              </ul>
+              <Divider theme={theme} />
               {currentUser && (
                 <div>
                   <ul>
@@ -222,14 +228,15 @@ export default function SideNavbar({
                   <Divider theme={theme} />
                 </div>
               )}
-              <ul>
-                <li>
-                  <SideNavButton title="Home" link="/dashboard" icon={Home} theme={theme} />
-                </li>
-              </ul>
-              <Divider theme={theme} />
               <ul className="flex flex-col">
                 <li>
+                  <SideNavButton
+                     title="My space" 
+                     link="/tasks" 
+                     icon={MdPerson} 
+                     theme={theme} />
+                </li>
+                {/* <li>
                   <SideNavButton title="Tasks" link="/tasks" icon={PenBox} theme={theme} />
                 </li>
                 <li>
@@ -239,8 +246,8 @@ export default function SideNavbar({
                     icon={Calendar}
                     theme={theme}
                   />
-                </li>
-                <Divider theme={theme} />
+                </li> */}
+                {/* <Divider theme={theme} />
                 <li>
                   <SideNavButton
                     title="My business"
@@ -251,7 +258,7 @@ export default function SideNavbar({
                 </li>
                 <li>
                   <SideNavButton title="Roadmap" link="/tracking" icon={Car} theme={theme} />
-                </li>
+                </li> */}
                 <Divider theme={theme} />
                 <li>
                   <div

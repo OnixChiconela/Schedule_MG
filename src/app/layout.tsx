@@ -7,6 +7,8 @@ import { Metadata } from 'next';
 import { SubfolderProvider } from './context/SubfolderContext';
 import { LocationProvider } from './context/LocationContext';
 import { UserProvider } from './context/UserContext';
+import { NotificationProvider } from './context/NotificationContext';
+import { NotificationSocketProvider } from './context/ws/NotificationSocketContext';
 
 export const metadata: Metadata = {
   title: 'Scheuor',
@@ -47,13 +49,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <UserProvider>
           <ClientOnly>
             <ToasterProvider />
-            <LocationProvider>
-              <ThemeProvider>
-                <SubfolderProvider>
-                  {children}
-                </SubfolderProvider>
-              </ThemeProvider>
-            </LocationProvider>
+            <NotificationProvider>
+              <LocationProvider>
+                <ThemeProvider>
+                  <SubfolderProvider>
+                    {children}
+                  </SubfolderProvider>
+                </ThemeProvider>
+              </LocationProvider>
+            </NotificationProvider>
           </ClientOnly>
         </UserProvider>
       </body>
