@@ -6,15 +6,14 @@ import { useTheme } from "@/app/themeContext";
 import { Trash } from "lucide-react";
 import toast from "react-hot-toast";
 import { PartnershipMembers, User } from "@/app/types/back-front";
+import { useState } from "react";
 
 export interface Partnership {
   id: string;
   name: string;
   description?: string;
   ownerId: string;
-  // role: "OWNER" | "ADMIN" | "COLABORATOR" | "GUEST";
-  status?: "pending" | "accepted" | "invited";
-  members: PartnershipMembers[]
+  members: PartnershipMembers[] | undefined
   createdAt: string;
   updatedAt: string;
 }
@@ -36,6 +35,25 @@ export default function CollaborationTeamCards({
     router.push(`collaboration-space/collaboration/${partnershipId}`);
   };
 
+  const [isModalOpen, setIsModalOpen] = useState<{ [key: string]: boolean }>({});
+
+  const getMemberInfo = (partnership: Partnership) => {
+    if (!partnership.members) {
+      console.warn(`No members found for partnership ${partnership.id}`);
+      return { status: "unknown", role: "GUEST" };
+    }
+    const member = partnership.members.find((m) => m.userId === userId);
+    return member || { status: "unknown", role: "GUEST" };
+  };
+
+  const handleCardClick = (partnershipId: string, memberStatus: string) => {
+    if (memberStatus === "accepted") {
+      router.push(`/collaboration-space/collaboration/${partnershipId}`);
+    } else if (memberStatus === "pending") {
+      setIsModalOpen((prev) => ({ ...prev, [partnershipId]: true }));
+    }
+  };
+
   const handleAcceptInvite = async (partnershipId: string) => {
     try {
       const response = await fetch(`/api/partnerships/accept/${partnershipId}`, {
@@ -44,6 +62,7 @@ export default function CollaborationTeamCards({
       });
       if (!response.ok) throw new Error("Failed to accept invite");
       toast.success("Invite accepted!");
+      setIsModalOpen((prev) => ({ ...prev, [partnershipId]: false }));
       router.push(`/collaboration/${partnershipId}`);
     } catch (error) {
       console.error("Error accepting invite:", error);
@@ -51,8 +70,13 @@ export default function CollaborationTeamCards({
     }
   };
 
+  const handleDeclineInvite = (partnershipId: string) => {
+    setIsModalOpen((prev) => ({ ...prev, [partnershipId]: false }));
+    toast.success("Invite declined!");
+  };
+
   const handleDeletePartnership = async (partnershipId: string) => {
-    if (!confirm("Are you sure you want to delete this partnership?")) return;
+    // if (!confirm("Are you sure you want to delete this partnership?")) return;
     try {
       const response = await fetch(`/api/partnerships/${partnershipId}`, {
         method: "DELETE",
@@ -60,8 +84,7 @@ export default function CollaborationTeamCards({
       });
       if (!response.ok) throw new Error("Failed to delete partnership");
       toast.success("Partnership deleted!");
-      // Atualizar lista localmente
-      window.location.reload(); // Alternativa: atualizar estado no CollaborationSpace
+      window.location.reload();
     } catch (error) {
       console.error("Error deleting partnership:", error);
       toast.error("Failed to delete partnership.");
@@ -76,46 +99,63 @@ export default function CollaborationTeamCards({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {partnerships.map((partnership) => {
-        const member = partnership.members.find(m => m.userId === userId);
+        const memberInfo = getMemberInfo(partnership);
         return (
           <motion.div
             key={partnership.id}
-            className={`p-4 rounded-lg cursor-pointer relative ${theme === "light" ? "bg-neutral-100 text-neutral-800" : "bg-slate-800 text-white"
-              }`}
+            className={`p-4 rounded-lg cursor-pointer shadow-lg ${theme === "light" ? "bg-white text-neutral-800" : "bg-slate-800 text-white"} border border-gray-200 relative`}
+            style={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
             variants={cardVariants}
             whileHover="hover"
             whileTap="tap"
+            onClick={() => handleCardClick(partnership.id, memberInfo.status)}
           >
+            <div className="flex items-start justify-between mb-2">
+              <div className="text-2xl">😀</div> {/* Placeholder para emoji */}
+              <div
+                className="absolute top-2 right-2 w-1"
+                style={{
+                  height: "95%",
+                  position: "absolute",
+                  right: "2%",
+                  borderRadius: "2px",
+                }}
+              />
+            </div>
             <h3 className="text-lg font-semibold">{partnership.name}</h3>
             <p className="text-sm text-gray-500">{partnership.description || "No description"}</p>
-            <p className="text-xs text-gray-400 mt-2">Role: {member?.role}</p>
-            {partnership.status === "pending" ? (
+            <p className="text-xs text-gray-400 mt-2">Role: {memberInfo.role}</p>
+            {memberInfo.role === "OWNER" && (
               <button
-                onClick={() => handleAcceptInvite(partnership.id)}
-                className={`mt-4 px-4 py-2 rounded ${theme === "light" ? "bg-fuchsia-500 text-white hover:bg-fuchsia-600" : "bg-fuchsia-600 text-white hover:bg-fuchsia-700"
-                  }`}
-              >
-                Accept Invite
-              </button>
-            ) : (
-              <button
-                onClick={() => handleNavigate(partnership.id)}
-                className={`mt-4 px-4 py-2 rounded ${theme === "light" ? "bg-fuchsia-500 text-white hover:bg-fuchsia-600" : "bg-fuchsia-600 text-white hover:bg-fuchsia-700"
-                  }`}
-              >
-                Open
-              </button>
-            )}
-            {member?.role === "OWNER" && (
-              <button
-                onClick={() => handleDeletePartnership(partnership.id)}
+                onClick={(e) => { e.stopPropagation(); handleDeletePartnership(partnership.id); }}
                 className="absolute top-2 right-2 p-1 rounded-full hover:bg-red-500 hover:text-white"
               >
                 <Trash size={16} />
               </button>
             )}
+            {isModalOpen[partnership.id] && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className={`p-6 rounded-lg ${theme === "light" ? "bg-white text-neutral-800" : "bg-slate-800 text-white"}`}>
+                  <h3 className="text-lg font-semibold mb-4">Invite to {partnership.name}</h3>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => handleAcceptInvite(partnership.id)}
+                      className={`px-4 py-2 rounded ${theme === "light" ? "bg-fuchsia-500 text-white hover:bg-fuchsia-600" : "bg-fuchsia-600 text-white hover:bg-fuchsia-700"}`}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => handleDeclineInvite(partnership.id)}
+                      className={`px-4 py-2 rounded ${theme === "light" ? "bg-gray-300 text-neutral-800 hover:bg-gray-400" : "bg-gray-700 text-white hover:bg-gray-600"}`}
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </motion.div>
-        )
+        );
       })}
     </div>
   );

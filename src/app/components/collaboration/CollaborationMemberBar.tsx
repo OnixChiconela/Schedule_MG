@@ -201,6 +201,7 @@ const CollabMemberBar: React.FC<CollabMemberBarProps> = ({ partnership }) => {
                                 >
                                     <option value="COLABORATOR">Colaborator</option>
                                     <option value="ADMIN">Admin</option>
+                                    <option value="GUEST">Guest</option>
                                 </select>
                             </div>
                             <div className="flex justify-end gap-2">

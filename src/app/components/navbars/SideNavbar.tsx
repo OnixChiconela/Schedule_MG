@@ -20,7 +20,7 @@ import {
 import { IconType } from 'react-icons';
 import UserProfileItem from './UserProfilleItem';
 import { useRouter } from 'next/navigation';
-import { MdPeopleOutline, MdPerson } from 'react-icons/md';
+import { MdPeopleOutline, MdPerson, MdPersonOutline } from 'react-icons/md';
 import { useUser } from '@/app/context/UserContext';
 import toast from 'react-hot-toast';
 import { updateUserProfile } from '@/app/api/actions/user/updateUserProfile';
@@ -215,11 +215,11 @@ export default function SideNavbar({
               <Divider theme={theme} />
               {currentUser && (
                 <div>
-                  <ul>
+                  <ul className='flex flex-col'>
                     <li>
                       <SideNavButton
-                        title="Team space"
-                        link="/team-space"
+                        title="Partnership"
+                        link="/collaboration-space"
                         icon={MdPeopleOutline}
                         theme={theme}
                       />
@@ -233,7 +233,7 @@ export default function SideNavbar({
                   <SideNavButton
                      title="My space" 
                      link="/tasks" 
-                     icon={MdPerson} 
+                     icon={MdPersonOutline} 
                      theme={theme} />
                 </li>
                 {/* <li>

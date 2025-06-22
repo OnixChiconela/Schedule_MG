@@ -22,17 +22,81 @@ const NotificationsPages = () => {
     const { theme, toggleTheme } = useTheme()
     const { currentUser } = useUser()
     const router = useRouter()
-    const { setLastViewed, notificationCount } = useNotifications();
+    const { setLastViewed, notifSocket } = useNotifications();
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const [invites, setInvites] = useState<Invite[]>([])
     const [messages, setMessages] = useState<NotificationMessage[]>([])
     const [systemAlerts, setSystemAlerts] = useState<SystemAlert[]>([])
-    // const [notificationCount, setNotificationCount] = useState(0)
+    const [notificationCount, setNotificationCount] = useState(0)
     const [isLoading, setIsLoading] = useState(true);
 
 
     useEffect(() => {
+        if (!currentUser?.id) {
+            toast.error("Please log in to view notifications", { duration: 3000 });
+            router.push("/my-space/auth/login");
+            return;
+        }
+    }, [currentUser?.id])
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const handleInviteReceived = (data: Invite) => {
+            if (isMounted) {
+                console.log('inviteReceived:', data);
+                setInvites((prev) => [...prev, data]);
+                setNotificationCount((prev) => prev + 1);
+                toast.success(`Invite received: ${data.partnership?.name || 'Unknown'}`);
+            }
+        };
+
+        const handleNotificationReceived = (data: NotificationMessage) => {
+            if (isMounted) {
+                console.log('notificationReceived:', data);
+                if (data.user.id !== currentUser?.id) { // Excluir o criador
+                    setMessages((prev) => [...prev, data]);
+                    setNotificationCount((prev) => prev + 1);
+                    toast.success(`New message from ${data.user.firstName} ${data.user.lastName}`);
+                } else {
+                    console.log(`Notification ignored for sender ${currentUser?.id}`);
+                }
+            }
+        };
+
+        const handleNotificationRead = () => {
+            if (isMounted) {
+                setNotificationCount((prev) => Math.max(0, prev - 1));
+                // Atualizar mensagens ou alertas lidos (se necessário)
+            }
+        };
+
+        const handleConnectError = (err: Error) => {
+            if (isMounted) {
+                console.error(`notifSocket connect_error: ${err.message}`);
+                toast.error(`Notification socket error: ${err.message}`);
+            }
+        };
+
+        const handleDisconnect = () => {
+            if (isMounted) {
+                console.log(`notifSocket disconnected: userId=${currentUser?.id}`);
+            }
+        };
+
+        if (notifSocket) {
+            console.log(`[Socket] Initial notifSocket state: id=${notifSocket.id}, connected=${notifSocket.connected}`);
+
+            // Adicionar listeners para os eventos
+            notifSocket.on('inviteReceived', handleInviteReceived);
+            notifSocket.on('notificationReceived', handleNotificationReceived);
+            notifSocket.on('notificationRead', handleNotificationRead);
+            notifSocket.on('connect_error', handleConnectError);
+            notifSocket.on('disconnect', handleDisconnect);
+        }
+
+        // Carregar notificações iniciais via polling
         if (!currentUser?.id) {
             toast.error("Please log in to view notifications", { duration: 3000 });
             router.push("/my-space/auth/login");
@@ -46,11 +110,10 @@ const NotificationsPages = () => {
                 setInvites(data.invites);
                 setMessages(data.unreadMessages);
                 setSystemAlerts(data.systemAlerts);
-                // Mark notifications as viewed
                 setLastViewed();
             } catch (error) {
                 toast.error("Failed to load notifications");
-                console.error(error)
+                console.error(error);
                 setInvites([]);
                 setMessages([]);
                 setSystemAlerts([]);
@@ -60,7 +123,19 @@ const NotificationsPages = () => {
         };
         fetchNotifications();
 
-    }, [currentUser?.id, router, setLastViewed]);
+        // Cleanup
+        return () => {
+            isMounted = false;
+            if (notifSocket) {
+                notifSocket.off('inviteReceived', handleInviteReceived);
+                notifSocket.off('notificationReceived', handleNotificationReceived);
+                notifSocket.off('notificationRead', handleNotificationRead);
+                notifSocket.off('connect_error', handleConnectError);
+                notifSocket.off('disconnect', handleDisconnect);
+            }
+        };
+
+    }, [currentUser?.id, router, setLastViewed, notifSocket, setNotificationCount]);
 
     const formatDate = (dateStr: string) => {
         const date = new Date(dateStr);
@@ -72,7 +147,7 @@ const NotificationsPages = () => {
         try {
             await acceptInvite(inviteId, currentUser?.id)
             setInvites((prev) => prev.filter((inv) => inv.id !== inviteId))
-            // setNotificationCount((prev) => Math.max(0, prev - 1))
+            setNotificationCount((prev) => Math.max(0, prev - 1))
             toast.success("Invited accepted")
         } catch (error) {
             toast.error("Failed to accept invite");

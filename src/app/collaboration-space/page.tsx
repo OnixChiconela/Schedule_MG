@@ -35,18 +35,25 @@ export default function CollaborationSpace() {
 
         const fetchPartnerships = async () => {
             try {
-                const response = await getUserCollabSpace(currentUser.id)
-                setPartnerships(response)
+                setLoading(true);
+                const response = await getUserCollabSpace(currentUser.id);
+                // Garantir que members seja um array válido
+                const normalizedPartnerships = response.map((p: any) => ({
+                    ...p,
+                    members: Array.isArray(p.members) ? p.members : [],
+                }));
+                setPartnerships(normalizedPartnerships);
             } catch (error) {
-                console.error("Error fetching partnerships:", error)
-                toast.error("Failed to loas partnerships. Try again")
+                console.error("Error fetching partnerships:", error);
+                setError("Failed to load partnerships. Try again.");
+                toast.error("Failed to load partnerships. Try again");
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
-        }
+        };
 
-        fetchPartnerships()
-    }, [currentUser, router])
+        fetchPartnerships();
+    }, [currentUser, router]);
 
 
     // const filteredPartnerships = partnerships.filter((partnership) =>
@@ -252,8 +259,10 @@ export default function CollaborationSpace() {
                                 <p className="text-neutral-500">Please log in to view partnerships.</p>
                             ) : (
                                 <div>
-                                    {filteredPartnership && (
+                                    {filteredPartnership && filteredPartnership.length > 0 ? (
                                         <CollaborationTeamCards partnerships={filteredPartnership} userId={currentUser.id} theme={theme} />
+                                    ) : (
+                                        <p className="text-neutral-500">No partnerships found.</p>
                                     )}
                                 </div>
                             )}

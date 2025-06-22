@@ -7,7 +7,6 @@ import { useEffect, useRef, useState } from "react";
 import { useUser } from "@/app/context/UserContext";
 import { Partnership } from "@/app/components/collaboration/CollaborationCard";
 import { Maximize, Minimize, X } from "lucide-react";
-import Navbar from "@/app/components/navbars/Navbar";
 import SplitPane from "split-pane-react";
 import "split-pane-react/esm/themes/default.css";
 import { getCollabById } from "@/app/api/actions/collaboration/getCollabById";
@@ -19,6 +18,7 @@ import NoteEditor from "@/app/components/teams/NoteEditor";
 import CollaborationChatView from "@/app/components/collaboration/CollaborationChatView";
 import CollabMemberBar from "@/app/components/collaboration/CollaborationMemberBar";
 import CollaborationVideoCallView from "@/app/components/collaboration/video call/CollaborationVideoCallView";
+import MainNavbar from "@/app/components/navbars/MainNavbar";
 
 export default function CollaborationPage() {
   const { collaborationId } = useParams<{ collaborationId: string }>();
@@ -194,18 +194,18 @@ export default function CollaborationPage() {
 
   return (
     <div className={`flex min-h-screen w-full ${theme === "light" ? "bg-white" : "bg-slate-900"} transition-colors duration-300`}>
-      <Navbar
-        themeButton={true}
-        showToggleSidebarButton={false}
-        isSidebarOpen={isSidebarOpen}
-        showNotificationBell={true}
-      />
       <CollaborationSidebar
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
         isSmallScreen={isSmallScreen}
         onSectionSelect={handleSectionSelect}
         partnership={partnership}
+      />
+      <MainNavbar
+        themeButton={true}
+        showToggleSidebarButton={false}
+        isSidebarOpen={isSidebarOpen}
+        showNotificationBell={true}
       />
       <main
         className={`flex-1 p-4 sm:p-6 transition-all duration-300 w-full ${isSidebarOpen && !isSmallScreen ? "lg:max-w-[calc(100%-12rem)] ml-40" : "max-w-full"

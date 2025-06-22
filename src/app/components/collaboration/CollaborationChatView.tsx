@@ -25,6 +25,7 @@ import ScheduleMessageModal from "./modals/ScheduleMessageModal";
 import ScheduleReviewModal from "./modals/ScheduleReviewModal";
 import { updateChatpermissions } from "@/app/api/actions/collaboration/chat/updateChatPermissions";
 import { useNotifications } from "@/app/context/NotificationContext";
+import { format } from "date-fns";
 
 export type Message = {
     id: string;
@@ -505,11 +506,6 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
             }
         });
 
-        // if (!hasJoinedPartnership.current && partnershipId) {
-        //     chatSocket.emit("joinPartnership", { partnershipId, userId: currentUser.id });
-        //     hasJoinedPartnership.current = true;
-        // }
-
         return () => {
             isMounted = false;
             chatSocket.off("new-chat", handleNewChat);
@@ -522,8 +518,11 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
     }, [currentUser?.id, partnershipId, chatSocket, selectedChatId]);
 
     return (
+        // <div
+        //     className={`p-4 ${theme === "light" ? "bg-white text-neutral-800" : "bg-slate-900 text-neutral-200"} h-[92.5vh] lg:h-[88.5vh]`}
+        // >
         <div
-            className={`p-4 ${theme === "light" ? "bg-white text-neutral-800" : "bg-slate-900 text-neutral-200"} h-[92.5vh] lg:h-[88.5vh]`}
+            className={`p-4 ${theme === "light" ? "bg-white text-neutral-800" : "bg-slate-900 text-neutral-200"} h-full min-h-[88.5vh]`} // Altura mínima com h-full
         >
             <AnimatePresence>
                 {showCreateChatModal && (
@@ -646,7 +645,7 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                                         onClick={() => setShowActionModal(true)}
                                         className={` absolute px-2 py-1 right-7 lg:-top-6 rounded border-[1px] ${theme === "light" ? "text-neutral-900 border-gray-200 hover:bg-gray-200"
                                             : "text-gray-100 border-gray-600 hover:bg-gray-700"
-                                            } z-40 ${showCreateChatModal == true ? "hidden" : ""}`}
+                                            } z-30 ${showCreateChatModal == true ? "hidden" : ""}`}
                                         data-testid="sparkles-button"
                                     >
                                         <Sparkles size={20} />
@@ -655,22 +654,51 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                             </div>
                             <div className="flex-1 overflow-y-auto p-4 pb-4">
                                 {selectedChat.messages.length > 0 ? (
-                                    selectedChat.messages.map((message) => {
-                                        const isCurrentUser = message.userId === currentUser?.id;
-                                        const user = partnershipUsers.find((u) => u.id === message.userId);
-                                        return (
-                                            <MessageBubble
-                                                key={message.id}
-                                                message={message}
-                                                isCurrentUser={isCurrentUser}
-                                                user={user}
-                                                data-testid="message-bubble"
-                                            />
-                                        );
-                                    })
+                                    <>
+                                        {selectedChat.messages.reduce((acc: { date: string; messages: typeof selectedChat.messages }[], message) => {
+                                            const messageDate = new Date(message.timestamp).toDateString();
+                                            const lastGroup = acc[acc.length - 1];
+
+                                            if (!lastGroup || lastGroup.date !== messageDate) {
+                                                acc.push({ date: messageDate, messages: [message] });
+                                            } else {
+                                                lastGroup.messages.push(message);
+                                            }
+                                            return acc;
+                                        }, []).map(({ date, messages }, index) => (
+                                            <div key={index}>
+                                                <div className={`sticky rounded-xl top-0 z-10 py-2 px-4 text-center ${theme === "light" ? "bg-gray-100 text-gray-600" : "bg-gray-800 text-gray-400"} text-sm font-semibold`}>
+                                                    {(() => {
+                                                        const today = new Date().toDateString();
+                                                        const yesterday = new Date(Date.now() - 86400000).toDateString();
+                                                        if (date === today) return "Today";
+                                                        if (date === yesterday) return "Yesterday";
+                                                        return new Date(date).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }); // Formato inglês
+                                                    })()}
+                                                </div>
+                                                {messages.map((message) => {
+                                                    const isCurrentUser = message.userId === currentUser?.id;
+                                                    const user = partnershipUsers.find((u) => u.id === message.userId);
+                                                    return (
+                                                        <div className="pt-2">
+                                                            <MessageBubble
+                                                                key={message.id}
+                                                                message={message}
+                                                                isCurrentUser={isCurrentUser}
+                                                                user={user}
+                                                                data-testid="message-bubble"
+                                                                timeFormat={(date) => format(date, "HH:mm")} // Hora em formato 24h
+                                                            />
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ))}
+                                    </>
                                 ) : (
                                     <p className="text-center text-gray-400">No messages yet.</p>
                                 )}
+
                                 {/* {answer} */}
                                 <div ref={messagesEndRef} />
                             </div>

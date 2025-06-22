@@ -11,11 +11,10 @@ interface MessageBubbleProps {
   message: Message;
   isCurrentUser: boolean;
   user?: Users;
+  timeFormat?: (date: Date) => string; // Prop opcional para formatar o tempo
 }
 
-
-
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isCurrentUser, user }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isCurrentUser, user, timeFormat }) => {
   const { theme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -25,7 +24,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isCurrentUser, u
     return name.charAt(0).toUpperCase();
   }, [user, message.userId]);
 
-  const formattedTime = format(new Date(message.timestamp), "HH:mm");
+  // Usar timeFormat se fornecido, senão usar o formato padrão "HH:mm"
+  const formattedTime = timeFormat
+    ? timeFormat(new Date(message.timestamp))
+    : format(new Date(message.timestamp), "HH:mm");
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -62,7 +64,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isCurrentUser, u
             size="small"
           />
           <span className="text-sm font-semibold">
-            {user ? `${user.firstName} ${user.lastName}` : `User Unknow`}
+            {user ? `${user.firstName} ${user.lastName}` : `User Unknown`}
           </span>
         </div>
         {/* Conteúdo da Mensagem */}
