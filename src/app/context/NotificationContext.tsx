@@ -84,7 +84,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
     notificationSocket.on('connect', () => {
       console.log(`notifSocket connected: userId=${currentUser.id}, socketId=${notificationSocket.id}`);
       notificationSocket.emit('joinUserRoom', { userId: currentUser.id });
-      toast.success('Connected to notifications');
+      // toast.success('Connected to notifications');
     });
 
     notificationSocket.on('new-call', ({ callId, title, partnershipId, createdById }) => {
@@ -113,7 +113,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 
     notificationSocket.on('connect_error', (err) => {
       console.error(`notifSocket connect_error: userId=${currentUser.id}, error=${err.message}`);
-      toast.error(`Notification socket error: ${err.message}`);
+      // toast.error(`Notification socket error: ${err.message}`);
     });
 
     notificationSocket.on('disconnect', () => {
@@ -124,12 +124,12 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
     videoSocket.on('connect', () => {
       console.log(`videoSocket connected: userId=${currentUser.id}`);
       videoSocket.emit('join', currentUser.id);
-      toast.success('Connected to video call');
+      // toast.success('Connected to video call');
     });
 
     videoSocket.on('connect_error', (err) => {
       console.error(`videoSocket connect_error: ${err.message}`);
-      toast.error(`Video call socket error: ${err.message}`);
+      // toast.error(`Video call socket error: ${err.message}`);
     });
 
     videoSocket.on('disconnect', () => {
@@ -139,7 +139,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 
     partnershipUpdateSocket.on('connect', () => {
       console.log(`partnershipUpdateSocket connected: userId=${currentUser.id}, socketId=${partnershipUpdateSocket.id}`);
-      toast.success('Connected to partnership updates');
+      // toast.success('Connected to partnership updates');
     });
 
     partnershipUpdateSocket.on('memberRemoved', (data) => {
@@ -156,7 +156,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 
     partnershipUpdateSocket.on('connect_error', (err) => {
       console.error(`partnershipUpdateSocket connect_error: ${err.message}`);
-      toast.error(`Partnership update socket error: ${err.message}`);
+      // toast.error(`Partnership update socket error: ${err.message}`);
     });
 
     partnershipUpdateSocket.on('disconnect', () => {
@@ -188,12 +188,12 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
         chatSocket.on('connect', () => {
           console.log(`chatSocket connected: userId=${currentUser.id}`);
           // chatSocket.emit("joinPartnership", { partnershipId: currentUser.id }); // Ajustar para partnershipId se necessário
-          toast.success('Connected to chat');
+          // toast.success('Connected to chat');
         });
 
         chatSocket.on("chat-created", (data) => {
           if (data.userId === currentUser.id) {
-            toast.success("chat")
+            // toast.success("chat")
             console.log(`chatSocket received chat-created: ${data.chatId}`);
           }
         });
@@ -218,7 +218,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 
         chatSocket.on('connect_error', (err) => {
           console.error(`chatSocket connect_error: ${err.message}`);
-          toast.error(`Chat socket error: ${err.message}`);
+          // toast.error(`Chat socket error: ${err.message}`);
         });
 
         chatSocket.on('disconnect', () => {
@@ -228,7 +228,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 
         chatSocket.on('error', (data) => {
           console.error(`chatSocket error event: userId=${currentUser.id}, error=${data.message}`);
-          toast.error(`Chat error: ${data.message}`);
+          // toast.error(`Chat error: ${data.message}`);
         });
       } catch (error) {
         console.error(`Failed to check partnerships for user ${currentUser.id}:`, error);

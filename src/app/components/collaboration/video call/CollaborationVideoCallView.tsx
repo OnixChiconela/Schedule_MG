@@ -111,7 +111,7 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
             }
             setMediaError(errorMessage);
             console.error(`[Media] Failed to get local stream for userId=${userId}:`, err);
-            toast.error(errorMessage);
+            // toast.error(errorMessage);
             isMediaSetup.current = false;
             setConnectionStatus('error');
         }
@@ -168,7 +168,7 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
         });
         peer.on('error', (err) => {
             console.error(`[Peer] Error for ${joinedUserId}:`, err);
-            toast.error(`Connection error with user ${joinedUserId}`);
+            // toast.error(`Connection error with user ${joinedUserId}`);
             setPeers((prev) => prev.filter((p) => p.userId !== joinedUserId));
             pendingPeers.current.delete(joinedUserId);
             setConnectionStatus('error');
@@ -323,12 +323,12 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
         videoSocket.on('call-ended', handleCallEnded); // Use videoSocket
         videoSocket.on('connect_error', (err) => {
             console.error(`[Socket] videoSocket connect_error for userId=${userId}:`, err);
-            toast.error(`Video call connection error: ${err.message}`);
+            // toast.error(`Video call connection error: ${err.message}`);
             setConnectionStatus('error');
         });
         videoSocket.on('error', (data) => {
             console.error(`[Socket] videoSocket error for userId=${userId}:`, data.message);
-            toast.error(`Video call error: ${data.message}`);
+            // toast.error(`Video call error: ${data.message}`);
             setConnectionStatus('error');
         });
 
@@ -419,7 +419,7 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
             toast.error('Already in a call');
         } else {
             console.error(`[Call] Not connected to video call server for userId=${userId}`);
-            toast.error('Not connected to video call server');
+            // toast.error('Not connected to video call server');
             setConnectionStatus('error');
         }
     };

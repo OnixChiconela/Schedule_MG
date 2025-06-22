@@ -161,11 +161,11 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                         }))
                     );
                 } else if (isMounted) {
-                    toast.error("Failed to load chats", { duration: 3000 });
+                    // toast.error("Failed to load chats", { duration: 3000 });
                 }
             } catch (err) {
                 if (isMounted) {
-                    toast.error("An unexpected error occurred", { duration: 3000 });
+                    // toast.error("An unexpected error occurred", { duration: 3000 });
                     console.error(err);
                 }
             }
@@ -186,7 +186,7 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
 
     const createChat = async () => {
         if (!currentUser || !chatSocket || !chatSocket.connected || isCreatingChat) {
-            toast.error("Cannot create chat: user not authenticated, socket unavailable, or already creating", { duration: 3000 });
+            // toast.error("Cannot create chat: user not authenticated, socket unavailable, or already creating", { duration: 3000 });
             return;
         }
         if (!newChatName.trim()) {
@@ -501,7 +501,7 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
         chatSocket.on("chatPermissionUpdated", handleChatPermissionUpdated);
         chatSocket.on("connect_error", (err) => {
             if (isMounted) {
-                toast.error("Failed to connect to chat server", { duration: 3000 });
+                // toast.error("Failed to connect to chat server", { duration: 3000 });
                 console.error("WebSocket connection error:", err.message);
             }
         });
