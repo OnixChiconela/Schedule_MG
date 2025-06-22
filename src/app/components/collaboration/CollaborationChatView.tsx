@@ -1,3 +1,5 @@
+"use client"
+
 import { getCollabById } from "@/app/api/actions/collaboration/getCollabById";
 import { getCollabChats } from "@/app/api/actions/collaboration/chat/getCollabChats";
 import { getUsers } from "@/app/api/actions/user/getUsers";
@@ -22,6 +24,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import ScheduleMessageModal from "./modals/ScheduleMessageModal";
 import ScheduleReviewModal from "./modals/ScheduleReviewModal";
 import { updateChatpermissions } from "@/app/api/actions/collaboration/chat/updateChatPermissions";
+import { useNotifications } from "@/app/context/NotificationContext";
 
 export type Message = {
     id: string;
@@ -30,6 +33,14 @@ export type Message = {
     content: string;
     timestamp: Date;
 };
+
+interface MessageResponse {
+    id: string;
+    chatId: string;
+    userId: string;
+    content: string;
+    createdAt: string; // ISO string
+}
 
 type PartnershipMembership = {
     userId: string;
@@ -71,14 +82,15 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
     const [summary, setSummary] = useState<string | null>(null)
     const [answer, setAnswer] = useState<string | null>(null)
     const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false)
+
     const [showActionModal, setShowActionModal] = useState(false);
-
     const [showCreateChatModal, setShowCreateChatModal] = useState(false);
-    const [newChatName, setNewChatName] = useState("");
     const [showScheduleModal, setShowScheduleModal] = useState(false);
-
+    const [newChatName, setNewChatName] = useState("");
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [scheduledMessage, setScheduledMessage] = useState<string | null>(null);
+    const { chatSocket, joinPartnership } = useNotifications()
+    const [isCreatingChat, setIsCreatingChat] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const socketRef = useRef<Socket | null>(null)
@@ -89,122 +101,27 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
         || partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "COLABORATOR"
         || false
 
-    //WS
+    // Data loading
     useEffect(() => {
-        let isMounted = true
-        if (userLoading || !currentUser || !isMounted) return
-
-        const token = localStorage.getItem("access_token")
-        if (!token) {
-            toast.error("No authemtication token found. Make sure you're logged in", { duration: 300 })
-            router.push("/my-space/auth/login")
-            return
-        }
-
-        if (!socketRef.current || !socketRef.current.connected) {
-            socketRef.current = io(`${process.env.NEXT_PUBLIC_WS}/partnership/chat`, {
-                query: { userId: currentUser.id, token },
-                transports: ["websocket"],
-                reconnection: true,
-                reconnectionAttempts: 3,
-                reconnectionDelay: 1000
-            })
-        }
-
-        const socket = socketRef.current
-
-        socket.on("error", (err) => {
-            if (isMounted) {
-                toast.error(err.message || "Connection failed", { duration: 3000 });
-                console.error("Socket error:", err);
-            }
-        });
-        socket.on("joinedPartnership", (data) => {
-            if (isMounted) {
-                console.log(`Joined partnership: ${data.partnershipId}`);
-            }
-        });
-        socket.on("receiveMessage", (message) => {
-            setChats((prev) =>
-                prev.map((chat) =>
-                    chat.id === message.chatId
-                        ? { ...chat, messages: [...chat.messages, { ...message, timestamp: new Date(message.createdAt) }] }
-                        : chat
-                )
-            );
-            if (message.chatId === selectedChatId) {
-                setShouldScrollToBottom(true);
-            }
-        });
-
-        socket.on("newChat", (newChat) => {
-            if (isMounted) {
-                setChats((prev) => [
-                    ...prev,
-                    {
-                        id: newChat.id,
-                        name: newChat.name,
-                        partnershipId: newChat.partnershipId,
-                        visibleTo: newChat.visibleTo || [],
-                        createdBy: newChat.createdBy || "",
-                        messages: [],
-                    },
-                ]);
-            }
-        });
-
-        socket.on('reviewMessage', (data: { message: string; scheduledMessageId: string }) => {
-            if (isMounted) {
-                setScheduledMessage(data.message);
-                // setScheduledMessageId(data.scheduledMessageId);
-                setShowReviewModal(true);
-            }
-        });
-
-        socket.on("connected", () => console.log("socket connected!!:", socket.id))
-        socket.on("connect_error", (err) => {
-            if (isMounted) {
-                toast.error("Failed to connect to chat server", { duration: 3000 });
-                console.error("WebSocket connection error:", err.message);
-            }
-        });
-
-
-        if (!hasJoinedPartnership.current) {
-            socket.emit("joinPartnership", { partnershipId, userId: currentUser.id })
-            hasJoinedPartnership.current = true
-        }
-
-        return () => {
-            isMounted = false
-            socket.disconnect()
-            socketRef.current = null
-            hasJoinedPartnership.current = false
-        }
-    }, [currentUser?.id, partnershipId, router])
-
-    useEffect(() => {
-        let isMounted = true
+        let isMounted = true;
 
         const loadData = async () => {
-            if (userLoading || !currentUser || !isMounted) {
-                return
-            }
+            if (userLoading || !currentUser || !isMounted) return;
 
             try {
-                const users: Users[] = await getUsers()
+                const users: Users[] = await getUsers();
                 if (!users && isMounted) {
-                    toast.error("Failed to load users", { duration: 3000 })
-                    return
+                    toast.error("Failed to load users", { duration: 3000 });
+                    return;
                 }
 
-                const details: PartnershipDetails = await getCollabById(partnershipId)
+                const details: PartnershipDetails = await getCollabById(partnershipId);
                 if (!details && isMounted) {
-                    toast.error("Failed to load partnership details", { duration: 3000 })
-                    return
+                    toast.error("Failed to load partnership details", { duration: 3000 });
+                    return;
                 }
 
-                const members = await getCollabMembers(partnershipId)
+                const members = await getCollabMembers(partnershipId);
 
                 if (isMounted) {
                     setPartnershipDetails({
@@ -216,19 +133,18 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                             userId: member.userId,
                             partnershipId: member.partnershipId,
                             role: member.role,
-                            joinedAt: new Date(member.joinedAt)
-                        }))
-                    })
+                            joinedAt: new Date(member.joinedAt),
+                        })),
+                    });
                 }
 
                 if (members && isMounted) {
-                    const memberIds = members.map((member: PartnershipMembership) => member.userId)
-                    const filteredUsers = users.filter((user: Users) => memberIds.includes(user.id))
-                    setPartnershipUsers(filteredUsers)
+                    const memberIds = members.map((member: PartnershipMembership) => member.userId);
+                    const filteredUsers = users.filter((user: Users) => memberIds.includes(user.id));
+                    setPartnershipUsers(filteredUsers);
                 }
 
-                const chatsRes = await getCollabChats(partnershipId)
-                console.log("chat", chatsRes)
+                const chatsRes = await getCollabChats(partnershipId);
                 if (chatsRes && isMounted) {
                     setChats(
                         chatsRes.map((chat: Chat) => ({
@@ -242,9 +158,9 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                                 timestamp: new Date(msg.timestamp),
                             })),
                         }))
-                    )
+                    );
                 } else if (isMounted) {
-                    toast.error("Failed to load chats", { duration: 3000 })
+                    toast.error("Failed to load chats", { duration: 3000 });
                 }
             } catch (err) {
                 if (isMounted) {
@@ -252,23 +168,24 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                     console.error(err);
                 }
             }
-        }
-        loadData()
+        };
+        loadData();
 
         return () => {
-            isMounted = false
-        }
-    }, [partnershipId, currentUser?.id])
+            isMounted = false;
+        };
+    }, [partnershipId, currentUser?.id]);
 
-    const visibleChats = chats.filter((chat) =>
-        chat.visibleTo.includes(currentUser?.id || "") ||
-        (partnershipDetails?.members.find((member) => member.userId == currentUser?.id)?.role == "OWNER" ||
-            partnershipDetails?.members.find((member) => member.userId == currentUser?.id)?.role == "ADMIN")
-    )
+    const visibleChats = chats.filter(
+        (chat) =>
+            chat.visibleTo.includes(currentUser?.id || "") ||
+            (partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "OWNER" ||
+                partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "ADMIN")
+    );
 
     const createChat = async () => {
-        if (!currentUser) {
-            toast.error("Cannot create chat: user not authenticated", { duration: 3000 });
+        if (!currentUser || !chatSocket || !chatSocket.connected || isCreatingChat) {
+            toast.error("Cannot create chat: user not authenticated, socket unavailable, or already creating", { duration: 3000 });
             return;
         }
         if (!newChatName.trim()) {
@@ -276,58 +193,60 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
             return;
         }
 
+        setIsCreatingChat(true);
         const data = {
             partnershipId,
             userId: currentUser.id,
             name: newChatName,
-            visibleTo: [currentUser.id],
         };
 
         try {
-            const res = await createCollabChat(data);
-            setChats((prev) => [
-                ...prev,
-                {
-                    id: res.id,
-                    name: res.name,
-                    partnershipId: res.partnershipId,
-                    visibleTo: res.visibleTo || [],
-                    createdBy: res.createdBy || currentUser.id,
-                    messages: [],
-                },
-            ]);
-            setSelectedChatId(res.id);
-            setShowCreateChatModal(false);
-            setNewChatName("");
-            socketRef.current?.emit("createChat", { data }); // Notificar outros clientes
-            toast.success("Chat created successfully", { duration: 4000 });
+            chatSocket.emit("createChat", data, (response: any) => {
+                setIsCreatingChat(false);
+                if (response?.error) {
+                    toast.error(`Failed to create chat: ${response.error}`, { duration: 3000 });
+                } else {
+                    toast.success("Chat created successfully", { duration: 4000 });
+                    setShowCreateChatModal(false);
+                    setNewChatName("");
+                }
+            });
         } catch (error) {
+            setIsCreatingChat(false);
             toast.error("Failed to create chat", { duration: 3000 });
             console.error("Error creating chat:", error);
         }
     };
 
     const updateChatPermission = async (chatId: string) => {
-        if (!currentUser) return
+        if (!currentUser || !chatSocket || !chatSocket.connected) return;
         try {
-            await updateChatpermissions(chatId, currentUser?.id, selectedUsers)
-            setChats((prev) =>
-                prev.map((chat) =>
-                    chat.id === chatId ? { ...chat, visibleTo: selectedUsers } : chat)
-            )
+            await new Promise((resolve, reject) => {
+                chatSocket.emit('updateChatPermissions', {
+                    chatId,
+                    userId: currentUser.id,
+                    visibleTo: selectedUsers,
+                }, (response: any) => {
+                    if (response?.error) {
+                        reject(new Error(response.error));
+                    } else {
+                        resolve(response);
+                    }
+                });
+            });
+            toast.success("Chat permission updated successfully", { duration: 3000 });
             setShowPermissionModal(null);
-            setSelectedUsers([])
-            toast.success("Chat permission updated successfully", { duration: 3000 })
+            setSelectedUsers([]);
         } catch (error) {
-
+            toast.error(`Failed to update permissions`, { duration: 3000 });
+            console.error("Error updating permissions:", error);
         }
-    }
+    };
 
-    //send m
     const sendMessage = async (content: string) => {
-        if (!content.trim() || !selectedChatId || !currentUser) {
-            toast.error("Cannot send message: missing required data", { duration: 3000 })
-            return
+        if (!content.trim() || !selectedChatId || !currentUser || !chatSocket) {
+            toast.error("Cannot send message: missing required data or socket", { duration: 3000 });
+            return;
         }
 
         const tempMessage: Message = {
@@ -338,30 +257,47 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
             timestamp: new Date(),
         };
 
-        // Atualização otimista
         setChats((prev) =>
             prev.map((chat) =>
-                chat.id === selectedChatId
-                    ? { ...chat, messages: [...chat.messages, tempMessage] }
-                    : chat
+                chat.id === selectedChatId ? { ...chat, messages: [...chat.messages, tempMessage] } : chat
             )
         );
         setShouldScrollToBottom(true);
         setMessageInput("");
 
-
         try {
-            socketRef.current?.emit("sendMessage", {
-                chatId: selectedChatId,
-                content,
-                userId: currentUser.id,
-                partnershipId
-            })
-            setMessageInput("")
-            toast.success("Message sent successfyllu", { duration: 3000 })
+            const response = await new Promise<MessageResponse>((resolve, reject) => {
+                chatSocket.emit("sendMessage", {
+                    chatId: selectedChatId,
+                    content,
+                    userId: currentUser.id,
+                    partnershipId,
+                }, (response: any) => {
+                    if (response.error) {
+                        reject(new Error(response.error));
+                    } else {
+                        resolve(response as MessageResponse);
+                    }
+                });
+            });
+
+            // Atualizar o tempMessage com o id real recebido do servidor
+            setChats((prev) =>
+                prev.map((chat) =>
+                    chat.id === selectedChatId
+                        ? {
+                            ...chat,
+                            messages: chat.messages.map((msg) =>
+                                msg.id === tempMessage.id ? { ...msg, id: response.id, createdAt: response.createdAt } : msg
+                            ),
+                        }
+                        : chat
+                )
+            );
+            toast.success("Message sent successfully", { duration: 3000 });
         } catch (error) {
-            toast.error("Failed to send message", { duration: 3000 })
-            console.log(error)
+            toast.error("Failed to send message", { duration: 3000 });
+            console.log(error);
 
             setChats((prev) =>
                 prev.map((chat) =>
@@ -371,7 +307,7 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                 )
             );
         }
-    }
+    };
 
     //summarize the last 200 messages with AI
     const summarize = async () => {
@@ -461,7 +397,129 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
         }
     }, [selectedChat?.messages, shouldScrollToBottom]);
 
-    console.log("chats", chats)
+    useEffect(() => {
+        if (showPermissionModal) {
+            const selectedChat = chats.find((chat) => chat.id === showPermissionModal);
+            if (selectedChat) {
+                setSelectedUsers(selectedChat.visibleTo || []);
+            }
+        }
+    }, [showPermissionModal, chats]);
+
+    // console.log("chats", chats)
+    useEffect(() => {
+        let isMounted = true;
+
+        if (!chatSocket || !currentUser || !isMounted) return;
+
+        const handleNewChat = (newChat: any) => {
+            if (isMounted && newChat.visibleTo.includes(currentUser.id)) {
+                setChats((prev) => {
+                    if (!prev.find((chat) => chat.id === newChat.chatId)) {
+                        return [
+                            ...prev,
+                            {
+                                id: newChat.chatId,
+                                name: newChat.name,
+                                partnershipId: newChat.partnershipId,
+                                visibleTo: newChat.visibleTo || [],
+                                createdBy: newChat.createdBy || "",
+                                messages: [],
+                            },
+                        ];
+                    }
+                    return prev; // Evita duplicação
+                });
+            }
+        };
+
+        const handleNewMessage = (message: any) => {
+            setChats((prev) =>
+                prev.map((chat) =>
+                    chat.id === message.chatId
+                        ? { ...chat, messages: [...chat.messages, { ...message, timestamp: new Date(message.createdAt) }] }
+                        : chat
+                )
+            );
+            if (message.chatId === selectedChatId) {
+                setShouldScrollToBottom(true);
+            }
+        };
+
+        const handleReviewMessage = (data: { message: string; scheduledMessageId: string }) => {
+            if (isMounted) {
+                setScheduledMessage(data.message);
+                setShowReviewModal(true);
+            }
+        };
+
+        const handleChatCreated = (data: any) => {
+            if (isMounted && data.createdBy === currentUser.id) {
+                setChats((prev) => {
+                    if (!prev.find((chat) => chat.id === data.chatId)) {
+                        return [
+                            ...prev,
+                            {
+                                id: data.chatId,
+                                name: data.name,
+                                partnershipId: data.partnershipId,
+                                visibleTo: data.visibleTo || [],
+                                createdBy: data.createdBy || "",
+                                messages: [],
+                            },
+                        ];
+                    }
+                    return prev; // Evita duplicação
+                });
+                setSelectedChatId(data.chatId);
+                toast.success("Chat created successfully", { duration: 4000 });
+            }
+        };
+
+        const handleChatPermissionUpdated = (updatedChat: any) => {
+            if (isMounted && updatedChat.partnershipId === partnershipId) {
+                setChats((prev) =>
+                    prev.map((chat) =>
+                        chat.id === updatedChat.id ? { ...chat, visibleTo: updatedChat.visibleTo } : chat
+                    )
+                )
+                toast.success("Chat permissions updated", { duration: 3000 })
+            }
+        }
+
+        if (partnershipId && !hasJoinedPartnership.current) {
+            console.log(`Joining partnership ${partnershipId} for user ${currentUser.id}`);
+            joinPartnership(partnershipId);
+            hasJoinedPartnership.current = true;
+        }
+
+        chatSocket.on("new-chat", handleNewChat);
+        chatSocket.on("new-message", handleNewMessage);
+        chatSocket.on("reviewMessage", handleReviewMessage);
+        chatSocket.on("chat-created", handleChatCreated);
+        chatSocket.on("chatPermissionUpdated", handleChatPermissionUpdated);
+        chatSocket.on("connect_error", (err) => {
+            if (isMounted) {
+                toast.error("Failed to connect to chat server", { duration: 3000 });
+                console.error("WebSocket connection error:", err.message);
+            }
+        });
+
+        // if (!hasJoinedPartnership.current && partnershipId) {
+        //     chatSocket.emit("joinPartnership", { partnershipId, userId: currentUser.id });
+        //     hasJoinedPartnership.current = true;
+        // }
+
+        return () => {
+            isMounted = false;
+            chatSocket.off("new-chat", handleNewChat);
+            chatSocket.off("new-message", handleNewMessage);
+            chatSocket.off("reviewMessage", handleReviewMessage);
+            chatSocket.off("chat-created", handleChatCreated);
+            chatSocket.off("chatPermissionUpdated", handleChatPermissionUpdated)
+            chatSocket.off("connect_error");
+        };
+    }, [currentUser?.id, partnershipId, chatSocket, selectedChatId]);
 
     return (
         <div
@@ -661,6 +719,7 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                 setSelectedUsers={setSelectedUsers}
                 onSave={updateChatPermission}
                 chatId={showPermissionModal || ""}
+                visibleTo={selectedChat?.visibleTo || []}
             />
 
             <SummaryModal

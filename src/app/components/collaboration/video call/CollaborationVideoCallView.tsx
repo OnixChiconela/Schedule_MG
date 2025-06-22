@@ -1,22 +1,24 @@
-"use client"
-import { useUser } from "@/app/context/UserContext"
-import { useTheme } from "@/app/themeContext"
-import { Mic, MicOff, PhoneOff, Video, VideoOff } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
-import Peer from "simple-peer"
-import { Socket } from "socket.io-client"
-import CreateCallModal from "./modals/CreateCallModal"
-import toast from "react-hot-toast"
-import { useNotifications } from "@/app/context/NotificationContext"
-import JoinCallModal from "./modals/JoinCallModal"
+'use client';
+
+import { useUser } from '@/app/context/UserContext';
+import { useTheme } from '@/app/themeContext';
+import { Mic, MicOff, PhoneOff, Video, VideoOff } from 'lucide-react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import Peer from 'simple-peer';
+import CreateCallModal from './modals/CreateCallModal';
+import JoinCallModal from './modals/JoinCallModal';
+import toast from 'react-hot-toast';
+import { useNotifications } from '@/app/context/NotificationContext';
+import AICallModal from './modals/AiCallModal';
 
 interface VideoCallViewProps {
-    partnershipId: string
+    partnershipId: string;
 }
+
 interface PeerConnection {
-    peer: Peer.Instance
-    userId: string
-    stream: MediaStream
+    peer: Peer.Instance;
+    userId: string;
+    stream: MediaStream | null;
 }
 
 interface JoinCallData {
@@ -25,156 +27,339 @@ interface JoinCallData {
 }
 
 export default function CollaborationVideoCallView({ partnershipId }: VideoCallViewProps) {
-    const { theme } = useTheme()
-    const { currentUser } = useUser()
+    const { theme } = useTheme();
+    const { currentUser } = useUser();
     const { videoSocket, notifSocket, newCallData } = useNotifications();
-
-    const [localStream, setLocalStream] = useState<MediaStream | null>(null)
-    const [peers, setPeers] = useState<PeerConnection[]>([])
-    const [callId, setCallId] = useState<string | null>(null)
-    const [micEnabled, setMicEnabled] = useState(true)
-    const [videoEnabled, setVideoEnabled] = useState(true)
-    const [showCreateCallModal, setShowCreateCallModal] = useState(false)
-    const [showJoinCallModal, setShowJoinCallModal] = useState<JoinCallData | null>(null);
+    const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+    const [peers, setPeers] = useState<PeerConnection[]>([]);
+    const [callId, setCallId] = useState<string | null>(null);
+    const [micEnabled, setMicEnabled] = useState(true);
+    const [videoEnabled, setVideoEnabled] = useState(true);
     const [mediaError, setMediaError] = useState<string | null>(null);
-
+    const [connectionStatus, setConnectionStatus] = useState<string>('initializing');
+    const localVideoRef = useRef<HTMLVideoElement>(null);
     const isMediaSetup = useRef(false);
-    const localVideoRef = useRef<HTMLVideoElement>(null)
+    const userId = currentUser?.id || '';
+    const [showCreateCallModal, setShowCreateCallModal] = useState(false);
+    const [showJoinCallModal, setShowJoinCallModal] = useState<JoinCallData | null>(null);
+    const lastSignalTimes = useRef<Map<string, number>>(new Map());
+    const pendingPeers = useRef<Set<string>>(new Set());
+    const isCreatorRef = useRef<boolean>(false);
 
-
-    const userId = currentUser?.id
+    useEffect(() => {
+        console.log(`[VideoCallView] Mounted: userId=${userId}, partnershipId=${partnershipId}, videoSocketConnected=${videoSocket?.connected}`);
+        if (videoSocket) {
+            console.log(`[Socket] Initial videoSocket state: id=${videoSocket.id}, connected=${videoSocket.connected}`);
+        }
+    }, [userId, partnershipId, videoSocket]);
 
     const stopMediaStream = (stream: MediaStream | null) => {
         if (stream) {
             stream.getTracks().forEach((track) => {
-                if (track.readyState === "live") {
+                if (track.readyState === 'live') {
                     track.stop();
-                    console.log(`Track ${track.kind} stopped`);
+                    console.log(`[Media] Track ${track.kind} stopped for userId=${userId}`);
                 }
             });
             setLocalStream(null);
+            if (localVideoRef.current) {
+                localVideoRef.current.srcObject = null;
+                console.log(`[Media] Cleared video srcObject for userId=${userId}`);
+            }
         }
     };
 
     const setupMedia = async () => {
-        // Verifica suporte a getUserMedia
+        if (isMediaSetup.current) {
+            console.log(`[Media] setupMedia skipped: already setup for userId=${userId}`);
+            return;
+        }
+        isMediaSetup.current = true;
+
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            setMediaError("Your browser does not support video calls");
-            toast.error("Browser does not support video calls");
+            setMediaError('Your browser does not support video calls');
+            toast.error('Browser does not support video calls');
             isMediaSetup.current = false;
+            setConnectionStatus('error');
             return;
         }
 
         try {
+            console.log(`[Media] Requesting media stream for userId=${userId}`);
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            const videoTracks = stream.getVideoTracks();
+            console.log(`[Media] Stream acquired for userId=${userId}, video tracks: ${videoTracks.length}, state: ${videoTracks[0]?.readyState}, enabled: ${videoTracks[0]?.enabled}`);
             setLocalStream(stream);
+            setMediaError(null);
+            setConnectionStatus('connected');
             if (localVideoRef.current) {
                 localVideoRef.current.srcObject = stream;
+                localVideoRef.current.play().catch((err) => {
+                    console.error(`[Media] Failed to play video on setup for userId=${userId}:`, err);
+                    toast.error('Failed to play video stream');
+                    setConnectionStatus('error');
+                });
             }
-            setMediaError(null)
         } catch (err: any) {
-            let errorMessage = "Failed to access camera/microphone";
-            if (err.name === "NotAllowedError") {
-                errorMessage = "Camera/microphone access denied. Please allow access in browser settings.";
-            } else if (err.name === "NotFoundError") {
-                errorMessage = "No camera or microphone found. Please connect a device.";
-            } else if (err.name === "NotReadableError" || err.message.includes("Failed to allocate videosource")) {
-                errorMessage = "Camera/microphone is in use by another application. Please close other apps.";
+            let errorMessage = 'Failed to access camera/microphone';
+            if (err.name === 'NotAllowedError') {
+                errorMessage = 'Camera/microphone access denied. Please allow access in browser settings.';
+            } else if (err.name === 'NotFoundError') {
+                errorMessage = 'No camera or microphone found. Please connect a device.';
+            } else if (err.name === 'NotReadableError' || err.message.includes('Failed to allocate videosource')) {
+                errorMessage = 'Camera/microphone is in use by another application. Please close other apps.';
             }
             setMediaError(errorMessage);
-            console.error("Failed to get local stream:", err);
+            console.error(`[Media] Failed to get local stream for userId=${userId}:`, err);
             toast.error(errorMessage);
+            isMediaSetup.current = false;
+            setConnectionStatus('error');
         }
     };
 
+    const createPeer = useCallback((joinedUserId: string, initiator: boolean) => {
+        if (!localStream || !callId || !videoSocket) {
+            console.log(`[Peer] Cannot create peer for ${joinedUserId}: localStream=${!!localStream}, callId=${callId}, videoSocketConnected=${videoSocket?.connected}`);
+            return null;
+        }
+        if (pendingPeers.current.has(joinedUserId)) {
+            console.log(`[Peer] Skipping peer creation for ${joinedUserId}: already pending`);
+            return null;
+        }
+        pendingPeers.current.add(joinedUserId);
+        console.log(`[Peer] Creating peer connection for ${joinedUserId}, initiator=${initiator}`);
+        const peer = new Peer({
+            initiator,
+            stream: localStream,
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    // Replace with real TURN server
+                    // {
+                    //     urls: 'turn:your-turn-server.com:3478',
+                    //     username: 'your-username',
+                    //     credential: 'your-password'
+                    // }
+                ],
+            },
+        });
+        peer.on('signal', (data) => {
+            const now = Date.now();
+            const lastSignal = lastSignalTimes.current.get(joinedUserId) || 0;
+            if (now - lastSignal > 100) {
+                console.log(`[Peer] Sending signal to ${joinedUserId} from ${userId}`);
+                videoSocket.emit('signal', { to: joinedUserId, from: userId, data });
+                lastSignalTimes.current.set(joinedUserId, now);
+            }
+        });
+        peer.on('stream', (stream) => {
+            console.log(`[Peer] Received stream from ${joinedUserId}, tracks: ${stream.getTracks().length}`);
+            setPeers((prev) => {
+                const existing = prev.find((p) => p.userId === joinedUserId);
+                if (existing) {
+                    console.log(`[Peer] Updating stream for existing peer ${joinedUserId}`);
+                    return prev.map((p) => (p.userId === joinedUserId ? { ...p, stream } : p));
+                }
+                return [...prev, { peer, userId: joinedUserId, stream }];
+            });
+            pendingPeers.current.delete(joinedUserId);
+            setConnectionStatus('connected');
+        });
+        peer.on('error', (err) => {
+            console.error(`[Peer] Error for ${joinedUserId}:`, err);
+            toast.error(`Connection error with user ${joinedUserId}`);
+            setPeers((prev) => prev.filter((p) => p.userId !== joinedUserId));
+            pendingPeers.current.delete(joinedUserId);
+            setConnectionStatus('error');
+        });
+        peer.on('iceStateChange', (iceConnectionState) => {
+            console.log(`[Peer] ICE state for ${joinedUserId}: ${iceConnectionState}`);
+            setConnectionStatus(iceConnectionState);
+            if (iceConnectionState === 'failed' || iceConnectionState === 'disconnected') {
+                toast.error(`Connection failed with user ${joinedUserId}`);
+                setPeers((prev) => {
+                    const peerConn = prev.find((p) => p.userId === joinedUserId);
+                    if (peerConn) peerConn.peer.destroy();
+                    return prev.filter((p) => p.userId !== joinedUserId);
+                });
+                pendingPeers.current.delete(joinedUserId);
+            }
+        });
+        return peer;
+    }, [localStream, callId, videoSocket, userId]);
+
+    useEffect(() => {
+        if (currentUser?.id) {
+            setupMedia();
+        }
+        return () => {
+            console.log(`[Media] Cleanup: userId=${userId}`);
+            stopMediaStream(localStream);
+            peers.forEach((p) => p.peer.destroy());
+            setPeers([]);
+            pendingPeers.current.clear();
+            setConnectionStatus('disconnected');
+        };
+    }, [currentUser?.id]);
+
+    useEffect(() => {
+        console.log(`[Video] Updating video srcObject: userId=${userId}, localStream=${!!localStream}, videoEnabled=${videoEnabled}, callId=${callId}`);
+        if (localVideoRef.current && localStream) {
+            localVideoRef.current.srcObject = localStream;
+            if (videoEnabled) {
+                localVideoRef.current.play().catch((err) => {
+                    console.error(`[Media] Failed to play video for userId=${userId}:`, err);
+                    toast.error('Failed to play video stream');
+                    setConnectionStatus('error');
+                });
+            } else {
+                localVideoRef.current.pause();
+                console.log(`[Media] Video paused due to videoEnabled=false for userId=${userId}`);
+            }
+        } else if (localVideoRef.current && !localStream) {
+            localVideoRef.current.srcObject = null;
+            console.log(`[Media] Video srcObject cleared for userId=${userId}`);
+        }
+    }, [localStream, videoEnabled, callId, userId]);
+
     useEffect(() => {
         if (!currentUser?.id || !videoSocket || !notifSocket) {
-            toast.error("Please log in to access video calls");
+            console.error(`[Socket] Invalid setup: userId=${currentUser?.id}, videoSocket=${!!videoSocket}, notifSocket=${!!notifSocket}`);
+            toast.error('Please log in to access video calls');
+            setConnectionStatus('error');
             return;
         }
 
-        // console.log(`Component mounted: userId=${userId}, partnershipId=${partnershipId}`);
-        // console.log(`notifSocket state: connected=${notifSocket.connected}, id=${notifSocket.id}`);
-        // setupMedia();
+        console.log(`[Socket] Setting up listeners: videoSocketConnected=${videoSocket.connected}, notifSocketConnected=${notifSocket.connected}, socketId=${videoSocket.id}`);
 
-        // VideoGateway events
-        videoSocket.on("user-joined", ({ userId: joinedUserId }) => {
-            if (joinedUserId !== userId && localStream) {
-                const peer = new Peer({ initiator: true, stream: localStream });
-                peer.on("signal", (data) => {
-                    videoSocket.emit("signal", { to: joinedUserId, from: userId, data });
-                });
-                peer.on("stream", (stream) => {
-                    setPeers((prev) => [...prev, { peer, userId: joinedUserId, stream }]);
-                });
-                peer.on("error", (err) => console.error("Peer error:", err));
-            }
-        });
-
-        videoSocket.on("signal", ({ from, data }) => {
-            const existingPeer = peers.find((peer) => peer.userId === from);
-            if (existingPeer) {
-                existingPeer.peer.signal(data);
-            } else if (localStream) {
-                const peer = new Peer({ initiator: false, stream: localStream });
-                peer.on("signal", (signalData) => {
-                    videoSocket.emit("signal", { to: from, from: userId, data: signalData });
-                });
-                peer.on("stream", (stream) => {
-                    setPeers((prev) => [...prev, { peer, userId: from, stream }]);
-                });
-                peer.signal(data);
-            }
-        });
-
-        videoSocket.on("user-left", ({ userId: leftUserId }) => {
-            setPeers((prev) => prev.filter((peer) => peer.userId !== leftUserId));
-        });
-
-        // NotificationGateway events
-        notifSocket.on('call-created', ({ callId, title, partnershipId: pid }) => {
-            console.log(`Received call-created: callId=${callId}, pid=${pid}, userId=${userId}`);
-            if (pid === partnershipId) {
-                setCallId(callId);
+        const handleConnect = () => {
+            console.log(`[Socket] videoSocket connected: userId=${userId}, socketId=${videoSocket.id}`);
+            videoSocket.emit('join', userId);
+            if (callId) {
+                console.log(`[Socket] Re-joining call: callId=${callId}, userId=${userId}`);
                 videoSocket.emit('join-room', { callId });
-                toast.success(`Joined call: ${title || 'Untitled'}`);
             }
-        });
+        };
 
-        // notifSocket.on("new-call", ({ callId, title, partnershipId: pid }) => {
-        //     console.log(`Global new-call: callId=${callId}, pid=${pid}, userId=${localStorage.getItem('userId')}`);
-        //     if (pid === partnershipId) {
-        //         setShowJoinCallModal({ callId, title: title || "Untitled" });
-        //     }
-        // });
+        const handleUserJoined = ({ userId: joinedUserId }: { userId: string }) => {
+            console.log(`[Socket] User ${joinedUserId} joined, callId=${callId}, localStream=${!!localStream}, peersCount=${peers.length}`);
+            if (joinedUserId !== userId && localStream && callId) {
+                setPeers((prev) => {
+                    if (prev.find((p) => p.userId === joinedUserId)) {
+                        console.log(`[Peer] Peer for ${joinedUserId} already exists, skipping`);
+                        return prev;
+                    }
+                    const peer = createPeer(joinedUserId, true);
+                    return peer ? [...prev, { peer, userId: joinedUserId, stream: null }] : prev;
+                });
+                setConnectionStatus('connecting');
+            }
+        };
 
-        notifSocket.on("call-ended", ({ callId: endedCallId }) => {
+        const handleSignal = ({ from, data }: { from: string; data: any }) => {
+            console.log(`[Socket] Received signal from ${from} with data:`, data);
+            setPeers((prev) => {
+                const existingPeer = prev.find((peer) => peer.userId === from);
+                if (existingPeer && !existingPeer.peer.destroyed) {
+                    console.log(`[Peer] Signaling existing peer for ${from}`);
+                    existingPeer.peer.signal(data);
+                    return prev;
+                }
+                if (localStream && callId && !pendingPeers.current.has(from)) {
+                    console.log(`[Peer] Creating peer for incoming signal from ${from}`);
+                    const peer = createPeer(from, false);
+                    if (peer) {
+                        peer.signal(data);
+                        return [...prev, { peer, userId: from, stream: null }];
+                    }
+                }
+                return prev;
+            });
+            setConnectionStatus('connecting');
+        };
+
+        const handleUserLeft = ({ userId: leftUserId }: { userId: string }) => {
+            console.log(`[Socket] User ${leftUserId} left callId=${callId}`);
+            setPeers((prev) => {
+                const peer = prev.find((p) => p.userId === leftUserId);
+                if (peer) {
+                    peer.peer.destroy();
+                    console.log(`[Peer] Destroyed peer for ${leftUserId}`);
+                }
+                return prev.filter((p) => p.userId !== leftUserId);
+            });
+            pendingPeers.current.delete(leftUserId);
+            setConnectionStatus(peers.length > 0 ? 'connected' : 'waiting');
+        };
+
+        const handleCallCreated = ({ callId: newCallId, title, partnershipId: pid, createdById }: { callId: string; title: string; partnershipId: string; createdById: string }) => {
+            console.log(`[Socket] Received call-created: callId=${newCallId}, pid=${pid}, userId=${userId}, createdById=${createdById}`);
+            if (pid === partnershipId && !callId && !isCreatorRef.current) {
+                setShowCreateCallModal(false);
+                setShowJoinCallModal({ callId: newCallId, title });
+                toast.success(`New call available: ${title}`);
+            }
+        };
+
+        const handleCallEnded = ({ callId: endedCallId }: { callId: string }) => {
+            console.log(`[Socket] Received call-ended: callId=${endedCallId}, userId=${userId}`);
             if (endedCallId === callId) {
                 setCallId(null);
+                peers.forEach((p) => p.peer.destroy());
                 setPeers([]);
-                localStream?.getTracks().forEach((track) => track.stop());
-                setLocalStream(null);
-                toast.success("Call ended");
+                stopMediaStream(localStream);
+                isMediaSetup.current = false;
+                setConnectionStatus('disconnected');
+                toast.success('Call ended');
             }
+        };
+
+        videoSocket.on('connect', handleConnect);
+        videoSocket.on('user-joined', handleUserJoined);
+        videoSocket.on('signal', handleSignal);
+        videoSocket.on('user-left', handleUserLeft);
+        videoSocket.on('call-created', handleCallCreated); // Use videoSocket
+        videoSocket.on('call-ended', handleCallEnded); // Use videoSocket
+        videoSocket.on('connect_error', (err) => {
+            console.error(`[Socket] videoSocket connect_error for userId=${userId}:`, err);
+            toast.error(`Video call connection error: ${err.message}`);
+            setConnectionStatus('error');
+        });
+        videoSocket.on('error', (data) => {
+            console.error(`[Socket] videoSocket error for userId=${userId}:`, data.message);
+            toast.error(`Video call error: ${data.message}`);
+            setConnectionStatus('error');
         });
 
         return () => {
-            videoSocket.off("user-joined");
-            videoSocket.off("signal");
-            videoSocket.off("user-left");
-            notifSocket.off("call-created");
-            notifSocket.off("new-call");
-            notifSocket.off("call-ended");
-            localStream?.getTracks().forEach((track) => track.stop());
+            console.log(`[Socket] Cleanup listeners: userId=${userId}`);
+            videoSocket.off('connect', handleConnect);
+            videoSocket.off('user-joined', handleUserJoined);
+            videoSocket.off('signal', handleSignal);
+            videoSocket.off('user-left', handleUserLeft);
+            videoSocket.off('call-created', handleCallCreated);
+            videoSocket.off('call-ended', handleCallEnded);
         };
-    }, [currentUser?.id, videoSocket, notifSocket, partnershipId, userId, localStream]);
+    }, [userId, partnershipId, currentUser?.id, videoSocket, callId, localStream]);
+
+    useEffect(() => {
+        console.log(`[Notification] newCallData updated:`, newCallData);
+        if (newCallData && newCallData.partnershipId === partnershipId && !callId && !isCreatorRef.current) {
+            console.log(`[Socket] Showing call ${newCallData.callId} modal for ${userId}`);
+            setShowJoinCallModal({ callId: newCallData.callId, title: newCallData.title });
+            toast.success(`New call available: ${newCallData.title}`);
+        } else if (newCallData) {
+            console.log(`[Network] ${newCallData.title} ignored for userId=${userId}`);
+        }
+    }, [newCallData, partnershipId, currentUser?.id, callId, userId]);
 
     const toggleMic = () => {
         if (localStream) {
             const enabled = !micEnabled;
             localStream.getAudioTracks().forEach((track) => {
                 track.enabled = enabled;
-                console.log(`Microphone ${enabled ? "enabled" : "disabled"}`);
+                console.log(`[Media] Microphone ${enabled ? 'enabled' : 'disabled'} for ${userId}`);
             });
             setMicEnabled(enabled);
         }
@@ -185,53 +370,102 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
             const enabled = !videoEnabled;
             localStream.getVideoTracks().forEach((track) => {
                 track.enabled = enabled;
-                console.log(`Video ${enabled ? "enabled" : "disabled"}`);
+                console.log(`[Media] Video track ${enabled ? 'enabled' : 'disabled'} for ${userId}`);
             });
             setVideoEnabled(enabled);
+            if (enabled && localVideoRef.current) {
+                localVideoRef.current.play().catch((err) => {
+                    console.error(`[Media] Failed to play video after toggle for ${userId}:`, err);
+                    toast.error('Failed to play video stream');
+                    setConnectionStatus('error');
+                });
+            }
+        } else {
+            console.log(`[Media] toggleVideo failed: no localStream for ${userId}`);
+            toast.error('Camera not available. Try restarting the call.');
+            setConnectionStatus('error');
         }
     };
 
     const endCall = () => {
         if (callId && videoSocket) {
-            videoSocket.emit("leave-room", callId);
-            setCallId(null);
+            console.log(`[Call] Ending call: callId=${callId}, userId=${userId}`);
+            videoSocket.emit('end-room', { callId });
+            peers.forEach((p) => p.peer.destroy());
             setPeers([]);
             stopMediaStream(localStream);
             isMediaSetup.current = false;
-            toast.success("You left the call");
+            setCallId(null);
+            isCreatorRef.current = false; // Reset creator status
+            setConnectionStatus('disconnected');
+            toast.success('Call ended');
         }
     };
 
     const createCall = (title: string) => {
-        if (videoSocket) {
-            videoSocket.emit("create-room", { partnershipId, title }, ({ callId }: { callId: string }) => {
+        if (videoSocket && !callId) {
+            console.log(`[Call] Creating call: title=${title}, userId=${userId}, partnershipId=${partnershipId}`);
+            isCreatorRef.current = true;
+            videoSocket.emit('create-room', { partnershipId, title, createdById: userId }, ({ callId }: { callId: string }) => {
+                console.log(`[Call] Created call: callId=${callId}, userId=${userId}`);
                 setCallId(callId);
+                videoSocket.emit('join-room', { callId });
                 setShowCreateCallModal(false);
+                setConnectionStatus('waiting');
                 toast.success(`Call created: ${title}`);
-                console.log("chatt th")
             });
+        } else if (callId) {
+            console.log(`[Call] Already in call: callId=${callId}, userId=${userId}`);
+            toast.error('Already in a call');
         } else {
-            toast.error("Not connected to video call server");
+            console.error(`[Call] Not connected to video call server for userId=${userId}`);
+            toast.error('Not connected to video call server');
+            setConnectionStatus('error');
         }
     };
 
     const joinCall = (callId: string) => {
         if (videoSocket) {
-            videoSocket.emit("join-room", callId);
+            console.log(`[Call] Attempting to join call: callId=${callId}, userId=${userId}`);
             setCallId(callId);
-            setShowJoinCallModal(null);
-            toast.success("Joined call");
+            setConnectionStatus('connecting');
+            videoSocket.emit('join-room', { callId }, (response: { success: boolean; error?: string }) => {
+                if (response.success) {
+                    console.log(`[Call] Successfully joined call: callId=${callId}, userId=${userId}`);
+                    setShowJoinCallModal(null);
+                    setConnectionStatus('waiting');
+                    setupMedia();
+                    toast.success('Joined call');
+                } else {
+                    console.error(`[Call] Failed to join call: callId=${callId}, error=${response.error}`);
+                    setCallId(null);
+                    setConnectionStatus('error');
+                    toast.error(`Failed to join call: ${response.error}`);
+                }
+            });
+        } else {
+            console.error(`[Call] Failed to join call: videoSocket not available for userId=${userId}`);
+            toast.error('Failed to connect to call server');
+            setConnectionStatus('error');
         }
     };
 
+    const participantCount = (localStream ? 1 : 0) + peers.filter((p) => p.stream).length;
+    const gridClass = participantCount === 1 ? 'grid-cols-1' :
+        participantCount === 2 ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4';
+
+    if (!currentUser?.id) {
+        return <div className="h-full flex items-center justify-center text-gray-400">Please log in</div>;
+    }
+
     if (mediaError) {
         return (
-            <div className="h-full flex flex-col items-center justify-center text-gray-400">
+            <div className="h-full flex flex-col items-center justify-center text-center text-gray-400">
                 <p className="mb-4">{mediaError}</p>
                 <div className="flex gap-4">
                     <button
                         onClick={setupMedia}
-                        className={`px-4 py-2 rounded-lg ${theme === "light" ? "bg-fuchsia-500 hover:bg-fuchsia-600 text-white" : "bg-fuchsia-700 hover:bg-fuchsia-800 text-white"}`}
+                        className={`px-4 py-2 rounded-lg ${theme === 'light' ? 'bg-fuchsia-500 hover:bg-fuchsia-600 text-white' : 'bg-fuchsia-600 hover:bg-fuchsia-700 text-white'}`}
                     >
                         Try Again
                     </button>
@@ -239,8 +473,10 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                         onClick={() => {
                             setMediaError(null);
                             setLocalStream(null);
+                            isMediaSetup.current = false;
+                            setConnectionStatus('pending');
                         }}
-                        className={`px-4 py-2 rounded-lg ${theme === "light" ? "bg-gray-500 hover:bg-gray-600 text-white" : "bg-gray-700 hover:bg-gray-800 text-white"}`}
+                        className={`px-4 py-2 rounded-lg ${theme === 'light' ? 'bg-gray-500 hover:bg-gray-600 text-white' : 'bg-gray-600 hover:bg-gray-700 text-white'}`}
                     >
                         Continue Without Media
                     </button>
@@ -250,69 +486,101 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
     }
 
     return (
-        <div className={`h-full p-4 ${theme === "light" ? "bg-white" : "bg-slate-900"}`}>
+        <div className={`h-full p-4 ${theme === 'light' ? 'bg-white text-gray-800' : 'bg-gray-900 text-gray-200'}`}>
             {!callId ? (
                 <div className="flex flex-col items-center justify-center h-full">
                     <p className="text-gray-400 mb-4">No active call</p>
                     <button
                         onClick={() => setShowCreateCallModal(true)}
-                        className={`px-4 py-2 rounded-lg ${theme === "light" ? "bg-fuchsia-500 hover:bg-fuchsia-600 text-white" : "bg-fuchsia-700 hover:bg-fuchsia-800 text-white"}`}
+                        className={`px-4 py-2 rounded-lg ${theme === 'light' ? 'bg-fuchsia-500 hover:bg-fuchsia-600 text-white' : 'bg-fuchsia-600 hover:bg-fuchsia-700 text-white'}`}
                     >
                         Start Call
                     </button>
                 </div>
             ) : (
-                <div className="grid grid-cols-2 gap-4 h-full">
-                    <div className="relative h-full">
-                        {localStream && videoEnabled ? (
-                            <video
-                                ref={localVideoRef}
-                                autoPlay
-                                muted
-                                className="w-full h-full object-cover rounded-lg"
-                            />
-                        ) : (
-                            <div className="w-full h-full bg-gray-800 flex items-center justify-center rounded-lg">
-                                <p className="text-gray-400">Video disabled</p>
+                <div className="h-full">
+                    <div className="mb-4 text-center">
+                        <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                            {connectionStatus === 'connected' && participantCount > 1
+                                ? `Connected: ${participantCount} participants`
+                                : connectionStatus === 'connecting'
+                                ? 'Connecting to call...'
+                                : connectionStatus === 'error'
+                                ? 'Connection error. Please try again.'
+                                : 'Waiting for others to join...'}
+                        </p>
+                    </div>
+                    <div className={`grid ${gridClass} gap-4 h-[calc(100%-2rem)]`}>
+                        {localStream && (
+                            <div className="relative h-full">
+                                {videoEnabled ? (
+                                    <video
+                                        ref={localVideoRef}
+                                        autoPlay
+                                        playsInline
+                                        muted
+                                        className="w-full h-full object-cover rounded-lg"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-400 rounded-lg">
+                                        <p>Video Disabled</p>
+                                    </div>
+                                )}
+                                <div className="absolute bottom-4 left-4 flex gap-2">
+                                    <button
+                                        onClick={toggleMic}
+                                        disabled={!localStream}
+                                        className={`p-2 rounded-full ${!localStream ? 'opacity-50 cursor-not-allowed' : ''} ${theme === 'light' ? 'bg-gray-200 text-gray-800' : 'bg-gray-700 text-gray-200'}`}
+                                    >
+                                        {micEnabled ? <Mic size={20} /> : <MicOff size={20} />}
+                                    </button>
+                                    <button
+                                        onClick={toggleVideo}
+                                        disabled={!localStream}
+                                        className={`p-2 rounded-full ${!localStream ? 'opacity-50 cursor-not-allowed' : ''} ${theme === 'light' ? 'bg-gray-200 text-gray-800' : 'bg-gray-700 text-gray-200'}`}
+                                    >
+                                        {videoEnabled ? <Video size={20} /> : <VideoOff size={20} />}
+                                    </button>
+                                    <button
+                                        onClick={endCall}
+                                        className="p-2 rounded-full bg-red-600 hover:bg-red-700 text-white"
+                                    >
+                                        <PhoneOff size={20} />
+                                    </button>
+                                </div>
+                                <p className="absolute top-2 left-2 text-white bg-black bg-opacity-50 px-2 py-1 rounded">
+                                    You ({userId})
+                                </p>
                             </div>
                         )}
-                        <div className="absolute bottom-4 left-4 flex gap-2">
-                            <button
-                                onClick={toggleMic}
-                                disabled={!localStream}
-                                className={`p-2 rounded-full ${!localStream ? "opacity-50 cursor-not-allowed" : ""} ${theme === "light" ? "bg-gray-200" : "bg-gray-700"}`}
-                            >
-                                {micEnabled ? <Mic size={20} /> : <MicOff size={20} />}
-                            </button>
-                            <button
-                                onClick={toggleVideo}
-                                disabled={!localStream}
-                                className={`p-2 rounded-full ${!localStream ? "opacity-50 cursor-not-allowed" : ""} ${theme === "light" ? "bg-gray-200" : "bg-gray-700"}`}
-                            >
-                                {videoEnabled ? <Video size={20} /> : <VideoOff size={20} />}
-                            </button>
-                            <button
-                                onClick={endCall}
-                                className="p-2 rounded-full bg-red-500 text-white"
-                            >
-                                <PhoneOff size={20} />
-                            </button>
-                        </div>
+                        {peers.map((peer) => (
+                            <div key={peer.userId} className="relative h-full">
+                                {peer.stream ? (
+                                    <video
+                                        ref={(ref) => {
+                                            if (ref && peer.stream) {
+                                                ref.srcObject = peer.stream;
+                                                ref.play().catch((err) => {
+                                                    console.error(`[Peer] Failed to play peer video for ${peer.userId}:`, err);
+                                                    setConnectionStatus('error');
+                                                });
+                                            }
+                                        }}
+                                        autoPlay
+                                        playsInline
+                                        className="w-full h-full object-cover rounded-lg"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-400 rounded-lg">
+                                        <p>Waiting for {peer.userId}...</p>
+                                    </div>
+                                )}
+                                <p className="absolute top-2 left-2 text-white bg-black bg-opacity-50 px-2 py-1 rounded">
+                                    User {peer.userId}
+                                </p>
+                            </div>
+                        ))}
                     </div>
-                    {peers.map((peer) => (
-                        <div key={peer.userId} className="relative h-full">
-                            <video
-                                ref={(ref) => {
-                                    if (ref) ref.srcObject = peer.stream;
-                                }}
-                                autoPlay
-                                className="w-full h-full object-cover rounded-lg"
-                            />
-                            <p className="absolute top-2 left-2 text-white bg-black bg-opacity-50 px-2 py-1 rounded">
-                                User {peer.userId}
-                            </p>
-                        </div>
-                    ))}
                 </div>
             )}
             {showCreateCallModal && (
@@ -331,6 +599,15 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                     title={showJoinCallModal.title}
                 />
             )}
+            <AICallModal
+                isOpen={!!callId}
+                onClose={() => {}}
+                onSubmit={(prompt, audioBlob) => {
+                    console.log(`[AICall] Prompt: ${prompt}, Audio Blob:`, audioBlob);
+                    toast.success('Prompt sent to AI');
+                }}
+                peerStream={peers[0]?.stream}
+            />
         </div>
     );
 }

@@ -23,3 +23,14 @@ export const getNotifications = async (userId: string, lastViewedAt?: string | n
         throw new Error('Failed to load notifications');
     }
 } 
+
+export const checkUserPartnerships = async (userId: string) => {
+    try {
+        const res = await api.get(`/collaboration/partnerships/check-memberships/${userId}`)
+        return res.data
+    } catch (error) {
+        console.error(`Error checking partnership for user ${userId}:`, error)
+        return false
+    }
+}
+
