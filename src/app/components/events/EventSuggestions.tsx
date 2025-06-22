@@ -81,51 +81,51 @@ const EventSuggestions: React.FC<EventSuggestionsProps> = ({ userCategories, loc
         return format(date, formatString);
     };
 
-    useEffect(() => {
-        const fetchSuggestions = async () => {
-            if (!location) {
-                toast.error("Cannot find your location")
-                setLoading(false);
-                return;
-            }
+    // useEffect(() => {
+    //     const fetchSuggestions = async () => {
+    //         if (!location) {
+    //             toast.error("Cannot find your location")
+    //             setLoading(false);
+    //             return;
+    //         }
 
-            const storedSuggestions = loadFromLocalStorage();
-            if (storedSuggestions.length > 0) {
-                setAvailableSuggestions(storedSuggestions);
-                setDisplayedSuggestions(storedSuggestions.slice(0, 3));
-                setLoading(false);
-                return;
-            }
+    //         const storedSuggestions = loadFromLocalStorage();
+    //         if (storedSuggestions.length > 0) {
+    //             setAvailableSuggestions(storedSuggestions);
+    //             setDisplayedSuggestions(storedSuggestions.slice(0, 3));
+    //             setLoading(false);
+    //             return;
+    //         }
 
-            // Se não houver eventos no localStorage, buscar do backend
-            try {
-                // const fetchedSuggestions = await fetchEventSuggestions({ latitude: 34.0522, longitude: -118.24534 }, userCategories);
-                const fetchedSuggestions = await fetchEventSuggestions(location, userCategories);
-                const mappedSuggestions = fetchedSuggestions.map((event: any, index: number) => ({
-                    id: `${event.name}-${event.date}-${index}`,
-                    title: event.name,
-                    date: event.date,
-                    category: event.category,
-                    url: event.url || `https://example.com/events/${event.name.replace(/\s/g, '-')}`,
-                    description: event.description || 'No description available',
-                    imageUrl: event.imageUrl
-                }));
+    //         // Se não houver eventos no localStorage, buscar do backend
+    //         try {
+    //             // const fetchedSuggestions = await fetchEventSuggestions({ latitude: 34.0522, longitude: -118.24534 }, userCategories);
+    //             const fetchedSuggestions = await fetchEventSuggestions(location, userCategories);
+    //             const mappedSuggestions = fetchedSuggestions.map((event: any, index: number) => ({
+    //                 id: `${event.name}-${event.date}-${index}`,
+    //                 title: event.name,
+    //                 date: event.date,
+    //                 category: event.category,
+    //                 url: event.url || `https://example.com/events/${event.name.replace(/\s/g, '-')}`,
+    //                 description: event.description || 'No description available',
+    //                 imageUrl: event.imageUrl
+    //             }));
 
-                // Armazenar até 10 eventos
-                const limitedSuggestions = mappedSuggestions.slice(0, 10);
-                setAvailableSuggestions(limitedSuggestions);
-                setDisplayedSuggestions(limitedSuggestions.slice(0, 3));
-                saveToLocalStorage(limitedSuggestions);
-            } catch (err: any) {
-                console.error('Error fetching suggestions:', err.message || err);
-                setError(err.message || 'Failed to load suggestions');
-            } finally {
-                setLoading(false);
-            }
-        };
+    //             // Armazenar até 10 eventos
+    //             const limitedSuggestions = mappedSuggestions.slice(0, 10);
+    //             setAvailableSuggestions(limitedSuggestions);
+    //             setDisplayedSuggestions(limitedSuggestions.slice(0, 3));
+    //             saveToLocalStorage(limitedSuggestions);
+    //         } catch (err: any) {
+    //             console.error('Error fetching suggestions:', err.message || err);
+    //             setError(err.message || 'Failed to load suggestions');
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
 
-        fetchSuggestions();
-    }, [location, userCategories]);
+    //     fetchSuggestions();
+    // }, [location, userCategories]);
 
     const interest = localStorage.getItem("userPreferences")
 

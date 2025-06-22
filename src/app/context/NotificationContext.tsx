@@ -14,6 +14,7 @@ interface NotificationContextType {
   videoSocket: Socket | null;
   notifSocket: Socket | null;
   chatSocket: Socket | null;
+  partnershipUpdateSocket: Socket | null
   newCallData: { callId: string; title: string; partnershipId: string; createdById?: string } | null;
   joinPartnership: (partnershipId: string) => void
 }
@@ -25,6 +26,7 @@ const NotificationContext = createContext<NotificationContextType>({
   videoSocket: null,
   notifSocket: null,
   chatSocket: null,
+  partnershipUpdateSocket: null,
   newCallData: null,
   joinPartnership: () => { }
 });
@@ -35,6 +37,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
   const [videoSocket, setVideoSocket] = useState<Socket | null>(null);
   const [notifSocket, setNotifSocket] = useState<Socket | null>(null);
   const [chatSocket, setChatSocket] = useState<Socket | null>(null);
+  const [partnershipUpdateSocket, setPartnershipUpdateSocket] = useState<Socket | null>(null);
   const [newCallData, setNewCallData] = useState<NotificationContextType['newCallData']>(null);
   const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
 
@@ -64,8 +67,19 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
       reconnectionDelayMax: 5000,
     });
 
+    const partnershipUpdateSocket = io(`${process.env.NEXT_PUBLIC_WS}/partnership/updates`, {
+      withCredentials: true,
+      query: { userId: currentUser.id, token },
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+    })
+
     setVideoSocket(videoSocket);
     setNotifSocket(notificationSocket);
+    setPartnershipUpdateSocket(partnershipUpdateSocket)
 
     notificationSocket.on('connect', () => {
       console.log(`notifSocket connected: userId=${currentUser.id}, socketId=${notificationSocket.id}`);
@@ -121,6 +135,33 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
     videoSocket.on('disconnect', () => {
       console.log(`videoSocket disconnected: userId=${currentUser.id}`);
       setVideoSocket(null);
+    });
+
+    partnershipUpdateSocket.on('connect', () => {
+      console.log(`partnershipUpdateSocket connected: userId=${currentUser.id}, socketId=${partnershipUpdateSocket.id}`);
+      toast.success('Connected to partnership updates');
+    });
+
+    partnershipUpdateSocket.on('memberRemoved', (data) => {
+      console.log(`Received memberRemoved: ${JSON.stringify(data)}`);
+      // Delegar ao componente (e.g., CollabMembersModal) ou gerenciar aqui se desejar
+      toast.success('Member removed');
+    });
+
+    partnershipUpdateSocket.on('roleUpdated', (data) => {
+      console.log(`Received roleUpdated: ${JSON.stringify(data)}`);
+      // Delegar ao componente ou gerenciar aqui
+      toast.success('Role updated');
+    });
+
+    partnershipUpdateSocket.on('connect_error', (err) => {
+      console.error(`partnershipUpdateSocket connect_error: ${err.message}`);
+      toast.error(`Partnership update socket error: ${err.message}`);
+    });
+
+    partnershipUpdateSocket.on('disconnect', () => {
+      console.log(`partnershipUpdateSocket disconnected: userId=${currentUser.id}`);
+      setPartnershipUpdateSocket(null);
     });
 
     // Check if user has partnerships before connecting to chatSocket
@@ -223,6 +264,14 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
       videoSocket.off('connect');
       videoSocket.off('connect_error');
       videoSocket.off('disconnect');
+      if (partnershipUpdateSocket) {
+        partnershipUpdateSocket.off('connect');
+        partnershipUpdateSocket.off('memberRemoved');
+        partnershipUpdateSocket.off('roleUpdated');
+        partnershipUpdateSocket.off('connect_error');
+        partnershipUpdateSocket.off('disconnect');
+        partnershipUpdateSocket.disconnect();
+      }
       if (chatSocket) {
         chatSocket.off("connect");
         chatSocket.off("chat-created");
@@ -264,6 +313,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
       videoSocket,
       notifSocket,
       chatSocket,
+      partnershipUpdateSocket,
       newCallData,
       joinPartnership
     }}>

@@ -350,7 +350,7 @@
 // export default CollabMembersModal;
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/app/themeContext";
 import { useUser } from "@/app/context/UserContext";
 import Avatar from "../../Avatar";
@@ -364,6 +364,7 @@ import { io } from "socket.io-client";
 import { useNotifications } from "@/app/context/NotificationContext";
 import { removeMember } from "@/app/api/actions/collaboration/removeMember";
 import { updateMemberRole } from "@/app/api/actions/collaboration/updateRole";
+import { getCollabMembers } from "@/app/api/actions/collaboration/getCollabMembers";
 
 interface CollabMembersModalProps {
   partnership: Partnership;
@@ -382,8 +383,37 @@ const CollabMembersModal: React.FC<CollabMembersModalProps> = ({ partnership, on
   const [users, setUsers] = useState<Users[]>([]);
   const [suggestions, setSuggestions] = useState<Users[]>([]);
   const [filteredMembers, setFilteredMembers] = useState(partnership.members || []); // Adicionado estado
-  const { notificationCount } = useNotifications();
+  const { notificationCount, partnershipUpdateSocket, joinPartnership } = useNotifications();
   const [prevNotificationCount, setPrevNotificationCount] = useState(notificationCount);
+
+  const hasJoinedPartnership = useRef(false)
+
+  useEffect(() => {
+    if (partnershipUpdateSocket) {
+      joinPartnership(partnership.id);
+
+      partnershipUpdateSocket.on('memberRemoved', (data) => {
+        if (data.partnershipId === partnership.id) {
+          setFilteredMembers((prev) => prev.filter((m) => m.id !== data.memberId));
+          toast.success('Member removed');
+        }
+      });
+
+      partnershipUpdateSocket.on('roleUpdated', (data) => {
+        if (data.partnershipId === partnership.id) {
+          setFilteredMembers((prev) =>
+            prev.map((m) => (m.id === data.memberId ? { ...m, role: data.newRole } : m))
+          );
+          toast.success('Role updated');
+        }
+      });
+
+      return () => {
+        partnershipUpdateSocket.off('memberRemoved');
+        partnershipUpdateSocket.off('roleUpdated');
+      };
+    }
+  }, [partnership.id, partnershipUpdateSocket]);
 
   useEffect(() => {
     if (notificationCount > prevNotificationCount && !isOwner) {
@@ -426,16 +456,18 @@ const CollabMembersModal: React.FC<CollabMembersModalProps> = ({ partnership, on
   }, [inviteSearchQuery, users, partnership.members, currentUser?.id]);
 
   const handleUpdateRole = async (memberId: string, newRole: string) => {
-    if (!currentUser?.id) {
-      toast.error("You must be logged in to update a role");
+    if (!currentUser?.id || !partnershipUpdateSocket) {
+      toast.error("You must be logged in to update a role or connection failed");
       return;
     }
     try {
-      await updateMemberRole(partnership.id, memberId, currentUser.id, newRole);
-      toast.success("Role updated successfully");
-      setFilteredMembers(
-        filteredMembers.map((m) => (m.id === memberId ? { ...m, role: newRole } : m))
-      );
+      partnershipUpdateSocket.emit('updateMemberRole', {
+        partnershipId: partnership.id,
+        memberId,
+        userId: currentUser.id,
+        newRole,
+      });
+      toast.success("Role update requested");
     } catch (error) {
       toast.error("Failed to update role");
       console.error("Role update error:", error);
@@ -443,19 +475,65 @@ const CollabMembersModal: React.FC<CollabMembersModalProps> = ({ partnership, on
   };
 
   const handleRemoveMember = async (memberId: string) => {
-    if (!currentUser?.id) {
-      toast.error("You must be logged in to remove a member");
+    if (!confirm("Are you sure you want to remove this member?")) return;
+    if (!currentUser?.id || !partnershipUpdateSocket) {
+      toast.error("You must be logged in to remove a member or connection failed");
       return;
     }
     try {
-      await removeMember(partnership.id, memberId, currentUser.id);
-      toast.success("Member removed successfully");
-      setFilteredMembers(filteredMembers.filter((m) => m.id !== memberId));
+      partnershipUpdateSocket.emit('removeMember', {
+        partnershipId: partnership.id,
+        memberId,
+        userId: currentUser.id,
+      });
+      toast.success("Member removal requested");
     } catch (error) {
       toast.error("Failed to remove member");
       console.error("Remove member error:", error);
     }
   };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!partnershipUpdateSocket || !currentUser || !isMounted || !partnership) return;
+
+    // Handlers para eventos recebidos
+    const handleMemberRemoved = (data: { partnershipId: string; memberId: string }) => {
+      if (isMounted && data.partnershipId === partnership.id) {
+        setFilteredMembers((prev) => prev.filter((m) => m.id !== data.memberId));
+        toast.success('Member removed');
+      }
+    };
+
+    const handleRoleUpdated = (data: { partnershipId: string; memberId: string; newRole: string }) => {
+      if (isMounted && data.partnershipId === partnership.id) {
+        setFilteredMembers((prev) =>
+          prev.map((m) => (m.id === data.memberId ? { ...m, role: data.newRole } : m))
+        );
+        toast.success('Role updated');
+      }
+    };
+
+    // Adicionar listeners
+    partnershipUpdateSocket.on('memberRemoved', handleMemberRemoved);
+    partnershipUpdateSocket.on('roleUpdated', handleRoleUpdated);
+    partnershipUpdateSocket.on('connect_error', (err) => {
+      if (isMounted) {
+        toast.error("Failed to connect to partnership updates", { duration: 3000 });
+        console.error("WebSocket connection error:", err.message);
+      }
+    });
+
+    // Limpeza
+    return () => {
+      isMounted = false;
+      partnershipUpdateSocket.off('memberRemoved', handleMemberRemoved);
+      partnershipUpdateSocket.off('roleUpdated', handleRoleUpdated);
+      partnershipUpdateSocket.off('connect_error');
+    };
+  }, [partnership, partnershipUpdateSocket, currentUser?.id]);
+
 
   const handleSelectUser = (user: Users) => {
     setInviteUserId(user.id);
@@ -483,6 +561,19 @@ const CollabMembersModal: React.FC<CollabMembersModalProps> = ({ partnership, on
       console.error("Invite error:", error);
     }
   };
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const data = await getCollabMembers(partnership.id)
+        setFilteredMembers(data || [])
+      }catch (error) {
+        console.error("Error fetching members", error)
+        toast.error("Failed to load members")
+      }
+    }
+    fetchMembers()
+  }, [partnership.id, partnership])
 
   return (
     <div

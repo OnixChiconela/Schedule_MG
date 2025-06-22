@@ -73,7 +73,7 @@ export default function DashboardPage() {
         return [];
     });
 
-    const [suggestions, setSuggestions] = useState<Suggestion[]>(initialSuggestions);
+    // const [suggestions, setSuggestions] = useState<Suggestion[]>(initialSuggestions);
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
@@ -87,9 +87,9 @@ export default function DashboardPage() {
         return format(date, formatString);
     };
 
-    const removeSuggestion = (id: number) => {
-        setSuggestions(suggestions.filter((s) => s.id !== id));
-    };
+    // const removeSuggestion = (id: number) => {
+    //     setSuggestions(suggestions.filter((s) => s.id !== id));
+    // };
 
     const addNote = () => {
         if (notes.length < 3) {
@@ -224,7 +224,7 @@ export default function DashboardPage() {
                             ))}
                         </div>
                     </section>
-                    <section className="mb-6">
+                    {/* <section className="mb-6">
                         <EventSuggestions userCategories={userInterests} location={location} />
                         <motion.p
                             className={`mt-3 sm:mt-4 text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}
@@ -234,7 +234,7 @@ export default function DashboardPage() {
                         >
                             Smart notes. try beta...
                         </motion.p>
-                    </section>
+                    </section> */}
                 </main>
             </div>
         </ClientOnly>
