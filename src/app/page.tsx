@@ -60,11 +60,12 @@ export default function LandingPage() {
                                 WebkitTextFillColor: 'transparent',
                               }}
                               className="bg-gradient-to-r from-fuchsia-500 to-fuchsia-900 text-transparent"
-                            >                              {`Shape your life`}
+                            >
+                              {`Shape your life`}
                             </span>
                           </h1>
                           <p className={`text-lg sm:text-xl max-w-2xl mb-8 text-center ${theme == "light" ? "text-gray-600" : "text-neutral-400/90"}`}>
-                            {`Bring your goals, habits, and priorities together in one place, Scheuor helps you stay on track, and grow with intention`}
+                            {`Scheuor e sua plataforma para conexao com as pessoas seja em parcerias ou solo, tenha a AI parceira que te ajuda em seus dialogos em tempo real`}
                           </p>
                           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <div
@@ -74,7 +75,7 @@ export default function LandingPage() {
                                 e.currentTarget.style.gap = '0.5rem';
                               }}
                               onMouseLeave={(e) => {
-                                e.currentTarget.style.gap = '0.10rem'; 
+                                e.currentTarget.style.gap = '0.10rem';
                               }}
                             >
                               {`Get Started`}
@@ -140,86 +141,163 @@ export default function LandingPage() {
               <div className="text-center mb-12">
                 <h2 className={`mb-4 text-3xl font-bold text-center sm:text-4xl ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`} style={{
                   translate: "none", rotate: "none", scale: "none"
-                }}>{`How It Works`}</h2>
+                }}>{`Scheuor ajuda a seus dialogos`}</h2>
                 <p className={`text-lg leading-8 ${theme == "light" ? "text-gray-800" : "text-gray-300"} text-center`}>
-                  {`Get started with Scheuor in simple steps`}
+                  {`Seja em equipes(parcerias) ou a solo`}
                 </p>
               </div>
               {/* <div className="mt-16"> */}
-              <div className="space-y-16 lg:space-y-20">
+              <div>
+                <div className="hidden lg:flex lg:flex-col space-y-16 lg:space-y-20">
+                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
+                    <div className="flex-none md:flex-1 lg:max-w-xl">
+                      <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
+                        <Image
+                          alt="calendar"
+                          src={require("@/../public/images/mybss.png")}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex-1 text-center lg:text-left">
+                      <div className={`
+                      mb-6 inline-flex h-12 w-12 
+                      items-center justify-center 
+                      text-xl font-bold bg-gradient-to-bl
+                      ${theme == "light" ? "text-neutral-800" : "text-neutral-200"} rounded-xl`}>
+                        {`1`}
+                      </div>
+                      <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Em reunioes`}</h3>
+                      <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
+                        <a className='font-semibold'>{`Crie ou partice de reunioes: `}</a>
+                        {`Scheuor te permite participar de reunioes e ainda com opcoes de escutar quando bem entenderes e dar sugestoes em real time com AI.`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
 
-                <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-2 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
-                  <div className="flex-none md:flex-1 lg:max-w-xl">
-                    <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
-                      <Image
-                        alt="calendar"
-                        src={require("@/../public/images/mybss.png")}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex-1 text-center lg:text-left">
-                    <div className={`
+                    <div className="flex-1 text-center lg:text-left">
+                      <div className={`
                       mb-6 inline-flex h-12 w-12 
                       items-center justify-center 
                       text-xl font-bold bg-gradient-to-bl
                       ${theme == "light" ? "text-neutral-800" : "text-neutral-200"} rounded-xl`}>
-                      {`1`}
+                        {`2`}
+                      </div>
+                      <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Chats.`}</h3>
+                      <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
+                        <a className='font-semibold'>{`Em em chats `}</a>
+                        {`Crie ou partice de chats de acordo com a partnership que estas inserido, seja profissional ou mais intimo, tenha AI do lado que te ajudar a conduzir as conversas se baseando no contexto da mesmas`}
+                      </p>
                     </div>
-                    <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Set Your Intentions`}</h3>
-                    <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                      <a className='font-semibold'>{`Define what matters to you: `}</a>{`Start by adding your goals, projects, or areas of focus, this is your personal map.`}
-                    </p>
+                    <div className="flex-1 lg:max-w-xl ">
+                      <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
+                        <Image
+                          alt="calendar"
+                          src={require("@/../public/images/calendar.png")}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
+                    <div className="flex-none md:flex-1 ">
+                      <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
+                        <Image
+                          alt="calendar"
+                          src={require("@/../public/images/road.png")}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex-1 text-center lg:text-left">
+                      <div className={`
+                      mb-6 inline-flex h-12 w-12 
+                      items-center justify-center 
+                      text-xl font-bold bg-gradient-to-bl
+                      ${theme == "light" ? "text-neutral-800" : "text-neutral-200"} rounded-xl`}>
+                        {`3`}
+                      </div>
+                      <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Track & Grow`}</h3>
+                      <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
+                        <a className='font-semibold'>{`Stay aligned and evolve: `}</a>{`Review progress, adjust priorities, and build habits that support your journey`}
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-2 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
 
-                  <div className="flex-1 text-center lg:text-left">
-                    <div className={`
+                <div className="lg:hidden flex flex-col space-y-16 lg:space-y-20">
+                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
+                    <div className="flex-none md:flex-1 lg:max-w-xl">
+                      <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">
+                        <Image
+                          alt="calendar"
+                          src={require("@/../public/images/mybss.png")}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex-1 text-center lg:text-left">
+                      <div className={`
                       mb-6 inline-flex h-12 w-12 
                       items-center justify-center 
                       text-xl font-bold bg-gradient-to-bl
                       ${theme == "light" ? "text-neutral-800" : "text-neutral-200"} rounded-xl`}>
-                      {`2`}
-                    </div>
-                    <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Organize Your Space`}</h3>
-                    <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                      <a className='font-semibold'>{`Create your flow: `}</a>{`Add tasks, notes, and reflections. Use visual boards and sections to structure your day your wasy`}
-                    </p>
-                  </div>
-                  <div className="flex-1 lg:max-w-xl ">
-                    <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
-                      <Image
-                        alt="calendar"
-                        src={require("@/../public/images/calendar.png")}
-                      />
+                        {`1`}
+                      </div>
+                      <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Em reunioes`}</h3>
+                      <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
+                        <a className='font-semibold'>{`Crie ou partice de reunioes: `}</a>
+                        {`Scheuor te permite participar de reunioes e ainda com opcoes de escutar quando bem entenderes e dar sugestoes em real time com AI.`}
+                      </p>
                     </div>
                   </div>
-                </div>
-                <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-2 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
-                  <div className="flex-none md:flex-1 ">
-                    <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
-                      <Image
-                        alt="calendar"
-                        src={require("@/../public/images/road.png")}
-                      />
+                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
+                    <div className="flex-none md:flex-1 lg:max-w-xl">
+                      <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">
+                        <Image
+                          alt="calendar"
+                          src={require("@/../public/images/mybss.png")}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex-1 text-center lg:text-left">
-                    <div className={`
+                    <div className="flex-1 text-center lg:text-left">
+                      <div className={`
                       mb-6 inline-flex h-12 w-12 
                       items-center justify-center 
                       text-xl font-bold bg-gradient-to-bl
                       ${theme == "light" ? "text-neutral-800" : "text-neutral-200"} rounded-xl`}>
-                      {`3`}
+                        {`2`}
+                      </div>
+                      <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Chats.`}</h3>
+                      <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
+                        <a className='font-semibold'>{`Em em chats `}</a>
+                        {`Crie ou partice de chats de acordo com a partnership que estas inserido, seja profissional ou mais intimo, tenha AI do lado que te ajudar a conduzir as conversas se baseando no contexto da mesmas`}
+                      </p>
                     </div>
-                    <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Track & Grow`}</h3>
-                    <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                      <a className='font-semibold'>{`Stay aligned and evolve: `}</a>{`Review progress, adjust priorities, and build habits that support your journey`}
-                    </p>
+                  </div>
+                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
+                    <div className="flex-none md:flex-1 lg:max-w-xl">
+                      <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">
+                        <Image
+                          alt="calendar"
+                          src={require("@/../public/images/mybss.png")}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex-1 text-center lg:text-left">
+                      <div className={`
+                      mb-6 inline-flex h-12 w-12 
+                      items-center justify-center 
+                      text-xl font-bold bg-gradient-to-bl
+                      ${theme == "light" ? "text-neutral-800" : "text-neutral-200"} rounded-xl`}>
+                        {`3`}
+                      </div>
+                      <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Track & Grow`}</h3>
+                      <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
+                        <a className='font-semibold'>{`Stay aligned and evolve: `}</a>{`Review progress, adjust priorities, and build habits that support your journey`}
+                      </p>
+                    </div>
                   </div>
                 </div>
+                {/* </div> */}
               </div>
-              {/* </div> */}
             </div>
           </Container>
           <div className="h-3 md:h-5" />
@@ -228,7 +306,7 @@ export default function LandingPage() {
 
 
         {/* Why Scheuor */}
-        <section id="why-scheuor" className={`py-16 ${theme == "light" ? "bg-neutral-50" : ""}`}>
+        <section id="why-scheuor" className={`py-16 px-2 ${theme == "light" ? "bg-neutral-50" : ""}`}>
           <Container>
             <div className="flex flex-col justify-center items-center max-w-screen-xl mx-auto">
 
@@ -237,7 +315,7 @@ export default function LandingPage() {
                   Why Choose Scheuor
                 </div>
                 <h2 className={`text-3xl sm:text-4xl font-bold ${theme == "light" ? "text-gray-900" : "text-neutral-200"} `}>
-                  Empower Your Journey with Scheuor
+
                 </h2>
                 <p className={`text-lg  ${theme == "light" ? "text-gray-600" : "text-neutral-300"} mt-4 max-w-2xl mx-auto`}>
                   Join a platform built to help you focus, organize, and grow - your way.
@@ -283,54 +361,33 @@ export default function LandingPage() {
         </section>
 
         {/* Features */}
-        <section id="features" className="py-16">
+
+        <section id="connect-with-us" className="relative overflow-hidden px-2 py-20 sm:py-32">
           <Container>
             <div className="flex flex-col justify-center items-center max-w-screen-xl mx-auto">
 
               <div className="text-center mb-12">
-                <h2 className={`text-3xl sm:text-4xl font-bold  ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`}>Tools That Keep You Moving.</h2>
-                <p className={`text-lg  ${theme == "light" ? "text-gray-600" : "text-neutral-300"} mt-4 max-w-2xl mx-auto`}>
-                  Stay in control, stay on track, stay growing.
-                </p>
+                <h2 className={`text-3xl sm:text-4xl font-bold ${theme == "light" ? "text-gray-900" : "text-neutral-200"} `}>{`How Scheuor Can Help`}</h2>
+                <p className={`text-lg mt-4 ${theme == "light" ? "text-gray-600" : "text-neutral-300"}`}>{`Tools to boost your your clarity, focus, and progress`}</p>
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <InfoCard
                   icon={MdChecklist}
-                  title="Smart Task Management"
-                  content="Organize, prioritize, and track your tasks with clarity and ease."
+                  title="Actionable Clarity"
+                  content="Visualize your priorities clearly and take intentional steps toward your goals."
                   iconColor="fuchsia"
                 />
                 <InfoCard
-                  icon={FaCalendarAlt}
-                  title="Integrated Calendar"
-                  content="Visualize your schedule and plan your days with confidence."
+                  icon={BiTask}
+                  title="Stay Aligned"
+                  content="Organize tasks, routines, and reflections in one place to keep your day aligned with your purpose."
                   iconColor="fuchsia"
                 />
                 <InfoCard
-                  icon={MdLightbulbOutline}
-                  title="Personalized Suggestions"
-                  content="Get thoughtful insights based on your habits and priorities."
+                  icon={Map}
+                  title="Build Habits That Sticks"
+                  content="Track your progress and reinforce behaviors that move you forward, consistently."
                   iconColor="fuchsia"
-                />
-                <InfoCard
-                  icon={MdBusinessCenter}
-                  title="My Business"
-                  content="Manage your personal and professional projects in one place."
-                  iconColor="fuchsia"
-                />
-                <InfoCard
-                  icon={FaChartLine}
-                  title="Progress Tracking"
-                  content="Monitor your growth with visual metrics and reflection tools."
-                  iconColor="fuchsia"
-                  soon="coming soon"
-                />
-                <InfoCard
-                  icon={FaMagic}
-                  title="AI Assist"
-                  content="Let smart automation help you stay focused and organized."
-                  iconColor="fuchsia"
-                  soon="coming soon"
                 />
               </div>
             </div>
@@ -338,7 +395,7 @@ export default function LandingPage() {
         </section>
 
         {/* Testimonials */}
-        <section id="testimonials" className={`py-16 ${theme == "light" ? "" : ""}`}>
+        <section id="testimonials" className={` px-2 py-16 ${theme == "light" ? "" : ""}`}>
           <Container>
             <div className="flex flex-col justify-center items-center max-w-screen-xl mx-auto">
 

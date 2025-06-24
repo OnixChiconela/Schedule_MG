@@ -56,6 +56,10 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
             animate={controls}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
+            style={{
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+            }}
         >
             <motion.div
                 className={`w-96 rounded-lg p-6 shadow-lg ${theme === "light" ? "bg-white text-neutral-800" : "bg-slate-800 text-neutral-200"}`}

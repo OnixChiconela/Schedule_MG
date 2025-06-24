@@ -136,13 +136,19 @@ export default function CreatePartnershipModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50"
+            style={{
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+            }}
+        >
             <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.8, opacity: 0 }}
                 className={`relative p-6 rounded-lg w-full max-w-md ${theme === "light" ? "bg-white text-neutral-800" : "bg-slate-800 text-white"
                     }`}
+                
             >
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold">Create Partnership</h2>

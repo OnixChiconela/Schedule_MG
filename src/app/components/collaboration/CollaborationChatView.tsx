@@ -59,7 +59,7 @@ type Chat = {
     messages: Message[];
 }
 
-type PartnershipDetails = {
+export type PartnershipDetails = {
     id: string;
     name: string; // Sem criptografia
     description: string;
@@ -96,6 +96,8 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const socketRef = useRef<Socket | null>(null)
     const hasJoinedPartnership = useRef(false)
+
+    const [isLoading, setIsLoading] = useState(false)
 
     const isAuthorized = partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "OWNER"
         || partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "ADMIN"
@@ -311,12 +313,19 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
     };
 
     //summarize the last 200 messages with AI
+    const [IsSummarizeLoading, setIsSummarizeLoading] = useState(false)
     const summarize = async () => {
         if (!selectedChatId || !currentUser) {
             toast.error("Cannot summarize: no chat selected or user not authenticated", { duration: 3000 })
             return
         }
-
+        const toastId = toast.loading("summarizing...", {
+            style: {
+                background: theme === "light" ? "#fff" : "#1e293b",
+                color: theme === "light" ? "#1f2937" : "#f3f4f6",
+                border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+            },
+        });
         try {
             const selectedChat = chats.find((chat) => chat.id === selectedChatId);
             if (!selectedChat || selectedChat.messages.length === 0) {
@@ -330,14 +339,26 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
         } catch (error) {
             toast.error("Failed to summarize chat", { duration: 3000 });
             console.error("Summarize error:", error);
+        } finally {
+            setIsSummarizeLoading(false)
+            toast.dismiss();
         }
     }
 
+    const [isAnswerLoading, setIsAnswerLoading] = useState(false)
     const answerCht = async () => {
         if (!selectedChatId || !currentUser) {
             toast.error("Cannot answer: no chat selected or user not authenticated", { duration: 3000 });
             return;
         }
+
+        const toastId = toast.loading("Generating...", {
+            style: {
+                background: theme === "light" ? "#fff" : "#1e293b",
+                color: theme === "light" ? "#1f2937" : "#f3f4f6",
+                border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+            },
+        });
 
         try {
             const selectedChat = chats.find((chat) => chat.id === selectedChatId)
@@ -345,12 +366,17 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                 toast.error("No messages to answer", { duration: 3000 });
                 return;
             }
+            setIsAnswerLoading(true)
             const res = await answerChat(partnershipId, selectedChatId, currentUser.id)
+            toast.dismiss(toastId);
             setAnswer(res)
             toast.success("Chat answered successfully", { duration: 3000 });
         } catch (error) {
             toast.error("Failed to answer chat", { duration: 3000 });
             console.error(error);
+        } finally {
+            setIsAnswerLoading(false)
+            toast.dismiss();
         }
     }
 
@@ -640,7 +666,7 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                                     <ArrowLeft size={20} />
                                 </button>
                                 <h3 className="text-base font-medium flex lg:hidden">{selectedChat.name}</h3>
-                                {selectedChat && (
+                                {selectedChat && isAuthorized && (
                                     <button
                                         onClick={() => setShowActionModal(true)}
                                         className={` absolute px-2 py-1 right-7 lg:-top-6 rounded border-[1px] ${theme === "light" ? "text-neutral-900 border-gray-200 hover:bg-gray-200"
@@ -751,14 +777,20 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
             />
 
             <SummaryModal
-                isOpen={!!summary}
-                onClose={() => setSummary(null)}
+                isOpen={IsSummarizeLoading || !!summary}
+                onClose={() => {
+                    setSummary(null)
+                    setIsSummarizeLoading(false)
+                }}
                 summary={summary}
             />
 
             <AnswerModal
-                isOpen={!!answer}
-                onClose={() => setAnswer(null)}
+                isOpen={isAnswerLoading || !!answer}
+                onClose={() => {
+                    setAnswer(null)
+                    setIsAnswerLoading(false)
+                }}
                 answer={answer}
                 onConfirm={handleConfirmAnswer}
             />

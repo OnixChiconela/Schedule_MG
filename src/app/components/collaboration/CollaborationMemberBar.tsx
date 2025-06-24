@@ -144,6 +144,10 @@ const CollabMemberBar: React.FC<CollabMemberBarProps> = ({ partnership }) => {
                     onClick={(e) => {
                         if (e.target === e.currentTarget) setIsInviteModalOpen(false);
                     }}
+                    style={{
+                        backdropFilter: 'blur(4px)',
+                        WebkitBackdropFilter: 'blur(4px)',
+                    }}
                 >
                     <div
                         className={`p-6 rounded-lg w-96 ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-800 text-neutral-200'

@@ -567,7 +567,7 @@ const CollabMembersModal: React.FC<CollabMembersModalProps> = ({ partnership, on
       try {
         const data = await getCollabMembers(partnership.id)
         setFilteredMembers(data || [])
-      }catch (error) {
+      } catch (error) {
         console.error("Error fetching members", error)
         toast.error("Failed to load members")
       }
@@ -580,6 +580,10 @@ const CollabMembersModal: React.FC<CollabMembersModalProps> = ({ partnership, on
       className="fixed inset-0 flex items-center justify-center bg-black/50 z-50"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
+      }}
+      style={{
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
       }}
     >
       <div
@@ -711,6 +715,10 @@ const CollabMembersModal: React.FC<CollabMembersModalProps> = ({ partnership, on
             className="fixed inset-0 flex items-center justify-center bg-black/50 z-60"
             onClick={(e) => {
               if (e.target === e.currentTarget) setIsInviteModalOpen(false);
+            }}
+            style={{
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
             }}
           >
             <div

@@ -62,7 +62,6 @@ export default function CollaborationTeamCards({
       if (!partnership) throw new Error("Partnership not found");
       const memberInfo = getMemberInfo(partnership);
       if (!memberInfo.id) throw new Error("Invite ID not found");
-      toast.success(`userId: ${userId}`)
       await acceptInvite(memberInfo.id, userId);
       toast.success("Invite accepted!");
       setIsModalOpen((prev) => ({ ...prev, [partnershipId]: false }));
@@ -107,11 +106,10 @@ export default function CollaborationTeamCards({
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {partnerships.map((partnership) => {
         const memberInfo = getMemberInfo(partnership);
-        toast.success(`${memberInfo.id}`)
         return (
           <motion.div
             key={partnership.id}
-            className={`p-4 rounded-lg shadow-lg ${theme === "light" ? "bg-white text-neutral-800" : "bg-slate-800 text-white"} border border-gray-200 relative`}
+            className={`p-4 rounded-lg shadow-lg ${theme === "light" ? "bg-white text-neutral-800 border-gray-200" : "bg-slate-800 text-white border-gray-800"} border  relative`}
             style={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
             variants={cardVariants}
             initial="initial"
@@ -151,6 +149,10 @@ export default function CollaborationTeamCards({
                   if (e.target === e.currentTarget) {
                     setIsModalOpen((prev) => ({ ...prev, [partnership.id]: false }));
                   }
+                }}
+                style={{
+                  backdropFilter: 'blur(4px)',
+                  WebkitBackdropFilter: 'blur(4px)',
                 }}
               >
                 <div className={`p-6 w-86 rounded-lg ${theme === "light" ? "bg-white text-neutral-800" : "bg-slate-800 text-white"}`}>

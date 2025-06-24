@@ -95,7 +95,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
       }
     });
 
-    toast.error(`notification id:${notifSocket?.id}`)
+    // toast.error(`notification id:${notifSocket?.id}`)
 
     notificationSocket.on('inviteReceived', (data: Invite) => {
       console.log('inviteReceived:', data);

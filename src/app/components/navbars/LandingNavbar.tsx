@@ -21,7 +21,6 @@ const LandingNavbar = () => {
     };
 
     const tryDemo = () => {
-        if (!localStorage.getItem("userPreferences")) return router.push("/onboarding")
         router.push("/dashboard")
     }
 
