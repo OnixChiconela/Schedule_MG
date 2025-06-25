@@ -9,17 +9,18 @@ import { LocationProvider } from './context/LocationContext';
 import { UserProvider } from './context/UserContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { NotificationSocketProvider } from './context/ws/NotificationSocketContext';
+import { Nunito_Sans } from "next/font/google"
 
 export const metadata: Metadata = {
   title: 'Scheuor',
   description: 'Manage your destiny.',
 };
 
-// const font = Nunito_Sans({
-//   subsets: ['latin'],
-//   weight: ['300', '400', '500', '600', '700'],
-//   style: ['normal', 'italic'],
-// });
+const font = Nunito_Sans({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+});
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const gaTrackingId = process.env.NEXT_PUBLIC_GA_TRACKING_ID;
@@ -45,7 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </>
         )}
       </head>
-      <body>
+      <body className={font.className}>
         <UserProvider>
           <ClientOnly>
             <ToasterProvider />

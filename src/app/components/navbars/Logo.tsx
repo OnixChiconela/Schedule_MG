@@ -2,9 +2,18 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation"
+import React from "react";
 
 
-const Logo = () => {
+interface LogoProps {
+    height?: number
+    width?: number
+}
+
+const Logo: React.FC<LogoProps> = ({
+    height = 55,
+    width = 55
+}) => {
     const router = useRouter();
 
     return (
@@ -14,8 +23,8 @@ const Logo = () => {
                 onClick={() => router.push('/')}
                 alt="Logo"
                 className="md:block cursor-pointer"
-                height="55"
-                width="55"
+                height={height}
+                width={width}
                 src={require("@/../public/scheuor_logo.png")}
             />
         </div>

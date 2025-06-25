@@ -34,7 +34,7 @@ const LandingNavbar = () => {
                 <div className="flex flex-row items-center justify-between py-6  mx-auto">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2">
-                        <Logo />
+                        <Logo width={40} height={40}/>
                         <span
                             className={`text-md font-medium ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
                                 } hidden sm:block`}

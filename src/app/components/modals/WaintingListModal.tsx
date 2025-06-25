@@ -47,16 +47,16 @@ const WaitingListModal: React.FC<WaitingListModalProps> = ({ isOpen, onClose, on
                         onClick={(e) => e.stopPropagation()}
                     >
                         <h2 className={`${theme == "light" ? "text-gray-900" : "text-gray-100"} text-xl font-bold mb-4`}>Join the Waiting List</h2>
-                        <p className={`${theme == "light" ? "text-gray-600" : "text-gray-300"} mb-4`}>
+                        {/* <p className={`${theme == "light" ? "text-gray-600" : "text-gray-300"} mb-4`}>
                             Sign up to get early access to <strong>Scheuor</strong> and enjoy:
-                        </p>
-                        <ul className={`list-disc list-inside ${theme == "light" ? "text-gray-500" : "text-gray-300"} mb-4 flex flex-col gap-2`}>
+                        </p> */}
+                        {/* <ul className={`list-disc list-inside ${theme == "light" ? "text-gray-500" : "text-gray-300"} mb-4 flex flex-col gap-2`}>
                             <li>Early access to the beta version</li>
                             <li>Smart suggestions for local events and content</li>
                             <li>Exclusive previews of upcoming features</li>
                             <li>Help shape the product with your feedback</li>
                             <li>Be among the first to use the cloud database when it launches</li>
-                        </ul>
+                        </ul> */}
 
                         <span className={`${theme == "light" ? "text-neutral-600" : "text-neutral-200"}`}>Email:</span>
                         <input

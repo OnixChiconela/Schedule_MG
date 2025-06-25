@@ -544,9 +544,6 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
     }, [currentUser?.id, partnershipId, chatSocket, selectedChatId]);
 
     return (
-        // <div
-        //     className={`p-4 ${theme === "light" ? "bg-white text-neutral-800" : "bg-slate-900 text-neutral-200"} h-[92.5vh] lg:h-[88.5vh]`}
-        // >
         <div
             className={`p-4 ${theme === "light" ? "bg-white text-neutral-800" : "bg-slate-900 text-neutral-200"} h-full min-h-[88.5vh]`} // Altura mínima com h-full
         >

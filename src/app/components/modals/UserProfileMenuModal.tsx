@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/app/themeContext';
 import { ReactNode } from 'react';
 import { Divider } from '../navbars/SideNavbar';
+import { useUser } from '@/app/context/UserContext';
 
 interface UserProfileMenuModalProps {
     isOpen: boolean;
@@ -29,6 +30,7 @@ const UserProfileMenuModal: React.FC<UserProfileMenuModalProps> = ({
 }) => {
     const { theme } = useTheme();
     const modalRef = useRef<HTMLDivElement>(null);
+    const { currentUser } = useUser()
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -39,6 +41,8 @@ const UserProfileMenuModal: React.FC<UserProfileMenuModalProps> = ({
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [onClose]);
+
+
 
     return (
         <AnimatePresence>
@@ -85,7 +89,11 @@ const UserProfileMenuModal: React.FC<UserProfileMenuModalProps> = ({
                                 onClick={onLogoutClick}
                                 className={`px-3 py-2 text-sm cursor-pointer rounded-md ${theme === 'light' ? 'text-gray-800 hover:bg-gray-100' : 'text-gray-200 hover:bg-slate-500'}`}
                             >
-                                Log Out
+                                {currentUser ? (
+                                    <div>Log out</div>
+                                ): (
+                                    <div>Log in</div>
+                                )}
                             </li>
                         </ul>
                     </div>

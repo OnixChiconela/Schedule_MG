@@ -24,6 +24,8 @@ import { MdPeopleOutline, MdPerson, MdPersonOutline } from 'react-icons/md';
 import { useUser } from '@/app/context/UserContext';
 import toast from 'react-hot-toast';
 import { updateUserProfile } from '@/app/api/actions/user/updateUserProfile';
+import api from '@/app/api/api';
+import { clearTokenFromStorage } from '@/app/api/actions/auth/clearTokenFromStorage';
 
 interface SideNavbarProps {
   theme: 'light' | 'dark';
@@ -117,9 +119,32 @@ export default function SideNavbar({
   const handleProfileClick = () => {
     router.push('/profile');
   };
-  const handleLogoutClick = () => {
-    localStorage.removeItem('authToken');
-    // router.push('/');
+  const handleLogoutClick = async () => {
+    if (currentUser) {
+      const toastId = toast.loading("Logging out...", {
+        style: {
+          background: theme === "light" ? "#fff" : "#1e293b",
+          color: theme === "light" ? "#1f2937" : "#f3f4f6",
+          border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+        },
+      })
+      try {
+        const logout = await api.post("/auth/logout")
+        if(logout) {
+          await clearTokenFromStorage()
+          setCurrentUser(null)
+          router.refresh()
+          toast.dismiss(toastId)
+          toast.success("Logged out")
+        }
+      } catch (error) {
+        toast.dismiss(toastId)
+        toast.error("Oops. Something went wrong while logging out. Try again!")
+      } finally {
+        toast.dismiss()
+      }
+    }
+    router.push("my-space/auth/login")
   };
 
   return (
@@ -143,9 +168,8 @@ export default function SideNavbar({
         {(isOpen || isDesktop) && (
           <motion.nav
             key="sidebar"
-            className={`fixed w-[260px] h-screen p-4 ${
-              theme === "light" ? "bg-gray-100" : "bg-slate-950"
-            } z-[900] flex flex-col top-0 left-0`}
+            className={`fixed w-[260px] h-screen p-4 ${theme === "light" ? "bg-gray-100" : "bg-slate-950"
+              } z-[900] flex flex-col top-0 left-0`}
             initial={{ x: (isDesktop && !isVisible) || (!isDesktop && !isOpen) ? -260 : 0 }}
             animate={{ x: (isDesktop && !isVisible) || (!isDesktop && !isOpen) ? -260 : 0 }}
             exit={{ x: (isDesktop && !isVisible) || (!isDesktop && !isOpen) ? -260 : 0 }}
@@ -154,9 +178,8 @@ export default function SideNavbar({
             <div className="flex flex-col w-full h-full">
               <div className="flex mb-6 items-center justify-between">
                 <h2
-                  className={`text-2xl font-bold ${
-                    theme === "light" ? "text-gray-900" : "text-gray-100"
-                  }`}
+                  className={`text-2xl font-bold ${theme === "light" ? "text-gray-900" : "text-gray-100"
+                    }`}
                 >
                   Scheuor
                 </h2>
@@ -166,11 +189,10 @@ export default function SideNavbar({
                     whileHover="hover"
                     whileTap="tap"
                     variants={buttonVariants}
-                    className={`px-3 py-2 rounded-lg ${
-                      theme === "light"
+                    className={`px-3 py-2 rounded-lg ${theme === "light"
                         ? "bg-gray-200 text-gray-900"
                         : "bg-slate-800 text-gray-200"
-                    }`}
+                      }`}
                   >
                     {theme === "light" ? <Sun size={20} /> : <MoonStar size={20} />}
                   </motion.button>
@@ -231,10 +253,10 @@ export default function SideNavbar({
               <ul className="flex flex-col">
                 <li>
                   <SideNavButton
-                     title="My space" 
-                     link="/tasks" 
-                     icon={MdPersonOutline} 
-                     theme={theme} />
+                    title="My space"
+                    link="/tasks"
+                    icon={MdPersonOutline}
+                    theme={theme} />
                 </li>
                 {/* <li>
                   <SideNavButton title="Tasks" link="/tasks" icon={PenBox} theme={theme} />
@@ -262,9 +284,8 @@ export default function SideNavbar({
                 <Divider theme={theme} />
                 <li>
                   <div
-                    className={`flex items-center gap-2 mb-2 ${
-                      theme == "light" ? "text-neutral-900" : "text-neutral-200"
-                    } font-semibold`}
+                    className={`flex items-center gap-2 mb-2 ${theme == "light" ? "text-neutral-900" : "text-neutral-200"
+                      } font-semibold`}
                   >
                     AI Partner
                     <Sparkles size={16} />

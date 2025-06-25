@@ -4,9 +4,9 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { IoMdArrowForward } from 'react-icons/io'
-import { FaCalendarAlt, FaChartLine, FaClock, FaMagic } from 'react-icons/fa'
-import { MdBusinessCenter, MdChecklist, MdLightbulbOutline, MdPeople, MdTrendingUp } from 'react-icons/md'
-import { BiGlobe, BiTask } from 'react-icons/bi'
+import { FaClock } from 'react-icons/fa'
+import { MdChecklist, MdSettings, MdSummarize, MdTrendingUp } from 'react-icons/md'
+import { BiGlobe, BiQuestionMark, BiSpreadsheet, BiTask, BiWorld } from 'react-icons/bi'
 import Container from './components/Container'
 import { useTheme } from './themeContext'
 import ClientOnly from './components/ClientOnly'
@@ -16,9 +16,8 @@ import LandingNavbar from './components/navbars/LandingNavbar'
 import LandingFooter from './components/footers/LandingFooter'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { useLocation } from './context/LocationContext'
 import FloatingWaitingButton from './components/buttons/FloationgWaitingButton'
-import { Map } from 'lucide-react'
+import { Languages, Map, MessageSquareReply, Minimize } from 'lucide-react'
 
 export default function LandingPage() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false)
@@ -28,7 +27,6 @@ export default function LandingPage() {
   const { theme } = useTheme()
 
   const getStart = () => {
-    if (!localStorage.getItem("userPreferences")) return router.push("/onboarding")
     router.push("/dashboard")
   }
 
@@ -51,7 +49,7 @@ export default function LandingPage() {
                       <Container>
                         <div className="flex flex-col ">
                           <h1 className={`text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-center  ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`}>
-                            {`Design your path`}
+                            {`Where conversations`}
                             <br />
                             <span
                               style={{
@@ -61,11 +59,11 @@ export default function LandingPage() {
                               }}
                               className="bg-gradient-to-r from-fuchsia-500 to-fuchsia-900 text-transparent"
                             >
-                              {`Shape your life`}
+                              {`spark progress`}
                             </span>
                           </h1>
                           <p className={`text-lg sm:text-xl max-w-2xl mb-8 text-center ${theme == "light" ? "text-gray-600" : "text-neutral-400/90"}`}>
-                            {`Scheuor e sua plataforma para conexao com as pessoas seja em parcerias ou solo, tenha a AI parceira que te ajuda em seus dialogos em tempo real`}
+                            {`Scheuor is your spacce for real-time, meaningful conversations, solo or in partnership.Let AI assist and enhace your interaction, every step or of the way.`}
                           </p>
                           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <div
@@ -101,39 +99,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* How Scheuor Can Help */}
-        <section id="connect-with-us" className="relative overflow-hidden py-20 sm:py-32">
-          <Container>
-            <div className="flex flex-col justify-center items-center max-w-screen-xl mx-auto">
-
-              <div className="text-center mb-12">
-                <h2 className={`text-3xl sm:text-4xl font-bold ${theme == "light" ? "text-gray-900" : "text-neutral-200"} `}>{`How Scheuor Can Help`}</h2>
-                <p className={`text-lg mt-4 ${theme == "light" ? "text-gray-600" : "text-neutral-300"}`}>{`Tools to boost your your clarity, focus, and progress`}</p>
-              </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <InfoCard
-                  icon={MdTrendingUp}
-                  title="Actionable Clarity"
-                  content="Visualize your priorities clearly and take intentional steps toward your goals."
-                  iconColor="fuchsia"
-                />
-                <InfoCard
-                  icon={BiTask}
-                  title="Stay Aligned"
-                  content="Organize tasks, routines, and reflections in one place to keep your day aligned with your purpose."
-                  iconColor="fuchsia"
-                />
-                <InfoCard
-                  icon={Map}
-                  title="Build Habits That Sticks"
-                  content="Track your progress and reinforce behaviors that move you forward, consistently."
-                  iconColor="fuchsia"
-                />
-              </div>
-            </div>
-          </Container>
-        </section>
-
         {/* How It Works */}
         <section id="how-it-works" className="relative overflow-hidden py-20 sm:py-32">
           <Container>
@@ -149,7 +114,7 @@ export default function LandingPage() {
               {/* <div className="mt-16"> */}
               <div>
                 <div className="hidden lg:flex lg:flex-col space-y-16 lg:space-y-20">
-                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
+                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 hover:shadow-lg ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                     <div className="flex-none md:flex-1 lg:max-w-xl">
                       <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
                         <Image
@@ -163,30 +128,30 @@ export default function LandingPage() {
                       mb-6 inline-flex h-12 w-12 
                       items-center justify-center 
                       text-xl font-bold bg-gradient-to-bl
-                      ${theme == "light" ? "text-neutral-800" : "text-neutral-200"} rounded-xl`}>
+                      ${theme == "light" ? "text-neutral-200 bg-neutral-900" : "text-neutral-800 bg-neutral-200"} rounded-xl`}>
                         {`1`}
                       </div>
-                      <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Em reunioes`}</h3>
-                      <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
+                      <h3 className={`mb-4 text-4xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In Meetings`}</h3>
+                      <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
                         <a className='font-semibold'>{`Crie ou partice de reunioes: `}</a>
-                        {`Scheuor te permite participar de reunioes e ainda com opcoes de escutar quando bem entenderes e dar sugestoes em real time com AI.`}
+                        {`Lead smarter meetings. Scheuor's AI listens quietly. suggests intelligently, and stays invisible unless you choose to reveal it`}
                       </p>
                     </div>
                   </div>
-                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
+                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 hover:shadow-lg ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
 
                     <div className="flex-1 text-center lg:text-left">
                       <div className={`
                       mb-6 inline-flex h-12 w-12 
                       items-center justify-center 
                       text-xl font-bold bg-gradient-to-bl
-                      ${theme == "light" ? "text-neutral-800" : "text-neutral-200"} rounded-xl`}>
+                      ${theme == "light" ? "text-neutral-200 bg-neutral-900" : "text-neutral-800 bg-neutral-200"} rounded-xl`}>
                         {`2`}
                       </div>
-                      <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Chats.`}</h3>
-                      <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className='font-semibold'>{`Em em chats `}</a>
-                        {`Crie ou partice de chats de acordo com a partnership que estas inserido, seja profissional ou mais intimo, tenha AI do lado que te ajudar a conduzir as conversas se baseando no contexto da mesmas`}
+                      <h3 className={`mb-4 text-4xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In chats.`}</h3>
+                      <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
+                        <a className='font-semibold'>{`Engage on tailored chats `}</a>
+                        {`Whether professional or personal, scheuor adapts to each partnership. We support your conversation in real time, understanding its context to help guide your next move`}
                       </p>
                     </div>
                     <div className="flex-1 lg:max-w-xl ">
@@ -198,7 +163,7 @@ export default function LandingPage() {
                       </div>
                     </div>
                   </div>
-                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
+                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 hover:shadow-lg ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                     <div className="flex-none md:flex-1 ">
                       <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
                         <Image
@@ -212,19 +177,20 @@ export default function LandingPage() {
                       mb-6 inline-flex h-12 w-12 
                       items-center justify-center 
                       text-xl font-bold bg-gradient-to-bl
-                      ${theme == "light" ? "text-neutral-800" : "text-neutral-200"} rounded-xl`}>
+                      ${theme == "light" ? "text-neutral-200 bg-neutral-900" : "text-neutral-800 bg-neutral-200"} rounded-xl`}>
                         {`3`}
                       </div>
-                      <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Track & Grow`}</h3>
-                      <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className='font-semibold'>{`Stay aligned and evolve: `}</a>{`Review progress, adjust priorities, and build habits that support your journey`}
+                      <h3 className={`mb-4 text-4xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In private`}</h3>
+                      <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
+                        <a className='font-semibold'>{`Your space. Your pace: `}</a>
+                        {`Scheuor helps you shape your personal flow, generate ideias, and evolve with smart suggestions tailored to you`}
                       </p>
                     </div>
                   </div>
                 </div>
 
                 <div className="lg:hidden flex flex-col space-y-16 lg:space-y-20">
-                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
+                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 hover:shadow-lg ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                     <div className="flex-none md:flex-1 lg:max-w-xl">
                       <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">
                         <Image
@@ -238,17 +204,17 @@ export default function LandingPage() {
                       mb-6 inline-flex h-12 w-12 
                       items-center justify-center 
                       text-xl font-bold bg-gradient-to-bl
-                      ${theme == "light" ? "text-neutral-800" : "text-neutral-200"} rounded-xl`}>
+                      ${theme == "light" ? "text-neutral-200 bg-neutral-900" : "text-neutral-800 bg-neutral-200"} rounded-xl`}>
                         {`1`}
                       </div>
-                      <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Em reunioes`}</h3>
-                      <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className='font-semibold'>{`Crie ou partice de reunioes: `}</a>
-                        {`Scheuor te permite participar de reunioes e ainda com opcoes de escutar quando bem entenderes e dar sugestoes em real time com AI.`}
+                      <h3 className={`mb-4 text-3xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In meetings`}</h3>
+                      <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
+                        <a className='font-semibold'>{`Lead smarter meetings: `}</a>
+                        {`Scheuor's AI listens quietly. suggests intelligently, and stays invisible unless you choose to reveal it`}
                       </p>
                     </div>
                   </div>
-                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
+                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 hover:shadow-lg ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                     <div className="flex-none md:flex-1 lg:max-w-xl">
                       <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">
                         <Image
@@ -262,17 +228,17 @@ export default function LandingPage() {
                       mb-6 inline-flex h-12 w-12 
                       items-center justify-center 
                       text-xl font-bold bg-gradient-to-bl
-                      ${theme == "light" ? "text-neutral-800" : "text-neutral-200"} rounded-xl`}>
+                      ${theme == "light" ? "text-neutral-200 bg-neutral-900" : "text-neutral-800 bg-neutral-200"} rounded-xl`}>
                         {`2`}
                       </div>
-                      <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Chats.`}</h3>
-                      <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className='font-semibold'>{`Em em chats `}</a>
-                        {`Crie ou partice de chats de acordo com a partnership que estas inserido, seja profissional ou mais intimo, tenha AI do lado que te ajudar a conduzir as conversas se baseando no contexto da mesmas`}
+                      <h3 className={`mb-4 text-3xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In chats.`}</h3>
+                      <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
+                        <a className='font-semibold'>{`Engage on tailored chats `}</a>
+                        {`Whether professional or personal, scheuor adapts to each partnership. We support your conversation in real time, understanding its context to help guide your next move`}
                       </p>
                     </div>
                   </div>
-                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
+                  <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 hover:shadow-lg ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                     <div className="flex-none md:flex-1 lg:max-w-xl">
                       <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">
                         <Image
@@ -286,12 +252,14 @@ export default function LandingPage() {
                       mb-6 inline-flex h-12 w-12 
                       items-center justify-center 
                       text-xl font-bold bg-gradient-to-bl
-                      ${theme == "light" ? "text-neutral-800" : "text-neutral-200"} rounded-xl`}>
+                      
+                      ${theme == "light" ? "text-neutral-200 bg-neutral-900" : "text-neutral-800 bg-neutral-200"} rounded-xl`}>
                         {`3`}
                       </div>
-                      <h3 className={`mb-4 text-2xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`Track & Grow`}</h3>
-                      <p className={`text-lg leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className='font-semibold'>{`Stay aligned and evolve: `}</a>{`Review progress, adjust priorities, and build habits that support your journey`}
+                      <h3 className={`mb-4 text-3xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In private`}</h3>
+                      <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
+                        <a className='font-semibold'>{`Your space. Your pace: `}</a>
+                        {`Scheuor helps you shape your personal flow, generate ideias, and evolve with smart suggestions tailored to you`}
                       </p>
                     </div>
                   </div>
@@ -303,25 +271,99 @@ export default function LandingPage() {
           <div className="h-3 md:h-5" />
         </section>
 
-
-
         {/* Why Scheuor */}
-        <section id="why-scheuor" className={`py-16 px-2 ${theme == "light" ? "bg-neutral-50" : ""}`}>
+        <section id="why-scheuor" className={`py-16 px-2 rounded-md ${theme == "light" ? "bg-neutral-50" : "bg-slate-700/20"}`}>
           <Container>
             <div className="flex flex-col justify-center items-center max-w-screen-xl mx-auto">
 
-              <div className="text-center mb-12">
+              <div className="text-center mb-16">
                 <div className="inline-flex text-center rounded-full bg-fuchsia-100 px-4 py-2 text-sm font-semibold text-fuchsia-600 mb-6">
                   Why Choose Scheuor
                 </div>
                 <h2 className={`text-3xl sm:text-4xl font-bold ${theme == "light" ? "text-gray-900" : "text-neutral-200"} `}>
-
+                  This is how Scheuor moves your thoughts.
                 </h2>
-                <p className={`text-lg  ${theme == "light" ? "text-gray-600" : "text-neutral-300"} mt-4 max-w-2xl mx-auto`}>
-                  Join a platform built to help you focus, organize, and grow - your way.
-                </p>
+                {/* <p className={`text-lg  ${theme == "light" ? "text-gray-600" : "text-neutral-300"} mt-4 max-w-2xl mx-auto`}>
+                  Formas claras como o scheuor mudara a sua e a do seu parceiro forma de pensar.
+                </p> */}
               </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
+              <div className='flex flex-col gap-40'>
+                <div>
+                  <div className={`flex flex-col gap-4 mb-10`}>
+                    <h3 className={`text-4xl font-bold ${theme == "light" ? "text-gray-900" : "text-gray-200"}`}>{`In sync, almost telepathically`}</h3>
+                    <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
+                      {`Great partnerships that feels like telepathy. With Scheuor, you and your collaborators stay aligned, move faster, and grow together.
+                      supported by AI that offers real-time suggestions, privately shown to those with permission.`}<br />
+                      {`It listens when you listen in meetings, adapting to the flow and providing guidance as the conversation unfolds`}
+                    </p>
+                  </div>
+                  <div className='grid lg:grid-cols-2 gap-8 lg:gap-8'>
+                    <div>
+                      <h3 className={`p-2 bg-gradient-to-r w-[30%] rounded-xl mb-5 ${theme == "light"
+                        ? "from-neutral-800 to-neutral-400 text-neutral-50"
+                        : "from-neutral-200 to-neutral-600 text-neutral-800"} font-semibold transition-colors`}>
+                        Partners
+                      </h3>
+                      <div className="flex-none md:flex-1">
+                        <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">
+                          {/* <Image
+                          alt="calendar"
+                          src={""}
+                        /> */}
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-end">
+                        <h3 className={`p-2 bg-gradient-to-r w-[30%] rounded-xl mb-5 flex justify-end  ${theme == "light"
+                          ? "from-neutral-400 to-neutral-800 text-neutral-50"
+                          : "from-neutral-600 to-neutral-200 text-neutral-800"} font-semibold transition-colors`}>
+                          Guest
+                        </h3>
+                      </div>
+                      <div className="flex-none md:flex-1">
+                        <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">
+                          {/* <Image
+                          alt="calendar"
+                          src={""}
+                        /> */}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p className={`font-bold mt-8 ${theme == "light" ? "text-neutral-800" : "text-neutral-200"}`}>Behind the scenes, AI supports those who lead</p>
+                </div>
+
+                <div>
+                  <div className={`flex flex-col gap-4 mb-20`}>
+                    <h3 className={`text-4xl font-bold ${theme == "light" ? "text-gray-900" : "text-gray-200"}`}>{`There's always something to talk about`}</h3>
+                    <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
+                      {`A good conversation opens doors. Create those moments with ease.`}<br />
+                      {`Scheuor can respond alongside you in any chat, whether in a big group or one-on-one, understanding the context and helping define the right tone, so your 
+                      message always lands well`}
+                    </p>
+                  </div>
+                  <div className="flex flex-col md:flex-row gap-8 md:gap-12">
+                    {/* Text Section */}
+                    <div className="w-full md:flex-[0.35]">
+                      <h4 className={`text-2xl font-semibold mb-4 ${theme === "light" ? "text-neutral-700" : "text-neutral-300"}`}>
+                        One click. One clear answer
+                      </h4>
+                      <p className={`text-base leading-relaxed ${theme === "light" ? "text-gray-800" : "text-gray-300"}`}>
+                        Sometimes you don't need to think twice. Just hit reply, Scheuor knows what to say, how to say it, and when it matters most. It's like having someone who always gets you.
+                      </p>
+                    </div>
+
+                    {/* Image Section */}
+                    <div className="w-full md:flex-[0.65]">
+                      <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">
+                        {/* <Image alt="calendar" src={""} /> */}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
                 <InfoCard
                   icon={MdTrendingUp}
                   title="Clarity that drives action"
@@ -355,7 +397,7 @@ export default function LandingPage() {
                     Get Started <IoMdArrowForward size={20} className="ml-2" />
                   </Link>
                 </div>
-              </div>
+              </div> */}
             </div>
           </Container>
         </section>
@@ -372,22 +414,34 @@ export default function LandingPage() {
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <InfoCard
-                  icon={MdChecklist}
-                  title="Actionable Clarity"
-                  content="Visualize your priorities clearly and take intentional steps toward your goals."
-                  iconColor="fuchsia"
+                  icon={Minimize}
+                  title="Summarize conversations"
+                  content="Lost in a long chat? aghh again.scheuor can instantly generate summaries so you never miss the point.
+                  Whether it's a deep discussion or a fast-paced exchange, get a clear view of what matters, and pick up exactly where you left off"
+                  titleColor = {`${theme == "light" ? "text-neutral-800" : "text-neutral-200"}`}
+                  from={`${theme == "light" ? "from-neutral-100" : "from-slate-700"}`}
+                  to={`${theme == "light" ? "to-neutral-50" : "to-slate-600"}`}
+                  contentColor={`${theme == "light" ? "text-neutral-700" : "text-neutral-300"}`}
+                  smallBg={`${theme == "light" ? "bg-neutral-400/20" : "bg-slate-500/30"}`}
+                  iconColor={`${theme == "light" ? "black" : "gray"}`}
                 />
                 <InfoCard
-                  icon={BiTask}
-                  title="Stay Aligned"
-                  content="Organize tasks, routines, and reflections in one place to keep your day aligned with your purpose."
-                  iconColor="fuchsia"
+                  icon={MessageSquareReply}
+                  title="Schedule an answer or message."
+                  content="Reply exactly you want, without lifting a finger. scheuor analyzes the last messages, uses your prompt, and crafts a response that aligns with conversation's 
+                  tone and context. It's like pressing pause and still being perfectly present"
+                  titleColor = {`${theme == "light" ? "text-neutral-800" : "text-neutral-200"}`}
+                  from={`${theme == "light" ? "from-neutral-200/60" : "from-slate-700"}`}
+                  to={`${theme == "light" ? "to-neutral-50" : "to-slate-600"}`}
+                  contentColor={`${theme == "light" ? "text-neutral-700" : "text-neutral-300"}`}
+                  smallBg={`${theme == "light" ? "bg-neutral-400/20" : "bg-slate-500/30"}`}
+                  iconColor={`${theme == "light" ? "black" : "gray"}`}
+                  soon='Coming...'
                 />
                 <InfoCard
-                  icon={Map}
-                  title="Build Habits That Sticks"
-                  content="Track your progress and reinforce behaviors that move you forward, consistently."
-                  iconColor="fuchsia"
+                  icon={BiQuestionMark}
+                  title=""
+                  content=""
                 />
               </div>
             </div>
@@ -433,7 +487,7 @@ export default function LandingPage() {
         </section>
 
         {/* Video Demo Section */}
-        <section id="video-demo" className={`py-16 ${theme == "light" ? "" : "bg-slate-800/50"}`}>
+        {/* <section id="video-demo" className={`py-16 ${theme == "light" ? "" : "bg-slate-800/50"}`}>
           <Container>
             <div className="text-center mb-12">
               <h2 className={`text-3xl sm:text-4xl font-bold ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`}>
@@ -450,10 +504,10 @@ export default function LandingPage() {
           </Container>
 
 
-        </section>
+        </section> */}
 
 
-        <div className="w-full px-4 sm:px-6 lg:px-8">
+        {/* <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto aspect-video">
             <video
               className="w-full h-full object-cover rounded-lg shadow-lg shadow-fuchsia-300"
@@ -464,8 +518,8 @@ export default function LandingPage() {
               Your browser does not support the video tag.
             </video>
           </div>
-        </div>
-        <div className="mt-8 text-center">
+        </div> */}
+        {/* <div className="mt-8 text-center">
           <div className='flex justify-center'>
             <Link
               href="/onboarding"
@@ -474,26 +528,26 @@ export default function LandingPage() {
               Try Scheuor Now <IoMdArrowForward size={20} className="ml-2" />
             </Link>
           </div>
-        </div>
+        </div> */}
 
         {/* Final CTA */}
         <section id="final-cta" className="py-16 text-center">
           <Container>
-            <h2 className={`text-3xl sm:text-4xl font-bold  ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`}>Join Scheuor Today!</h2>
+            <h2 className={`text-3xl sm:text-4xl font-bold  ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`}>The Step Into a Smart Conversation</h2>
             <p className={`text-lg mt-4 max-w-2xl mx-auto  ${theme == "light" ? "text-gray-600" : "text-neutral-300"}`}>
-              Sign up now to become one of us.
+              {`You've seen how it works. Now, experience how it moves you`}
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/onboarding"
-                className="text-sm font-semibold py-3 px-6 rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition"
+                className={`text-base py-3 px-6 rounded-full transition font-semibold ${theme == "light" ? "bg-black text-white" : "bg-neutral-50 text-neutral-800"}`}
               >
                 Get Started
               </Link>
               <a
                 // href="mailto:contact@scheuor.com"
                 href="mailto:josechiconela@icloud.com"
-                className="text-sm font-semibold py-3 px-6 rounded-full border border-fuchsia-600 text-fuchsia-600 hover:bg-fuchsia-50 transition"
+                className={`ext-base font-semibold py-3 px-6 rounded-full border border-fuchsia-600 text-fuchsia-600 transition`}
               >
                 Contact Us
               </a>

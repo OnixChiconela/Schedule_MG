@@ -23,7 +23,8 @@ import MainNavbar from "@/app/components/navbars/MainNavbar";
 export default function CollaborationPage() {
   const { collaborationId } = useParams<{ collaborationId: string }>();
   const { theme } = useTheme();
-  const isSmallScreen = useMediaQuery({ maxWidth: 1024 });
+  // const isSmallScreen = useMediaQuery({ maxWidth: 1024 });
+  const isSmallScreen = useMediaQuery({ maxWidth: 768 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isSmallScreen);
   const { currentUser } = useUser();
   const [partnership, setPartnership] = useState<Partnership | null>(null);
@@ -208,8 +209,9 @@ export default function CollaborationPage() {
         showNotificationBell={true}
       />
       <main
-        className={`flex-1 p-4 sm:p-6 transition-all duration-300 w-full ${isSidebarOpen && !isSmallScreen ? "lg:max-w-[calc(100%-12rem)] ml-40" : "max-w-full"
-          }`}
+        // className={`flex-1 p-4 sm:p-6 transition-all duration-300 w-full ${isSidebarOpen && !isSmallScreen ? "lg:max-w-[calc(100%-12rem)] ml-40" : "max-w-full"
+        className={`flex-1 p-1 sm:p-2 md:p-4 transition-all duration-300 w-full ${isSidebarOpen && !isSmallScreen ? 'lg:max-w-[calc(100%-12rem)] ml-40' : 'max-w-full'}`}
+          
         style={{ paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}
       >
         <CollabMemberBar partnership={partnership} />
@@ -223,7 +225,7 @@ export default function CollaborationPage() {
                 const total = validSizes.reduce((a, b) => a + b, 0);
                 setPanelSizes(validSizes.map((size) => (size / total) * 100));
               }}
-              sashRender={() => <div className="bg-gray-400 w-2 cursor-col-resize" />}
+              sashRender={() => <div className={`bg-gray-400 w-2  cursor-col-resize ${isSmallScreen ? "hidden" : "block"}`} />}
               allowResize={true}
               style={{ height: "100%", width: "100%", position: "relative" }}
             >
