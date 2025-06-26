@@ -17,7 +17,7 @@ import LandingFooter from './components/footers/LandingFooter'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import FloatingWaitingButton from './components/buttons/FloationgWaitingButton'
-import { Languages, Map, MessageSquareReply, Minimize } from 'lucide-react'
+import { Languages, Map, MessageSquareReply, Minimize, StarIcon } from 'lucide-react'
 
 export default function LandingPage() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false)
@@ -106,9 +106,9 @@ export default function LandingPage() {
               <div className="text-center mb-12">
                 <h2 className={`mb-4 text-3xl font-bold text-center sm:text-4xl ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`} style={{
                   translate: "none", rotate: "none", scale: "none"
-                }}>{`Scheuor ajuda a seus dialogos`}</h2>
+                }}>{`Where Scheuor helps you you stay aligned`}</h2>
                 <p className={`text-lg leading-8 ${theme == "light" ? "text-gray-800" : "text-gray-300"} text-center`}>
-                  {`Seja em equipes(parcerias) ou a solo`}
+                  {`THE STEP INTO A SMART CONVERSATIONS`}
                 </p>
               </div>
               {/* <div className="mt-16"> */}
@@ -133,8 +133,8 @@ export default function LandingPage() {
                       </div>
                       <h3 className={`mb-4 text-4xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In Meetings`}</h3>
                       <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className='font-semibold'>{`Crie ou partice de reunioes: `}</a>
-                        {`Lead smarter meetings. Scheuor's AI listens quietly. suggests intelligently, and stays invisible unless you choose to reveal it`}
+                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Lead smarter meetings.`}</a>
+                        {`Scheuor's AI listens quietly. suggests intelligently, and stays invisible unless you choose to reveal it`}
                       </p>
                     </div>
                   </div>
@@ -150,7 +150,7 @@ export default function LandingPage() {
                       </div>
                       <h3 className={`mb-4 text-4xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In chats.`}</h3>
                       <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className='font-semibold'>{`Engage on tailored chats `}</a>
+                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Engage on tailored chats `}</a>
                         {`Whether professional or personal, scheuor adapts to each partnership. We support your conversation in real time, understanding its context to help guide your next move`}
                       </p>
                     </div>
@@ -182,7 +182,7 @@ export default function LandingPage() {
                       </div>
                       <h3 className={`mb-4 text-4xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In private`}</h3>
                       <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className='font-semibold'>{`Your space. Your pace: `}</a>
+                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Your space. Your pace. `}</a>
                         {`Scheuor helps you shape your personal flow, generate ideias, and evolve with smart suggestions tailored to you`}
                       </p>
                     </div>
@@ -209,7 +209,7 @@ export default function LandingPage() {
                       </div>
                       <h3 className={`mb-4 text-3xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In meetings`}</h3>
                       <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className='font-semibold'>{`Lead smarter meetings: `}</a>
+                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Lead smarter meetings. `}</a>
                         {`Scheuor's AI listens quietly. suggests intelligently, and stays invisible unless you choose to reveal it`}
                       </p>
                     </div>
@@ -233,7 +233,7 @@ export default function LandingPage() {
                       </div>
                       <h3 className={`mb-4 text-3xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In chats.`}</h3>
                       <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className='font-semibold'>{`Engage on tailored chats `}</a>
+                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Engage on tailored chats `}</a>
                         {`Whether professional or personal, scheuor adapts to each partnership. We support your conversation in real time, understanding its context to help guide your next move`}
                       </p>
                     </div>
@@ -258,7 +258,7 @@ export default function LandingPage() {
                       </div>
                       <h3 className={`mb-4 text-3xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In private`}</h3>
                       <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className='font-semibold'>{`Your space. Your pace: `}</a>
+                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Your space. Your pace: `}</a>
                         {`Scheuor helps you shape your personal flow, generate ideias, and evolve with smart suggestions tailored to you`}
                       </p>
                     </div>
@@ -418,7 +418,7 @@ export default function LandingPage() {
                   title="Summarize conversations"
                   content="Lost in a long chat? aghh again.scheuor can instantly generate summaries so you never miss the point.
                   Whether it's a deep discussion or a fast-paced exchange, get a clear view of what matters, and pick up exactly where you left off"
-                  titleColor = {`${theme == "light" ? "text-neutral-800" : "text-neutral-200"}`}
+                  titleColor={`${theme == "light" ? "text-neutral-800" : "text-neutral-200"}`}
                   from={`${theme == "light" ? "from-neutral-100" : "from-slate-700"}`}
                   to={`${theme == "light" ? "to-neutral-50" : "to-slate-600"}`}
                   contentColor={`${theme == "light" ? "text-neutral-700" : "text-neutral-300"}`}
@@ -430,7 +430,7 @@ export default function LandingPage() {
                   title="Schedule an answer or message."
                   content="Reply exactly you want, without lifting a finger. scheuor analyzes the last messages, uses your prompt, and crafts a response that aligns with conversation's 
                   tone and context. It's like pressing pause and still being perfectly present"
-                  titleColor = {`${theme == "light" ? "text-neutral-800" : "text-neutral-200"}`}
+                  titleColor={`${theme == "light" ? "text-neutral-800" : "text-neutral-200"}`}
                   from={`${theme == "light" ? "from-neutral-200/60" : "from-slate-700"}`}
                   to={`${theme == "light" ? "to-neutral-50" : "to-slate-600"}`}
                   contentColor={`${theme == "light" ? "text-neutral-700" : "text-neutral-300"}`}
@@ -459,28 +459,38 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-3 gap-8">
                 <Card>
                   <div className="p-6">
+                    <div className="flex items-center mb-2">
+                      {[...Array(5)].map((_, i) => (
+                        <StarIcon key={i} className="text-yellow-400 w-4 h-4" />
+                      ))}
+                    </div>
                     <p className={`${theme == "light" ? "text-gray-700" : "text-neutral-300"}`}>
-                      {`"Scheuor gave me the clarity I needed to finally stay on top of my tasks and goals."`}
+                      {`"Loved the idea of AI that only joins when I allow it, just create a partnership and it's there. The scheduled replies feature is amazing. Though, I sent one to my girlfriend and it ended with 'Sincerely, Ricky Otavio.' So formal, she laughed! at least"`}
                     </p>
-                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>{`— Maria, Freelancer`}</h4>
+                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>{`— Ricky Otavio, First User`}</h4>
                   </div>
                 </Card>
                 <Card>
                   <div className="p-6">
+                    <div className="flex items-center mb-2">
+                      {[...Array(5)].map((_, i) => (
+                        <StarIcon key={i} className="text-yellow-400 w-4 h-4" />
+                      ))}
+                    </div>
                     <p className={`${theme == "light" ? "text-gray-700" : "text-neutral-300"}`}>
-                      {`"I use Scheuor every day to organize my week, it keeps me focused without feeling overwhelmed."`}
+                      {`"The AI modal is a game changer. Me and my partner see the suggestions, the other person doesn't. It's like we're sharing the same brain. Can't wait to use this more!"`}
                     </p>
-                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>{`— John, Designer`}</h4>
+                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>{`— Jessica Alburquerque, Early User`}</h4>
                   </div>
                 </Card>
-                <Card>
+                {/* <Card>
                   <div className="p-6">
                     <p className={`${theme == "light" ? "text-gray-700" : "text-neutral-300"}`}>
                       {`"The suggestions and clean interface help me reflect and stay intentional with my time."`}
                     </p>
                     <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>{`— Ana, Creative`}</h4>
                   </div>
-                </Card>
+                </Card> */}
               </div>
             </div>
           </Container>
@@ -533,7 +543,7 @@ export default function LandingPage() {
         {/* Final CTA */}
         <section id="final-cta" className="py-16 text-center">
           <Container>
-            <h2 className={`text-3xl sm:text-4xl font-bold  ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`}>The Step Into a Smart Conversation</h2>
+            <h2 className={`text-3xl sm:text-4xl font-bold  ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`}>The Step Into a Smart Conversations</h2>
             <p className={`text-lg mt-4 max-w-2xl mx-auto  ${theme == "light" ? "text-gray-600" : "text-neutral-300"}`}>
               {`You've seen how it works. Now, experience how it moves you`}
             </p>
