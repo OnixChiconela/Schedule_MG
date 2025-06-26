@@ -545,7 +545,7 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
 
     return (
         <div
-            className={`p-4 ${theme === "light" ? "bg-white text-neutral-800" : "bg-slate-900 text-neutral-200"} h-full min-h-[88.5vh]`} // Altura mínima com h-full
+            className={`p-1 md:p-4 ${theme === "light" ? "bg-white text-neutral-800" : "bg-slate-900 text-neutral-200"} h-full min-h-[88.5vh]`} // Altura mínima com h-full
         >
             <AnimatePresence>
                 {showCreateChatModal && (
