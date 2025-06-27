@@ -63,7 +63,7 @@ export default function LandingPage() {
                             </span>
                           </h1>
                           <p className={`text-lg sm:text-xl max-w-2xl mb-8 text-center ${theme == "light" ? "text-gray-600" : "text-neutral-400/90"}`}>
-                            {`Scheuor is your spacce for real-time, meaningful conversations, solo or in partnership.Let AI assist and enhace your interaction, every step or of the way.`}
+                            {`Scheuor is your spacce for real-time, meaningful conversations, solo or in partnership. Let AI assist and enhace your interaction, every step or of the way.`}
                           </p>
                           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <div
@@ -106,7 +106,7 @@ export default function LandingPage() {
               <div className="text-center mb-12">
                 <h2 className={`mb-4 text-3xl font-bold text-center sm:text-4xl ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`} style={{
                   translate: "none", rotate: "none", scale: "none"
-                }}>{`Where Scheuor helps you you stay aligned`}</h2>
+                }}>{`Where Scheuor helps you stay aligned`}</h2>
                 <p className={`text-lg leading-8 ${theme == "light" ? "text-gray-800" : "text-gray-300"} text-center`}>
                   {`THE STEP INTO A SMART CONVERSATIONS`}
                 </p>

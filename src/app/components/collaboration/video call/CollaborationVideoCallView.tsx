@@ -3,7 +3,7 @@
 import { useUser } from '@/app/context/UserContext';
 import { useTheme } from '@/app/themeContext';
 import { Mic, MicOff, PhoneOff, Video, VideoOff } from 'lucide-react';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import Peer from 'simple-peer';
 import CreateCallModal from './modals/CreateCallModal';
 import JoinCallModal from './modals/JoinCallModal';
@@ -562,9 +562,10 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
         return <div className="h-full flex items-center justify-center text-gray-400">Please log in</div>;
     }
 
-    const handleAICallSubmit = async (prompt: string, audioBlob?: Blob): Promise<string | null> => {
-        console.log(`[AICall] Prompt: ${prompt}, Audio Blob:`, audioBlob);
+    const handleAICallSubmit = async (prompt: string, audioBlob?: Blob, transcription?: string): Promise<string | null> => {
+        console.log(`[AICall] Prompt: ${prompt}, Audio Blob:`, audioBlob, `Transcription: ${transcription}`);
         try {
+            const fullPrompt = transcription ? `${prompt} (Context: ${transcription})` : prompt;
             // Simulate AI service call (replace with real API call, e.g., Hugging Face or Whisper)
             await new Promise((resolve) => setTimeout(resolve, 1000)); // Mock delay
             const mockResponse = `AI response for prompt: ${prompt}`; // Mock response
@@ -618,9 +619,44 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
         );
     }
 
+    const stablePeerStream = useMemo(() => {
+        const validPeer = peers.find((p) => p.userId !== userId && p.stream && p.stream?.getAudioTracks().length > 0)
+        return validPeer ? validPeer.stream : null
+    }, [peers, userId])
+
+    const PeerVideo = ({ stream, userId }: { stream: MediaStream | null; userId: string }) => {
+        const videoRef = useRef<HTMLVideoElement>(null);
+
+        useEffect(() => {
+            if (videoRef.current && stream) {
+                videoRef.current.srcObject = stream;
+
+                const play = async () => {
+                    try {
+                        await videoRef.current?.play();
+                    } catch (err) {
+                        console.error(`[Peer] Failed to play video for ${userId}:`, err);
+                    }
+                };
+
+                play();
+            }
+        }, [stream]);
+
+        return (
+            <video
+                ref={videoRef}
+                data-user-id={userId}
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover rounded-lg"
+            />
+        );
+    };
+
     return (
         <div
-            className={`h-full p-4 ${theme === "light" ? "bg-white text-gray-800" : "bg-gray-900 text-gray-200"
+            className={`h-full p-1 md:p-4 ${theme === "light" ? "bg-white text-gray-800" : "bg-gray-900 text-gray-200"
                 }`}
         >
             {mediaError && (
@@ -632,8 +668,8 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                     <button
                         onClick={() => setShowCreateCallModal(true)}
                         className={`px-4 py-2 rounded-lg ${theme === "light"
-                                ? "bg-fuchsia-500 hover:bg-fuchsia-600 text-white"
-                                : "bg-fuchsia-600 hover:bg-fuchsia-700 text-white"
+                            ? "bg-fuchsia-500 hover:bg-fuchsia-600 text-white"
+                            : "bg-fuchsia-600 hover:bg-fuchsia-700 text-white"
                             }`}
                     >
                         Start Call
@@ -714,26 +750,7 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                         {peers.map((peer) => (
                             <div key={peer.userId} className="relative h-full">
                                 {peer.stream ? (
-                                    <video
-                                        ref={(ref) => {
-                                            if (ref && peer.stream) {
-                                                ref.srcObject = peer.stream;
-                                                ref.play().catch((err) => {
-                                                    console.error(`[Peer] Failed to play peer video for ${peer.userId}:`, err);
-                                                    toast.error(`Failed to play video stream for user ${peer.userId}`);
-                                                    setConnectionStatus("error");
-                                                });
-                                            }
-                                        }}
-                                        autoPlay
-                                        playsInline
-                                        className="w-full h-full object-cover rounded-lg"
-                                        onError={(e) => {
-                                            console.error(`[Media] Remote video error for ${peer.userId}:`, e);
-                                            toast.error(`Failed to play video stream for user ${peer.userId}`);
-                                            setConnectionStatus("error");
-                                        }}
-                                    />
+                                    <PeerVideo key={peer.userId} stream={peer.stream} userId={peer.userId} />
                                 ) : (
                                     <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-400 rounded-lg">
                                         <p>Waiting for {peer.userId}...</p>
@@ -768,7 +785,8 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                     isOpen={!!callId}
                     onClose={() => { }}
                     onSubmit={handleAICallSubmit}
-                    peerStream={peers.find((p) => p.userId !== userId)?.stream || null}
+                    peerStream={stablePeerStream}
+                    localStream={localStream}
                 />
             )}
         </div>

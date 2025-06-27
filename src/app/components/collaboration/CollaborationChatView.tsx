@@ -666,9 +666,9 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
                                 {selectedChat && isAuthorized && (
                                     <button
                                         onClick={() => setShowActionModal(true)}
-                                        className={` absolute px-2 py-1 right-7 lg:-top-6 rounded border-[1px] ${theme === "light" ? "text-neutral-900 border-gray-200 hover:bg-gray-200"
+                                        className={` absolute px-2 py-1 right-7 bottom-20 lg:-top-6 rounded-full border-[1px] ${theme === "light" ? "text-neutral-900 border-gray-200 hover:bg-gray-200"
                                             : "text-gray-100 border-gray-600 hover:bg-gray-700"
-                                            } z-30 ${showCreateChatModal == true ? "hidden" : ""}`}
+                                            } z-20 ${showCreateChatModal == true ? "hidden" : ""}`}
                                         data-testid="sparkles-button"
                                     >
                                         <Sparkles size={20} />
