@@ -659,7 +659,7 @@ interface MiniAICallModalProps {
   theme: string;
   prompt: string;
   setPrompt: (value: string) => void;
-  onSubmit: (prompt: string, audioBlob?: Blob | undefined, transcription?: string) => void;
+  onSubmit: (prompt: string, audioBlob?: Blob | null, transcription?: string) => void;
   onExpand: () => void;
   position: { x: number; y: number };
   isDragging?: boolean;
@@ -675,7 +675,7 @@ interface ExpandedAICallModalProps {
   theme: string;
   prompt: string;
   setPrompt: (value: string) => void;
-  onSubmit: (prompt: string, audioBlob?: Blob | undefined, transcription?: string) => void;
+  onSubmit: (prompt: string, audioBlob?: Blob | null, transcription?: string) => void;
   onMinimize: () => void;
   isRecording: boolean;
   toggleRecording: () => void;
@@ -688,7 +688,7 @@ interface ExpandedAICallModalProps {
   isResponseStreaming: boolean;
   audioSource: "local" | "peer" | "mixed";
   setAudioSource: (source: "local" | "peer" | "mixed") => void;
-  transcription: string | undefined;
+  transcription: string | null;
   downloadAudio: () => void;
 }
 
@@ -1016,7 +1016,7 @@ function ExpandedAICallModal({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onSubmit(prompt, audioBlob, transcription);
+            onSubmit(prompt, audioBlob, transcription ?? undefined);
           }}
           disabled={!prompt.trim()}
           className={`px-4 py-2 rounded-lg font-medium ${!prompt.trim()
@@ -1366,7 +1366,7 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
     }
   };
 
-  const handleSubmit = async (prompt: string, audioBlob?: Blob | undefined, transcription?: string) => {
+  const handleSubmit = async (prompt: string, audioBlob?: Blob | null, transcription?: string) => {
     if (!prompt.trim()) {
       toast.error("Prompt cannot be empty", {
         duration: 3000,
@@ -1388,7 +1388,7 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
     setIsResponseStreaming(true);
     setIsExpanded(true);
      try {
-      const res = await onSubmit(prompt, audioBlob, transcription);
+      const res = await onSubmit(prompt, audioBlob ?? undefined, transcription);
       toast.dismiss(toastId);
       if (res) {
         setResponse("");
