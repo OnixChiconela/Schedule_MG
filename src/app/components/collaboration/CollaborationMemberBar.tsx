@@ -98,7 +98,7 @@ const CollabMemberBar: React.FC<CollabMemberBarProps> = ({ partnership }) => {
     return (
         <>
             <div
-                className={`sticky top-[calc(5rem+env(safe-area-inset-top,0px))] z-30 flex items-center px-4 py-0 ${theme === 'light' ? 'bg-transparent' : 'bg-transparent'
+                className={`sticky top-[calc(5rem+env(safe-area-inset-top,0px))] z-50 flex items-center px-4 py-0 ${theme === 'light' ? 'bg-transparent' : 'bg-transparent'
                     } cursor-pointer w-fit ml-auto`}
                 onClick={() => setIsMembersModalOpen(true)}
             >

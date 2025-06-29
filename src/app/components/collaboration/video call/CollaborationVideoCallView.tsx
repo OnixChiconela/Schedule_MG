@@ -13,6 +13,9 @@ import AICallModal from './modals/AiCallModal';
 import { PartnershipDetails } from '../CollaborationChatView';
 import { getCollabById } from '@/app/api/actions/collaboration/getCollabById';
 import { getCollabMembers } from '@/app/api/actions/collaboration/getCollabMembers';
+import { transcribeAndGenerate } from '@/app/api/actions/collaboration/video-call/transcribeAndGenerate';
+import { checkAIUsage } from '@/app/api/actions/AI/checkAIUsage';
+import { callAITextOnly, processAudioWithAI } from '@/app/api/actions/collaboration/video-call/processAudioWithAI';
 
 interface VideoCallViewProps {
     partnershipId: string;
@@ -562,35 +565,80 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
         return <div className="h-full flex items-center justify-center text-gray-400">Please log in</div>;
     }
 
-    const handleAICallSubmit = async (prompt: string, audioBlob?: Blob, transcription?: string): Promise<string | null> => {
-        console.log(`[AICall] Prompt: ${prompt}, Audio Blob:`, audioBlob, `Transcription: ${transcription}`);
-        try {
-            const fullPrompt = transcription ? `${prompt} (Context: ${transcription})` : prompt;
-            // Simulate AI service call (replace with real API call, e.g., Hugging Face or Whisper)
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // Mock delay
-            const mockResponse = `AI response for prompt: ${prompt}`; // Mock response
-            toast.success('Prompt sent to AI', {
+    const handleAICallSubmit = async (
+        prompt: string,
+        audioBlob?: Blob,
+        transcription?: string
+    ) => {
+
+        if (!currentUser?.id) {
+            toast.error("User not authenticated", {
                 duration: 3000,
                 style: {
-                    background: theme === 'light' ? '#fff' : '#1e293b',
-                    color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-                    border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
-                },
-            });
-            return mockResponse;
-        } catch (error) {
-            console.error('[AICall] Failed to process prompt:', error);
-            toast.error('Failed to get AI response', {
-                duration: 3000,
-                style: {
-                    background: theme === 'light' ? '#fff' : '#1e293b',
-                    color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-                    border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+                    background: theme === "light" ? "#fff" : "#1e293b",
+                    color: theme === "light" ? "#1f2937" : "#f4f4f6",
+                    border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
                 },
             });
             return null;
         }
-    };
+
+        if (!prompt.trim()) {
+            toast.error("Prompt cannot be empty", {
+                duration: 3000,
+                style: {
+                    background: theme === "light" ? "#fff" : "#1e293b",
+                    color: theme === "light" ? "#1f2937" : "#f4f4f6",
+                    border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+                },
+            });
+            return null;
+        }
+
+        const canUse = await checkAIUsage(currentUser.id)
+        if (!canUse) {
+            console.error("[AICall] Daily AI usage limit reached");
+            toast.error("Daily AI usage limit reached", {
+                duration: 3000,
+                style: {
+                    background: theme === "light" ? "#fff" : "#1e293b",
+                    color: theme === "light" ? "#1f2937" : "#f4f4f6",
+                    border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+                },
+            });
+            return null;
+        }
+        toast.success("Here")
+        console.log(`[AiCall] Prompt: ${prompt}, Audio Blob:`, audioBlob, `Transcription: ${transcription}`)
+        try {
+            const fullPrompt = transcription ? `${prompt} (Context): ${transcription}` : prompt;
+
+            let res;
+            if (audioBlob) {
+                // Chamada com audio: usa multipart/form-data
+                res = await processAudioWithAI("generate", audioBlob, currentUser.id, {
+                    prompt: fullPrompt,
+                    transcription,
+                });
+            } else {
+                // Chamada sem audio: usa JSON
+                res = await callAITextOnly("generate", {
+                    prompt: fullPrompt,
+                    userId: currentUser.id,
+                });
+            }
+
+            if (!res?.text) {
+                throw new Error("No response received");
+            }
+
+            return res.text;
+        } catch (error: any) {
+            console.error("[AICall] Failed to process prompt:", error);
+            toast.error("Failed to get AI response", { /* ... estilo omitido */ });
+            return null;
+        }
+    }
 
     if (mediaError) {
         return (

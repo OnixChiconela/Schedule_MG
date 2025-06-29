@@ -51,7 +51,6 @@ export default function CollaborationPage() {
       }
       try {
         const res = await getCollabById(collaborationId);
-        toast.success(collaborationId)
         setPartnership(res);
       } catch (error) {
         console.error("Error fetching partnership:", error);

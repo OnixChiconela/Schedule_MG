@@ -360,10 +360,7 @@ import toast from "react-hot-toast";
 import { inviteMember } from "@/app/api/actions/collaboration/inviteMember";
 import { getUsers } from "@/app/api/actions/user/getUsers";
 import { Users } from "@/app/types";
-import { io } from "socket.io-client";
 import { useNotifications } from "@/app/context/NotificationContext";
-import { removeMember } from "@/app/api/actions/collaboration/removeMember";
-import { updateMemberRole } from "@/app/api/actions/collaboration/updateRole";
 import { getCollabMembers } from "@/app/api/actions/collaboration/getCollabMembers";
 
 interface CollabMembersModalProps {

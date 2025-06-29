@@ -13,6 +13,7 @@ import { useLocation } from '../context/LocationContext';
 import { initialSuggestions } from '../fake/suggestions';
 import { emojiOptions } from '../components/emojiOptions';
 import Notes from '../components/Notes'; 
+import AICallModal from '../components/collaboration/video call/modals/AiCallModal';
 
 type Task = {
     id: number;
@@ -223,6 +224,9 @@ export default function DashboardPage() {
                                 </motion.div>
                             ))}
                         </div>
+                        {/* <AICallModal 
+                            isOpen={true}
+                        /> */}
                     </section>
                     {/* <section className="mb-6">
                         <EventSuggestions userCategories={userInterests} location={location} />

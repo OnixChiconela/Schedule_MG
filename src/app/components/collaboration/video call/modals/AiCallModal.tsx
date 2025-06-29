@@ -644,8 +644,13 @@ import { useTheme } from "@/app/themeContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Send, X, Sparkles, Download } from "lucide-react";
 import { DndContext, useDraggable, useSensors, useSensor, PointerSensor } from "@dnd-kit/core";
-import { simulateStreaming } from "@/app/api/actions/AI/hugging_face/generateText";
+import { simulateStreaming, simulateStreamingBChunk } from "@/app/api/actions/AI/hugging_face/generateText";
 import toast from "react-hot-toast";
+import { transcribeAndGenerate } from "@/app/api/actions/collaboration/video-call/transcribeAndGenerate";
+import { useUser } from "@/app/context/UserContext";
+import { checkAIUsage } from "@/app/api/actions/AI/checkAIUsage";
+import { useRouter } from "next/navigation";
+import { transcribeAudio } from "@/app/api/actions/collaboration/video-call/transcribeAudio";
 
 interface AICallModalProps {
   isOpen: boolean;
@@ -690,6 +695,7 @@ interface ExpandedAICallModalProps {
   setAudioSource: (source: "local" | "peer" | "mixed") => void;
   transcription: string | null;
   downloadAudio: () => void;
+  suggestion: string | null
 }
 
 function MiniAICallModal({
@@ -730,7 +736,7 @@ function MiniAICallModal({
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.8 }}
-      className={`rounded-xl p-4 w-120 shadow-lg flex items-center gap-2 ${theme === "light" ? "bg-white border border-gray-200" : "bg-slate-900 border border-slate-600"
+      className={`rounded-xl p-4  shadow-lg flex items-center gap-2 ${theme === "light" ? "bg-white border border-gray-200" : "bg-slate-900 border border-slate-600"
         } hover:shadow-xl transition-shadow duration-200 select-none`}
     >
       <input
@@ -828,7 +834,8 @@ function ExpandedAICallModal({
   audioSource,
   setAudioSource,
   transcription,
-  downloadAudio
+  downloadAudio,
+  suggestion
 }: ExpandedAICallModalProps) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: "expanded-ai-call-modal",
@@ -851,7 +858,7 @@ function ExpandedAICallModal({
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className={`rounded-xl p-6 w-[80%] max-w-lg h-[400px] flex flex-col shadow-xl ${theme === "light" ? "bg-white border border-gray-200" : "bg-slate-900 border border-slate-600"
+      className={`rounded-xl p-6 w-[80%] max-w-lg  flex flex-col shadow-xl ${theme === "light" ? "bg-white border border-gray-200" : "bg-slate-900 border border-slate-600"
         } hover:shadow-xl transition-shadow duration-200 select-none`}
       role="dialog"
       aria-modal="true"
@@ -864,13 +871,56 @@ function ExpandedAICallModal({
         style={{ cursor: isDragging ? "grabbing" : "grab" }}
       >
         <div className="flex items-center gap-2">
-          <Sparkles size={18} />
-          <h2
-            className={`text-xl font-semibold ${theme === "light" ? "text-neutral-800" : "text-neutral-200"
-              }`}
-          >
-            AI Interaction
-          </h2>
+          <div className="flex items-center gap-2">
+            <Sparkles size={18} />
+            <h2
+              className={`text-xl font-semibold ${theme === "light" ? "text-neutral-800" : "text-neutral-200"
+                }`}
+            >
+              AI Interaction
+            </h2>
+          </div>
+
+          <div className="flex justify-between gap-2 items-center ">
+            <select
+              value={audioSource}
+              onChange={(e) => setAudioSource(e.target.value as "local" | "peer" | "mixed")}
+              className={`p-2 rounded-lg text-sm ${theme === "light" ? "bg-gray-50/20 text-neutral-800" : "bg-slate-800/20 text-neutral-200"
+                }`}
+              disabled={!localStream && !peerStream}
+            >
+              <option value="local" disabled={!localStream}>Your audio</option>
+              <option value="peer" disabled={!peerStream}>Participant audio</option>
+              <option value="mixed" disabled={!localStream || !peerStream}>All audio</option>
+            </select>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleRecording();
+                toast.success(isRecording ? "Recording stopped" : "Recording started", {
+                  duration: 3000,
+                  style: {
+                    background: theme === "light" ? "#fff" : "#1e293b",
+                    color: theme === "light" ? "#1f2937" : "#f4f4f6",
+                    border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+                  },
+                });
+              }}
+              disabled={!localStream && !peerStream}
+              className={`p-2 rounded-full ${!localStream && !peerStream
+                ? "opacity-50 cursor-not-allowed"
+                : isRecording
+                  ? "bg-red-500 hover:bg-red-600 text-white animate-pulse"
+                  : theme === "light"
+                    ? "bg-gray-200 hover:bg-gray-300"
+                    : "bg-slate-700 hover:bg-slate-600"
+                }`}
+              title={isRecording ? "Stop recording" : "Record audio"}
+              aria-label={isRecording ? "Stop recording audio" : "Start recording audio"}
+            >
+              {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
+            </button>
+          </div>
         </div>
         <button
           onClick={(e) => {
@@ -886,7 +936,7 @@ function ExpandedAICallModal({
         </button>
       </div>
       <div className="flex-1 mb-4">
-        {response !== null && (
+        {(response !== null || suggestion !== null) && (
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Sparkles size={16} />
@@ -897,7 +947,7 @@ function ExpandedAICallModal({
                 AI Response
               </h3>
             </div>
-            {isResponseStreaming && !response?.length ? (
+            {isResponseStreaming && !response?.length && !suggestion?.length ? (
               <div className="flex justify-center items-center ">
                 <div
                   className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${theme === "light" ? "border-neutral-800" : "border-neutral-300"
@@ -914,7 +964,7 @@ function ExpandedAICallModal({
                 data-testid="response-text"
                 aria-live="polite"
               >
-                {response || "Generating response..."}
+                {response ? `Response: ${response}` : suggestion ? `Suggestion: ${suggestion}` : "Generating response..."}
               </p>
             )}
           </div>
@@ -953,66 +1003,24 @@ function ExpandedAICallModal({
       <textarea
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        placeholder="Enter your prompt for the AI..."
-        className={`w-full h-24 p-3 rounded-lg mb-4 resize-none ${theme === "light"
+        placeholder="Ask AI..."
+        className={`w-full h-14 p-3 rounded-lg mb-4 resize-none ${theme === "light"
           ? "bg-gray-50/20 text-neutral-800 border border-gray-200"
           : "bg-slate-800/20 text-neutral-200 border border-slate-600"
           } focus:outline-none`}
         onClick={(e) => e.stopPropagation()}
         aria-label="Enter prompt for AI"
       />
-      <div className="flex justify-between items-center mb-2 flex-shrink-0">
-        <select
-          value={audioSource}
-          onChange={(e) => setAudioSource(e.target.value as "local" | "peer" | "mixed")}
-          className={`p-2 rounded-lg text-sm ${theme === "light" ? "bg-gray-50/20 text-neutral-800" : "bg-slate-800/20 text-neutral-200"
+
+      <div className="flex justify-between gap-2 items-center flex-shrink-0">
+        <p
+          className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-400"
             }`}
-          disabled={!localStream && !peerStream}
         >
-          <option value="local" disabled={!localStream}>Your audio</option>
-          <option value="peer" disabled={!peerStream}>Participant audio</option>
-          <option value="mixed" disabled={!localStream || !peerStream}>All audio</option>
-        </select>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleRecording();
-            toast.success(isRecording ? "Recording stopped" : "Recording started", {
-              duration: 3000,
-              style: {
-                background: theme === "light" ? "#fff" : "#1e293b",
-                color: theme === "light" ? "#1f2937" : "#f4f4f6",
-                border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-              },
-            });
-          }}
-          disabled={!localStream && !peerStream}
-          className={`p-2 rounded-full ${!localStream && !peerStream
-            ? "opacity-50 cursor-not-allowed"
-            : isRecording
-              ? "bg-red-500 hover:bg-red-600 text-white animate-pulse"
-              : theme === "light"
-                ? "bg-gray-200 hover:bg-gray-300"
-                : "bg-slate-700 hover:bg-slate-600"
-            }`}
-          title={isRecording ? "Stop recording" : "Record audio"}
-          aria-label={isRecording ? "Stop recording audio" : "Start recording audio"}
-        >
-          {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
-        </button>
-      </div>
-      <div className="flex justify-end gap-2 mb-2 flex-shrink-0">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onMinimize();
-          }}
-          className={`px-4 py-2 rounded-lg font-medium ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-slate-700 hover:bg-slate-600"
-            }`}
-          aria-label="Minimize AI modal"
-        >
-          Minimize
-        </button>
+          {isRecording
+            ? `Recording ${audioSource === "local" ? "your audio" : audioSource === "peer" ? "participant audio" : "all audio"}...`
+            : "Select audio source and record"}
+        </p>
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -1030,66 +1038,8 @@ function ExpandedAICallModal({
           <Send size={12} />
         </button>
       </div>
-      <p
-        className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-400"
-          }`}
-      >
-        {isRecording
-          ? `Recording ${audioSource === "local" ? "your audio" : audioSource === "peer" ? "participant audio" : "all audio"}...`
-          : "Select audio source and record"}
-      </p>
     </motion.div>
   );
-}
-
-async function transcribeAudio(audioBlob: Blob, retries = 2): Promise<string> {
-  if (audioBlob.size === 0) {
-    console.error("[AICall] Empty audio blob, cannot transcribe");
-    toast.error("No audio recorded to transcribe", {
-      duration: 3000,
-    });
-    return "";
-  }
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      const formData = new FormData();
-      formData.append("file", audioBlob, `audio.${audioBlob.type.split("/")[1]}`);
-      const response = await fetch("https://api-inference.huggingface.co/models/openai/whisper-large-v3", {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer YOUR_HUGGING_FACE_API_KEY", // Replace with your actual API key
-        },
-        body: formData,
-      });
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`[AICall] Transcription API error (attempt ${attempt}): ${response.status} ${errorText}`);
-        if (attempt === retries) {
-          toast.error("Transcription service unavailable", {
-            duration: 3000,
-          });
-          return "";
-        }
-        continue;
-      }
-      const result = await response.json();
-      if (result.text) {
-        console.log("[AICall] Transcription successful:", result.text);
-        return result.text;
-      }
-      console.error("[AICall] Transcription API returned no text");
-      return "";
-    } catch (error) {
-      console.error(`[AICall] Transcription failed (attempt ${attempt}):`, error);
-      if (attempt === retries) {
-        toast.error("Failed to transcribe audio", {
-          duration: 3000,
-        });
-        return "";
-      }
-    }
-  }
-  return "";
 }
 
 function getSupportedMimeType(): string | null {
@@ -1124,23 +1074,36 @@ function validateStream(stream: MediaStream, source: string): boolean {
   return true;
 }
 
+function cloneStream(stream: MediaStream): MediaStream {
+  const audioTracks = stream.getAudioTracks().filter((track) => track.enabled && track.readyState === "live");
+  return new MediaStream(audioTracks);
+}
+
 export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, localStream }: AICallModalProps) {
   const { theme } = useTheme();
+  const { currentUser } = useUser()
   const [prompt, setPrompt] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [transcription, setTranscription] = useState<string | null>(null);
   const [response, setResponse] = useState<string | null>(null);
+  const [suggestion, setSuggestion] = useState<string | null>(null)
+
   const [isResponseStreaming, setIsResponseStreaming] = useState(false);
   const [position, setPosition] = useState({ x: window.innerWidth - 340, y: window.innerHeight - 100 });
   const [activeId, setActiveId] = useState<string | null>(null);
   const [audioSource, setAudioSource] = useState<"local" | "peer" | "mixed">("local");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const audioTimestampsRef = useRef<{ blob: Blob; timestamp: number }[]>([])
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const destinationRef = useRef<MediaStreamAudioDestinationNode | null>(null);
+  const dataReceivedRef = useRef<boolean>(false);
+  const abortControllerRef = useRef<AbortController | null>(null)
+
+  const router = useRouter()
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -1152,13 +1115,14 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
 
   const downloadAudio = () => {
     if (audioBlob) {
+      const extension = audioBlob.type.split("/")[1].split(";")[0]
       const url = URL.createObjectURL(audioBlob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `recording.${audioBlob.type.split("/")[1]}`;
+      a.download = `recording.${extension}`;
       a.click();
       URL.revokeObjectURL(url);
-      console.log("[AICall] Audio blob downloaded:", audioBlob);
+      console.log("[AICall] Audio blob downloaded:", { size: audioBlob.size, type: audioBlob.type });
       toast.success("Audio downloaded", {
         duration: 3000,
         style: {
@@ -1170,15 +1134,127 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
     }
   };
 
+  //Maintain a 30 sec rolling buffer
+  const maintainAudioBuffer = () => {
+    const now = Date.now();
+    const thirtySecondsAgo = now - 30 * 1000;
+    audioTimestampsRef.current = audioTimestampsRef.current.filter(({ timestamp }) => timestamp >= thirtySecondsAgo);
+    console.log(`[AICall] Audio buffer updated: ${audioTimestampsRef.current.length} chunks`);
+  };
+
+  //Generate suggestions from peer audio
+  const generateSuggestions = async () => {
+    if (!isRecording || !audioTimestampsRef.current.length || !currentUser?.id) {
+      console.error("[AICall] Cannot generate suggestions: recording off, no audio, or no user ID")
+      toast.error("Cannot generate suggestions: recording off or no audio", {
+        duration: 3000,
+        style: {
+          background: theme === "light" ? "#fff" : "#1e293b",
+          color: theme === "light" ? "#1f2937" : "#f4f4f6",
+          border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+        },
+      });
+      return
+    }
+
+    const canUse = await checkAIUsage(currentUser?.id)
+    if (!canUse) {
+      setIsRecording(false)
+      toast.error("Daily AI usage limit reached", {
+        duration: 3000,
+        style: {
+          background: theme === "light" ? "#fff" : "#1e293b",
+          color: theme === "light" ? "#1f2937" : "#f4f4f6",
+          border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+        },
+      });
+      return
+    }
+    try {
+      //Stop recording to collect chunks
+      if (mediaRecorderRef.current?.state === "recording") {
+        mediaRecorderRef.current.stop()
+        await new Promise((resolve) => {
+          mediaRecorderRef.current!.onstop = resolve
+        })
+      }
+
+      const blobs = audioTimestampsRef.current.map(({ blob }) => blob)
+      const blob = new Blob(blobs, { type: mediaRecorderRef.current?.mimeType })
+      if (blob.size === 0) {
+        console.error("[AICall] Empty audio blob for suggestion")
+        toast.error("No audio recorded for suggestions", {
+          duration: 3000,
+          style: {
+            background: theme === "light" ? "#fff" : "#1e293b",
+            color: theme === "light" ? "#1f2937" : "#f4f4f6",
+            border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+          },
+        });
+        return
+      }
+      console.log(`[AICall] Generating suggestion from audio: size=${blob.size}, type=${blob.type}`)
+      const transcriptionText = await transcribeAndGenerate("", "", "transcribe", blob, currentUser.id)
+      if (!transcriptionText) {
+        console.error("[AICall] No transcription for suggestion")
+        return
+      }
+      const suggestionText = await transcribeAndGenerate(transcriptionText, transcriptionText, "suggest", undefined, currentUser.id)
+      if (suggestionText) {
+        setSuggestion("");
+        await simulateStreamingBChunk(
+          suggestionText,
+          (chunk) => setSuggestion((prev) => (prev ? prev + chunk : chunk)),
+          5,
+          200,
+          abortControllerRef.current?.signal
+        )
+      }
+    } catch (error: any) {
+      console.error("[AICall] Failed to generate suggestion:", error);
+      if (error.message.includes("Daily AI usage limit reached")) {
+        setIsRecording(false);
+        toast.error("Daily AI usage limit reached", {
+          duration: 3000,
+          style: {
+            background: theme === "light" ? "#fff" : "#1e293b",
+            color: theme === "light" ? "#1f2937" : "#f4f4f6",
+            border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+          },
+        });
+      }
+    } finally {
+      if (!isRecording) {
+        await toggleRecording();
+      }
+    }
+  }
+
+
   useEffect(() => {
-    console.log(
-      `[AICall] Rendering: isOpen=${isOpen}, localStream=${!!localStream}, peerStream=${!!peerStream}, isRecording=${isRecording}, audioSource=${audioSource}`
-    );
+    console.log(`[AICall] Rendering: isOpen=${isOpen}, localStream=${!!localStream}, 
+    peerStream=${!!peerStream}, isRecording=${isRecording}, audioSource=${audioSource}userId=${currentUser?.id}`);
+
+    if (!currentUser?.id) {
+      toast.error("Oops seems like you're not authenticated", {
+        duration: 3000,
+        style: {
+          background: theme === "light" ? "#fff" : "#1e293b",
+          color: theme === "light" ? "#1f2937" : "#f4f4f6",
+          border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+        },
+      })
+      setIsRecording(false)
+      router.push("/my-space/auth/login")
+      return
+    }
+
     if (isRecording) {
-      let audioSourceStream: MediaStream | null = null;
-      if (audioSource === "local" && localStream) {
-        if (!validateStream(localStream, "local")) {
-          toast.error("No active audio in your microphone", {
+      const startRecording = async () => {
+        const canUse = await checkAIUsage(currentUser.id)
+        if (!canUse) {
+          setIsRecording(false)
+          toast.error("Daily AI usage limit reached", {
             duration: 3000,
             style: {
               background: theme === "light" ? "#fff" : "#1e293b",
@@ -1186,98 +1262,13 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
               border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
             },
           });
-          setIsRecording(false);
           return;
         }
-        audioSourceStream = localStream;
-      } else if (audioSource === "peer" && peerStream) {
-        if (!validateStream(peerStream, "peer")) {
-          toast.error("No active audio from participant", {
-            duration: 3000,
-            style: {
-              background: theme === "light" ? "#fff" : "#1e293b",
-              color: theme === "light" ? "#1f2937" : "#f4f4f6",
-              border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-            },
-          });
-          setIsRecording(false);
-          return;
-        }
-        audioSourceStream = peerStream;
-      } else if (audioSource === "mixed" && localStream && peerStream) {
-        audioContextRef.current = new AudioContext();
-        destinationRef.current = audioContextRef.current.createMediaStreamDestination();
-        if (localStream && validateStream(localStream, "local")) {
-          const localSource = audioContextRef.current.createMediaStreamSource(localStream);
-          localSource.connect(destinationRef.current);
-        }
-        if (peerStream && validateStream(peerStream, "peer")) {
-          const peerSource = audioContextRef.current.createMediaStreamSource(peerStream);
-          peerSource.connect(destinationRef.current);
-        }
-        audioSourceStream = destinationRef.current.stream;
-        if (!validateStream(audioSourceStream, "mixed")) {
-          toast.error("No active audio in mixed stream", {
-            duration: 3000,
-            style: {
-              background: theme === "light" ? "#fff" : "#1e293b",
-              color: theme === "light" ? "#1f2937" : "#f4f4f6",
-              border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-            },
-          });
-          setIsRecording(false);
-          return;
-        }
-      }
 
-      if (!audioSourceStream) {
-        console.error("[AICall] No audio stream available");
-        toast.error("No audio stream available for recording", {
-          duration: 3000,
-          style: {
-            background: theme === "light" ? "#fff" : "#1e293b",
-            color: theme === "light" ? "#1f2937" : "#f4f4f6",
-            border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-          },
-        });
-        setIsRecording(false);
-        return;
-      }
-
-      const mimeType = getSupportedMimeType();
-      if (!mimeType) {
-        console.error("[AICall] No supported MIME types for MediaRecorder");
-        toast.error("Your browser does not support audio recording", {
-          duration: 3000,
-          style: {
-            background: theme === "light" ? "#fff" : "#1e293b",
-            color: theme === "light" ? "#1f2937" : "#f4f4f6",
-            border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-          },
-        });
-        setIsRecording(false);
-        return;
-      }
-
-      try {
-        const mediaRecorder = new MediaRecorder(audioSourceStream, { mimeType });
-        audioChunksRef.current = [];
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunksRef.current.push(event.data);
-            console.log(`[AICall] Audio chunk received: size=${event.data.size}`);
-          }
-        };
-        mediaRecorder.onstop = async () => {
-          const blob = new Blob(audioChunksRef.current, { type: mimeType });
-          setAudioBlob(blob);
-          console.log(`[AICall] Audio recording stopped, blob created: size=${blob.size}, type=${blob.type}`);
-          if (blob.size > 0) {
-            const transcriptionText = await transcribeAudio(blob);
-            setTranscription(transcriptionText || null);
-          } else {
-            console.error("[AICall] Empty audio blob, skipping transcription");
-            toast.error("No audio recorded", {
+        let audioSourceStream: MediaStream | null = null;
+        if (audioSource === "peer" && peerStream) {
+          if (!validateStream(peerStream, "peer")) {
+            toast.error("Participant's audio is muted or unavailable", {
               duration: 3000,
               style: {
                 background: theme === "light" ? "#fff" : "#1e293b",
@@ -1285,28 +1276,169 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
                 border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
               },
             });
+            setIsRecording(false);
+            return;
           }
-        };
-        mediaRecorderRef.current = mediaRecorder;
-        mediaRecorder.start(1000);
-        console.log(`[AICall] Started recording audio with MIME type: ${mimeType}`);
-      } catch (err) {
-        console.error("[AICall] Failed to start audio recording:", err);
-        toast.error(
-          err instanceof DOMException && err.name === "NotSupportedError"
-            ? "Your browser does not support this audio format"
-            : "Failed to start recording",
-          {
+          audioSourceStream = cloneStream(peerStream);
+        } else if (audioSource === "mixed" && localStream && peerStream) {
+          audioContextRef.current = new AudioContext();
+          destinationRef.current = audioContextRef.current.createMediaStreamDestination();
+          let hasValidStream = false;
+          if (peerStream && validateStream(peerStream, "peer")) {
+            const peerSource = audioContextRef.current.createMediaStreamSource(peerStream);
+            peerSource.connect(destinationRef.current);
+            hasValidStream = true;
+          }
+          if (localStream && validateStream(localStream, "local")) {
+            const localSource = audioContextRef.current.createMediaStreamSource(localStream);
+            localSource.connect(destinationRef.current);
+            hasValidStream = true;
+          }
+          audioSourceStream = destinationRef.current.stream;
+          if (!hasValidStream || !validateStream(audioSourceStream, "mixed")) {
+            toast.error("No active audio in mixed stream", {
+              duration: 3000,
+              style: {
+                background: theme === "light" ? "#fff" : "#1e293b",
+                color: theme === "light" ? "#1f2937" : "#f4f4f6",
+                border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+              },
+            });
+            setIsRecording(false);
+            return;
+          }
+        } else if (audioSource === "local" && localStream) {
+          if (!validateStream(localStream, "local")) {
+            toast.error("Your microphone is muted or unavailable", {
+              duration: 3000,
+              style: {
+                background: theme === "light" ? "#fff" : "#1e293b",
+                color: theme === "light" ? "#1f2937" : "#f4f4f6",
+                border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+              },
+            });
+            setIsRecording(false);
+            return;
+          }
+          audioSourceStream = cloneStream(localStream);
+        }
+
+        if (!audioSourceStream) {
+          console.error("[AICall] No audio stream available");
+          toast.error("No audio stream available for recording", {
             duration: 3000,
             style: {
               background: theme === "light" ? "#fff" : "#1e293b",
               color: theme === "light" ? "#1f2937" : "#f4f4f6",
               border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
             },
+          });
+          setIsRecording(false);
+          return;
+        }
+
+        const mimeType = getSupportedMimeType();
+        if (!mimeType) {
+          console.error("[AICall] No supported MIME types for MediaRecorder");
+          toast.error("Your browser does not support audio recording", {
+            duration: 3000,
+            style: {
+              background: theme === "light" ? "#fff" : "#1e293b",
+              color: theme === "light" ? "#1f2937" : "#f4f4f6",
+              border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+            },
+          });
+          setIsRecording(false);
+          return;
+        }
+
+        try {
+          const mediaRecorder = new MediaRecorder(audioSourceStream, { mimeType });
+          audioChunksRef.current = [];
+          audioTimestampsRef.current = []
+          dataReceivedRef.current = false;
+
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              // audioChunksRef.current.push(event.data);
+              audioTimestampsRef.current.push({ blob: event.data, timestamp: Date.now() })
+              dataReceivedRef.current = true;
+              console.log(`[AICall] Audio chunk received: size=${event.data.size}, timestamp=${Date.now()}`);
+              maintainAudioBuffer()
+            }
+          };
+
+          mediaRecorder.onstop = async () => {
+            const blobs = audioTimestampsRef.current.map(({ blob }) => blob);
+            const blob = new Blob(blobs, { type: mimeType });
+            setAudioBlob(blob);
+            console.log(`[AICall] Audio recording stopped, blob created: size=${blob.size}, type=${blob.type}`);
+            if (blob.size > 0) {
+              const transcriptionText = await transcribeAudio(blob, currentUser.id);
+              setTranscription(transcriptionText || null);
+            } else {
+              console.error("[AICall] Empty audio blob, skipping transcription");
+              toast.error("No audio recorded", {
+                duration: 3000,
+                style: {
+                  background: theme === "light" ? "#fff" : "#1e293b",
+                  color: theme === "light" ? "#1f2937" : "#f4f4f6",
+                  border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+                },
+              });
+            }
+          };
+
+          mediaRecorderRef.current = mediaRecorder;
+          mediaRecorder.start(1000);
+          console.log(`[AICall] Started recording audio with MIME type: ${mimeType}`);
+
+          //periodically clean up buffer to keep last 30 secs
+          const bufferInterval = setInterval(maintainAudioBuffer, 100)
+          const suggestionInterval = setInterval(generateSuggestions, 10000)
+
+          // Timeout to check if data is being received
+          const timeout = setTimeout(() => {
+            if (!dataReceivedRef.current && mediaRecorder.state === "recording") {
+              console.error("[AICall] No audio data received after 3 seconds");
+              mediaRecorder.stop();
+              toast.error("No audio detected during recording", {
+                duration: 3000,
+                style: {
+                  background: theme === "light" ? "#fff" : "#1e293b",
+                  color: theme === "light" ? "#1f2937" : "#f4f4f6",
+                  border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+                },
+              });
+              setIsRecording(false);
+            }
+          }, 3000);
+
+          return () => {
+            clearInterval(bufferInterval)
+            clearInterval(suggestionInterval)
+            clearTimeout(timeout)
           }
-        );
-        setIsRecording(false);
+        } catch (err) {
+          console.error("[AICall] Failed to start audio recording:", err);
+          toast.error(
+            err instanceof DOMException && err.name === "NotSupportedError"
+              ? "Your browser does not support this audio format"
+              : "Failed to start recording",
+            {
+              duration: 3000,
+              style: {
+                background: theme === "light" ? "#fff" : "#1e293b",
+                color: theme === "light" ? "#1f2937" : "#f4f4f6",
+                border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+              },
+            }
+          );
+          setIsRecording(false);
+        }
       }
+
+      startRecording()
     } else if (!isRecording && mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
       if (sourceNodeRef.current) {
@@ -1329,10 +1461,191 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
     };
   }, [isRecording, localStream, peerStream, audioSource, theme]);
 
+  // const toggleRecording = async () => {
+  //   if (!localStream && !peerStream) {
+  //     console.error("[AICall] No stream available for recording");
+  //     toast.error("No audio stream available for recording", {
+  //       duration: 3000,
+  //       style: {
+  //         background: theme === "light" ? "#fff" : "#1e293b",
+  //         color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //         border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //       },
+  //     });
+  //     return;
+  //   }
+
+  //   if (!currentUser?.id) {
+  //     console.error("[AICall] No user ID available");
+  //     toast.error("User not authenticated", {
+  //       duration: 3000,
+  //       style: {
+  //         background: theme === "light" ? "#fff" : "#1e293b",
+  //         color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //         border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //       },
+  //     });
+  //     return;
+  //   }
+
+  //   const canUse = await checkAIUsage(currentUser.id);
+  //   if (!canUse) {
+  //     toast.error("Daily AI usage limit reached", {
+  //       duration: 3000,
+  //       style: {
+  //         background: theme === "light" ? "#fff" : "#1e293b",
+  //         color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //         border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //       },
+  //     });
+  //     return;
+  //   }
+
+  //   try {
+  //     if (audioSource === "local" || audioSource === "mixed") {
+  //       await navigator.mediaDevices.getUserMedia({ audio: true });
+  //     }
+  //     setIsRecording((prev) => !prev);
+  //     toast.success(isRecording ? "Recording stopped" : "Recording started", {
+  //       duration: 3000,
+  //       style: {
+  //         background: theme === "light" ? "#fff" : "#1e293b",
+  //         color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //         border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //       },
+  //     });
+  //   } catch (err) {
+  //     console.error("[AICall] Microphone permission denied:", err);
+  //     toast.error("Microphone access denied. Please allow in browser settings.", {
+  //       duration: 3000,
+  //       style: {
+  //         background: theme === "light" ? "#fff" : "#1e293b",
+  //         color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //         border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //       },
+  //     });
+  //   }
+  // };
+
   const toggleRecording = async () => {
-    if (!localStream && !peerStream) {
-      console.error("[AICall] No stream available for recording");
-      toast.error("No audio stream available for recording", {
+  if (!localStream && !peerStream) {
+    console.error("[AICall] No stream available for recording");
+    toast.error("No audio stream available for recording", {
+      duration: 3000,
+      style: {
+        background: theme === "light" ? "#fff" : "#1e293b",
+        color: theme === "light" ? "#1f2937" : "#f4f4f6",
+        border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+      },
+    });
+    return;
+  }
+
+  if (!isRecording) {
+    try {
+      let stream: MediaStream;
+      if (audioSource === "local" || audioSource === "mixed") {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } else if (audioSource === "peer" && peerStream) {
+        stream = peerStream;
+      } else {
+        stream = localStream!;
+      }
+
+      if (!stream) {
+        throw new Error("No valid audio stream");
+      }
+
+      // Check audio tracks
+      const audioTracks = stream.getAudioTracks();
+      console.log("[AICall] Audio tracks:", audioTracks);
+      if (audioTracks.length === 0) {
+        throw new Error("No audio tracks in stream");
+      }
+
+      // Check supported mimeType
+      const mimeTypes = ["audio/webm", "audio/mp4", "audio/ogg"];
+      let selectedMimeType = "audio/webm";
+      for (const mimeType of mimeTypes) {
+        if (MediaRecorder.isTypeSupported(mimeType)) {
+          selectedMimeType = mimeType;
+          break;
+        }
+      }
+      console.log("[AICall] Selected mimeType:", selectedMimeType);
+
+      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: selectedMimeType });
+      audioTimestampsRef.current = [];
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioTimestampsRef.current.push({ blob: event.data, timestamp: Date.now() });
+          console.log(`[AICall] Audio buffer updated: ${audioTimestampsRef.current.length} chunks`);
+        } else {
+          console.warn("[AICall] Empty audio chunk received");
+        }
+      };
+      mediaRecorderRef.current.onstart = () => {
+        console.log("[AICall] Recording started");
+      };
+      mediaRecorderRef.current.onstop = () => {
+        console.log("[AICall] Recording stopped");
+      };
+      mediaRecorderRef.current.onerror = (error) => {
+        console.error("[AICall] MediaRecorder error:", error);
+        toast.error(`Recording error: ${error}`, {
+          duration: 3000,
+          style: {
+            background: theme === "light" ? "#fff" : "#1e293b",
+            color: theme === "light" ? "#1f2937" : "#f4f4f6",
+            border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+          },
+        });
+      };
+      mediaRecorderRef.current.start(1000); // Collect chunks every 1s
+      setIsRecording(true);
+      toast.success("Recording started", {
+        duration: 3000,
+        style: {
+          background: theme === "light" ? "#fff" : "#1e293b",
+          color: theme === "light" ? "#1f2937" : "#f4f4f6",
+          border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+        },
+      });
+    } catch (error: any) {
+      console.error("[AICall] Failed to start recording:", error);
+      toast.error(`Failed to start recording: ${error.message}`, {
+        duration: 3000,
+        style: {
+          background: theme === "light" ? "#fff" : "#1e293b",
+          color: theme === "light" ? "#1f2937" : "#f4f4f6",
+          border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+        },
+      });
+    }
+  } else {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      mediaRecorderRef.current.stop();
+      await new Promise((resolve) => {
+        mediaRecorderRef.current!.onstop = resolve;
+      });
+      setIsRecording(false);
+      toast.success("Recording stopped", {
+        duration: 3000,
+        style: {
+          background: theme === "light" ? "#fff" : "#1e293b",
+          color: theme === "light" ? "#1f2937" : "#f4f4f6",
+          border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+        },
+      });
+    }
+  }
+};
+
+
+  const handleSubmit = async (prompt: string, audioBlob?: Blob | null, transcription?: string) => {
+    if (!currentUser?.id) {
+      console.error("[AICall] No user ID available");
+      toast.error("User not authenticated", {
         duration: 3000,
         style: {
           background: theme === "light" ? "#fff" : "#1e293b",
@@ -1342,31 +1655,7 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
       });
       return;
     }
-    try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-      setIsRecording((prev) => !prev);
-      toast.success(isRecording ? "Recording stopped" : "Recording started", {
-        duration: 3000,
-        style: {
-          background: theme === "light" ? "#fff" : "#1e293b",
-          color: theme === "light" ? "#1f2937" : "#f4f4f6",
-          border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-        },
-      });
-    } catch (err) {
-      console.error("[AICall] Microphone permission denied:", err);
-      toast.error("Microphone access denied. Please allow in browser settings.", {
-        duration: 3000,
-        style: {
-          background: theme === "light" ? "#fff" : "#1e293b",
-          color: theme === "light" ? "#1f2937" : "#f4f4f6",
-          border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-        },
-      });
-    }
-  };
 
-  const handleSubmit = async (prompt: string, audioBlob?: Blob | null, transcription?: string) => {
     if (!prompt.trim()) {
       toast.error("Prompt cannot be empty", {
         duration: 3000,
@@ -1387,24 +1676,59 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
     });
     setIsResponseStreaming(true);
     setIsExpanded(true);
-     try {
-      const res = await onSubmit(prompt, audioBlob ?? undefined, transcription);
-      toast.dismiss(toastId);
-      if (res) {
-        setResponse("");
-        // Simulate streaming (replace with real streaming if API supports it)
-        setTimeout(() => {
-          setResponse(res);
-          setIsResponseStreaming(false);
-          toast.success("Response generated successfully", {
+    try {
+      abortControllerRef.current = new AbortController()
+
+      //If recording is active, use the last 30 seconds of audio
+      let finalBlob = audioBlob
+      let finalTranscription = transcription
+      if (isRecording && mediaRecorderRef.current && audioTimestampsRef.current.length > 0) {
+        mediaRecorderRef.current.stop()
+        const blobs = audioTimestampsRef.current.map(({ blob }) => blob)
+        finalBlob = new Blob(blobs, { type: mediaRecorderRef.current.mimeType })
+        console.log(`[AiCall] Using buffered audio for prompt: size=${finalBlob.size}, type=${finalBlob.type}`)
+        if (finalBlob.size > 0) {
+          finalTranscription = await transcribeAudio(finalBlob, currentUser.id)
+          setAudioBlob(finalBlob)
+          setTranscription(finalTranscription || null)
+        } else {
+          console.error("[AICall] Buffered audio is empty")
+          toast.error("No audio recorded for transcription", {
             duration: 3000,
             style: {
               background: theme === "light" ? "#fff" : "#1e293b",
               color: theme === "light" ? "#1f2937" : "#f4f4f6",
               border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-            },
-          });
-        }, 1000);
+            }
+          })
+        }
+        //Restart recording to continue buffering
+        await toggleRecording()
+        await toggleRecording()
+      }
+
+      const res = await onSubmit(prompt, finalBlob ?? undefined, finalTranscription);
+      toast.dismiss(toastId);
+      if (res) {
+        setResponse("")
+        await simulateStreamingBChunk(
+          res,
+          (chunk) => {
+            setResponse((prev) => (prev ? prev + chunk : chunk))
+          },
+          5,
+          200,
+          abortControllerRef.current.signal
+        )
+        setIsResponseStreaming(false)
+        toast.success("Response generated successfully", {
+          duration: 3000,
+          style: {
+            background: theme === "light" ? "#fff" : "#1e293b",
+            color: theme === "light" ? "#1f2937" : "#f4f4f6",
+            border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`
+          }
+        })
       } else {
         setIsResponseStreaming(false);
         setResponse(null);
@@ -1513,6 +1837,7 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
             setAudioSource={setAudioSource}
             transcription={transcription}
             downloadAudio={downloadAudio}
+            suggestion={suggestion}
           />
         )}
       </AnimatePresence>
