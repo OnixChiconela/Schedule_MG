@@ -9,7 +9,7 @@ import { format, getYear } from 'date-fns';
 import Navbar from '../components/navbars/Navbar';
 import { useEffect, useState } from 'react';
 import EventSuggestions from '../components/events/EventSuggestions';
-import { useLocation } from '../context/LocationContext';
+// import { useLocation } from '../context/LocationContext';
 import { initialSuggestions } from '../fake/suggestions';
 import { emojiOptions } from '../components/emojiOptions';
 import Notes from '../components/Notes'; 
@@ -49,7 +49,7 @@ type Note = {
 export default function DashboardPage() {
     const { theme, toggleTheme } = useTheme();
     const router = useRouter();
-    const location = useLocation();
+    // const location = useLocation();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [corners] = useState<Corner[]>(() => {
         if (typeof window !== 'undefined') {
@@ -224,9 +224,9 @@ export default function DashboardPage() {
                                 </motion.div>
                             ))}
                         </div>
-                        {/* <AICallModal 
+                        <AICallModal 
                             isOpen={true}
-                        /> */}
+                        />
                     </section>
                     {/* <section className="mb-6">
                         <EventSuggestions userCategories={userInterests} location={location} />

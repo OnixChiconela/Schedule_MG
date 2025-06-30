@@ -76,26 +76,6 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
     })
-    // const partnershipUpdateSocket = io('/partnership/updates', {
-    //   path: '/socket.io',
-    //   transports: ['websocket'],
-    //   secure: true,
-    //   withCredentials: true,
-    //   query: { userId: currentUser.id, token },
-    //   // Define a URL base separadamente:
-    //   forceNew: true,
-    //   autoConnect: true,
-    //   reconnection: true,
-    //   timeout: 10000,
-    //   upgrade: false, // força WebSocket puro
-    //   reconnectionAttempts: 5,
-    //   reconnectionDelay: 1000,
-    //   reconnectionDelayMax: 5000,
-    //   // isto aqui é crucial:
-    //   // define o host do backend (caso diferente do frontend)
-    //   // mesmo que o path/namespace esteja separado
-    //   host: process.env.NEXT_PUBLIC_WS, // ou explicitamente 'wss://seubackend.com'
-    // });
 
     setVideoSocket(videoSocket);
     setNotifSocket(notificationSocket);
@@ -202,26 +182,6 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
           reconnectionDelay: 1000,
           reconnectionDelayMax: 5000,
         });
-        // const chatSocket = io('/partnership/chat', {
-        //   path: '/socket.io',
-        //   transports: ['websocket'],
-        //   secure: true,
-        //   withCredentials: true,
-        //   query: { userId: currentUser.id, token },
-        //   // Define a URL base separadamente:
-        //   forceNew: true,
-        //   autoConnect: true,
-        //   reconnection: true,
-        //   timeout: 10000,
-        //   upgrade: false, // força WebSocket puro
-        //   reconnectionAttempts: 5,
-        //   reconnectionDelay: 1000,
-        //   reconnectionDelayMax: 5000,
-        //   // isto aqui é crucial:
-        //   // define o host do backend (caso diferente do frontend)
-        //   // mesmo que o path/namespace esteja separado
-        //   host: process.env.NEXT_PUBLIC_WS, // ou explicitamente 'wss://seubackend.com'
-        // });
 
         setChatSocket(chatSocket);
 

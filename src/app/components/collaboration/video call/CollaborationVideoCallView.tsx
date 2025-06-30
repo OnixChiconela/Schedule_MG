@@ -678,18 +678,27 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
         useEffect(() => {
             if (videoRef.current && stream) {
                 videoRef.current.srcObject = stream;
-
+                // Only play if stream is active and element is in DOM
                 const play = async () => {
                     try {
-                        await videoRef.current?.play();
+                        if (document.body.contains(videoRef.current) && stream.active) {
+                            await videoRef.current!.play();
+                            console.log(`[Peer] Playing video for ${userId}`);
+                        }
                     } catch (err) {
-                        console.error(`[Peer] Failed to play video for ${userId}:`, err);
+                        console.warn(`[Peer] Video play error for ${userId}:`, err);
                     }
                 };
-
-                play();
+                // Delay play to ensure DOM stability
+                requestAnimationFrame(play);
             }
-        }, [stream]);
+            // Cleanup on unmount or stream change
+            return () => {
+                if (videoRef.current) {
+                    videoRef.current.srcObject = null;
+                }
+            };
+        }, [stream, userId]);
 
         return (
             <video
@@ -835,6 +844,7 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                     onSubmit={handleAICallSubmit}
                     peerStream={stablePeerStream}
                     localStream={localStream}
+                    callId={callId!}
                 />
             )}
         </div>

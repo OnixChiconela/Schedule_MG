@@ -51,13 +51,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ClientOnly>
             <ToasterProvider />
             <NotificationProvider>
-              <LocationProvider>
+              {/* <LocationProvider> */}
                 <ThemeProvider>
                   <SubfolderProvider>
                     {children}
                   </SubfolderProvider>
                 </ThemeProvider>
-              </LocationProvider>
+              {/* </LocationProvider> */}
             </NotificationProvider>
           </ClientOnly>
         </UserProvider>
