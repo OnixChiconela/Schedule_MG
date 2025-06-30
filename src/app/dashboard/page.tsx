@@ -224,9 +224,9 @@ export default function DashboardPage() {
                                 </motion.div>
                             ))}
                         </div>
-                        <AICallModal 
+                        {/* <AICallModal 
                             isOpen={true}
-                        />
+                        /> */}
                     </section>
                     {/* <section className="mb-6">
                         <EventSuggestions userCategories={userInterests} location={location} />
