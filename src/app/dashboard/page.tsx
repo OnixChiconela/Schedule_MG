@@ -226,6 +226,7 @@ export default function DashboardPage() {
                         </div>
                         {/* <AICallModal 
                             isOpen={true}
+                            
                         /> */}
                     </section>
                     {/* <section className="mb-6">

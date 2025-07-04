@@ -28,7 +28,7 @@ export const simulateStreamingBChunk = async (
   text: string,
   callback: (chunk: string) => void,
   chunkSize: number = 5,
-  delay: number = 5,
+  delay: number = 200,
   signal?: AbortSignal
 ): Promise<void> => {
   if (!text || typeof text !== "string") {
@@ -58,7 +58,7 @@ export const simulateStreamingBChunk = async (
     }
     console.log("[Streaming] Streaming completed")
   } catch (error: any) {
-    if (error.message === "Streaming Abordet") {
+    if (error.message === "Streaming abordet") {
       throw new error
     }
     console.error("[Streaming] Streaming error: ", error)

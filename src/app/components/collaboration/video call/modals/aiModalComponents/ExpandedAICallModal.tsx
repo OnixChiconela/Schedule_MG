@@ -102,20 +102,6 @@ function ExpandedAICallModal({
     };
   }, [isRecording]);
 
-
-  useEffect(() => {
-    return () => {
-      if (localStream) {
-        localStream.getTracks().forEach((track) => track.stop());
-        console.log('[AICall] Cleaned up localStream');
-      }
-      if (peerStream) {
-        peerStream.getTracks().forEach((track) => track.stop());
-        console.log('[AICall] Cleaned up peerStream');
-      }
-    };
-  }, [localStream, peerStream]);
-
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -124,17 +110,6 @@ function ExpandedAICallModal({
 
   const handleToggleSharing = async () => {
     try {
-      // Check media stream availability
-      // if (audioSource === 'local' && !localStream) {
-      //   throw new Error('Local stream unavailable');
-      // }
-      // if (audioSource === 'peer' && !peerStream) {
-      //   throw new Error('Peer stream unavailable');
-      // }
-      // if (audioSource === 'mixed' && (!localStream || !peerStream)) {
-      //   throw new Error('Mixed stream unavailable');
-      // }
-
       await toggleSharing();
       toast.success(isShared ? 'Stopped sharing AI content' : 'Started sharing AI content', {
         duration: 3000,
@@ -260,7 +235,7 @@ function ExpandedAICallModal({
       </div>
 
       {/* Content Area */}
-      <div className="mb-4 max-h-[120px] overflow-y-auto">
+      <div className="mb-4 max-h-[120px] ">
         {(response !== null || suggestion !== null || isResponseStreaming) && (
           <div className="mb-2">
             <div className="flex items-center gap-2 mb-2">
@@ -269,7 +244,7 @@ function ExpandedAICallModal({
                 className={`text-sm font-medium ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-300'
                   }`}
               >
-                AI Response {isShared && <span className="text-xs text-teal-500">(Shared)</span>}
+                Response {isShared && <span className="text-xs text-teal-500">(Telepathy)</span>}
               </h3>
             </div>
             {isResponseStreaming && !response?.length && !suggestion?.length ? (
@@ -312,33 +287,6 @@ function ExpandedAICallModal({
             </p>
           </div>
         )}
-        {/* {aiContentHistory.length > 0 && (
-          <div className="mb-2">
-            <h3
-              className={`text-sm font-medium ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-300'
-                }`}
-            > */}
-              {/* Shared AI Content History
-            </h3>
-            <ul
-              className={`w-full p-3 rounded-lg h-[80px] overflow-y-auto ${theme === 'light'
-                ? 'bg-gray-50/20 text-neutral-800 border border-gray-200/30'
-                : 'bg-slate-800/20 text-neutral-200 border border-slate-600/30'
-                }`}
-            >
-              {aiContentHistory
-                .filter((content) => content.isShared)
-                .map((content) => (
-                  <li key={content.id} className="mb-2">
-                    <strong>{content.userId === currentUser?.id ? 'You' : 'Participant'}:</strong>{' '}
-                    {content.prompt} <br />
-                    <em>Response:</em> {content.response || 'Pending...'} <br />
-                    <small>{new Date(content.createdAt).toLocaleTimeString()}</small>
-                  </li>
-                ))}
-            </ul>
-          </div>
-        )} */}
       </div>
 
       {/* Footer */}

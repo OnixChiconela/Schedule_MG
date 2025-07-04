@@ -30,7 +30,7 @@ interface AICallContent {
 interface AICallModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (prompt: string, audioBlob?: Blob, transcription?: string) => Promise<string | null>;
+  onSubmit: (prompt: string, audioBlob?: Blob | null, transcription?: string) => Promise<string | null>;
   peerStream?: MediaStream | null;
   localStream?: MediaStream | null;
   callId: string
@@ -52,31 +52,31 @@ interface MiniAICallModalProps {
   setAudioSource: (source: "local" | "peer" | "mixed") => void;
 }
 
-interface ExpandedAICallModalProps {
-  theme: string;
-  prompt: string;
-  setPrompt: (value: string) => void;
-  onSubmit: (prompt: string, audioBlob?: Blob | null, transcription?: string) => void;
-  onMinimize: () => void;
-  isRecording: boolean;
-  toggleRecording: () => void;
-  peerStream?: MediaStream | null;
-  localStream?: MediaStream | null;
-  audioBlob: Blob | null;
-  position: { x: number; y: number };
-  isDragging?: boolean;
-  response: string | null;
-  isResponseStreaming: boolean;
-  audioSource: "local" | "peer" | "mixed";
-  setAudioSource: (source: "local" | "peer" | "mixed") => void;
-  transcription: string | null;
-  downloadAudio: () => void;
-  suggestion: string | null
-  isShared: boolean
-  setIsShared: (value: boolean) => void
-  aiContentHistory: AICallContent[]
-  toggleSharing: () => void
-}
+// interface ExpandedAICallModalProps {
+//   theme: string;
+//   prompt: string;
+//   setPrompt: (value: string) => void;
+//   onSubmit: (prompt: string, audioBlob?: Blob | null, transcription?: string) => void;
+//   onMinimize: () => void;
+//   isRecording: boolean;
+//   toggleRecording: () => void;
+//   peerStream?: MediaStream | null;
+//   localStream?: MediaStream | null;
+//   audioBlob: Blob | null;
+//   position: { x: number; y: number };
+//   isDragging?: boolean;
+//   response: string | null;
+//   isResponseStreaming: boolean;
+//   audioSource: "local" | "peer" | "mixed";
+//   setAudioSource: (source: "local" | "peer" | "mixed") => void;
+//   transcription: string | null;
+//   downloadAudio: () => void;
+//   suggestion: string | null
+//   isShared: boolean
+//   setIsShared: (value: boolean) => void
+//   aiContentHistory: AICallContent[]
+//   toggleSharing: () => void
+// }
 
 function MiniAICallModal({
   theme,
@@ -225,7 +225,7 @@ function validateStream(stream: MediaStream, source: string): boolean {
     console.error(`[AICall] No audio tracks in ${source} stream`);
     return false;
   }
-  const hasActiveTrack = audioTracks.some((track) => track.enabled && track.readyState === "live" && !track.muted);
+  const hasActiveTrack = audioTracks.some((track) => track.enabled && track.readyState === 'live' && !track.muted);
   if (!hasActiveTrack) {
     console.error(`[AICall] No active audio tracks in ${source} stream`);
     return false;
@@ -234,7 +234,8 @@ function validateStream(stream: MediaStream, source: string): boolean {
 }
 
 function cloneStream(stream: MediaStream): MediaStream {
-  const audioTracks = stream.getAudioTracks().filter((track) => track.enabled && track.readyState === "live" && !track.muted);
+  const audioTracks = stream.getAudioTracks().filter((track) => track.enabled && track.readyState === 'live');
+  console.log(`[AICall] Cloning stream: tracks=${audioTracks.length}`);
   return new MediaStream(audioTracks);
 }
 
@@ -301,7 +302,7 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
       //   });
       // }
       if (content.isShared) {
-        setResponse(content.response || null) 
+        setResponse(content.response || null)
         setTranscription(content.transcription || null)
         toast.success('New shared AI content received', {
           duration: 3000,
@@ -411,89 +412,89 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
   };
 
   //Generate suggestions from peer audio
-  const generateSuggestions = async () => {
-    if (!isRecording || !audioTimestampsRef.current.length || !currentUser?.id) {
-      console.error("[AICall] Cannot generate suggestions: recording off, no audio, or no user ID");
-      toast.error("Cannot generate suggestions: recording off or no audio", {
-        duration: 3000,
-        style: {
-          background: theme === "light" ? "#fff" : "#1e293b",
-          color: theme === "light" ? "#1f2937" : "#f4f4f6",
-          border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-        },
-      });
-      return;
-    }
+  // const generateSuggestions = async () => {
+  //   if (!isRecording || !audioTimestampsRef.current.length || !currentUser?.id) {
+  //     console.error("[AICall] Cannot generate suggestions: recording off, no audio, or no user ID");
+  //     toast.error("Cannot generate suggestions: recording off or no audio", {
+  //       duration: 3000,
+  //       style: {
+  //         background: theme === "light" ? "#fff" : "#1e293b",
+  //         color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //         border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //       },
+  //     });
+  //     return;
+  //   }
 
-    toast.error("Audio suggestions require PRO plan. Enter a text prompt instead.", {
-      duration: 3000,
-      style: {
-        background: theme === "light" ? "#fff" : "#1e293b",
-        color: theme === "light" ? "#1f2937" : "#f4f4f6",
-        border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-      },
-    });
-    // const canUse = await checkAIUsage(currentUser.id);
-    // if (!canUse) {
-    //   setIsRecording(false);
-    //   toast.error("Daily AI usage limit reached", {
-    //     duration: 3000,
-    //     style: {
-    //       background: theme === "light" ? "#fff" : "#1e293b",
-    //       color: theme === "light" ? "#1f2937" : "#f4f4f6",
-    //       border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-    //     },
-    //   });
-    //   return;
-    // }
+  //   toast.error("Audio suggestions require PRO plan. Enter a text prompt instead.", {
+  //     duration: 3000,
+  //     style: {
+  //       background: theme === "light" ? "#fff" : "#1e293b",
+  //       color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //       border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //     },
+  //   });
+  // const canUse = await checkAIUsage(currentUser.id);
+  // if (!canUse) {
+  //   setIsRecording(false);
+  //   toast.error("Daily AI usage limit reached", {
+  //     duration: 3000,
+  //     style: {
+  //       background: theme === "light" ? "#fff" : "#1e293b",
+  //       color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //       border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //     },
+  //   });
+  //   return;
+  // }
 
-    // try {
-    //   const blobs = audioTimestampsRef.current.map(({ blob }) => blob);
-    //   const blob = new Blob(blobs, { type: mediaRecorderRef.current?.mimeType });
-    //   if (blob.size === 0) {
-    //     console.error("[AICall] Empty audio blob for suggestion");
-    //     toast.error("No audio recorded for suggestions", {
-    //       duration: 3000,
-    //       style: {
-    //         background: theme === "light" ? "#fff" : "#1e293b",
-    //         color: theme === "light" ? "#1f2937" : "#f4f4f6",
-    //         border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-    //       },
-    //     });
-    //     return;
-    //   }
-    //   console.log(`[AICall] Generating suggestion from audio: size=${blob.size}, type=${blob.type}`);
-    //   const transcriptionText = await transcribeAndGenerate("", "", "transcribe", blob, currentUser.id);
-    //   if (!transcriptionText) {
-    //     console.error("[AICall] No transcription for suggestion");
-    //     return;
-    //   }
-    //   // Filter generic transcriptions
-    //   const genericPrompts = ["bom dia", "good morning", "hello", "hi"];
-    //   if (genericPrompts.some((gp) => transcriptionText.toLowerCase().trim().startsWith(gp))) {
-    //     console.warn("[AICall] Generic transcription ignored:", transcriptionText);
-    //     return;
-    //   }
-    //   const suggestionText = await transcribeAndGenerate(transcriptionText, transcriptionText, "suggest", undefined, currentUser.id);
-    //   if (suggestionText) {
-    //     setSuggestion("");
-    //     await simulateStreamingBChunk(suggestionText, (chunk) => setSuggestion((prev) => (prev ? prev + chunk : chunk)), 5, 200, abortControllerRef.current?.signal);
-    //   }
-    // } catch (error: any) {
-    //   console.error("[AICall] Failed to generate suggestion:", error);
-    //   if (error.message.includes("Daily AI usage limit reached")) {
-    //     setIsRecording(false);
-    //     toast.error("Daily AI usage limit reached", {
-    //       duration: 3000,
-    //       style: {
-    //         background: theme === "light" ? "#fff" : "#1e293b",
-    //         color: theme === "light" ? "#1f2937" : "#f4f4f6",
-    //         border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-    //       },
-    //     });
-    //   }
-    // }
-  };
+  // try {
+  //   const blobs = audioTimestampsRef.current.map(({ blob }) => blob);
+  //   const blob = new Blob(blobs, { type: mediaRecorderRef.current?.mimeType });
+  //   if (blob.size === 0) {
+  //     console.error("[AICall] Empty audio blob for suggestion");
+  //     toast.error("No audio recorded for suggestions", {
+  //       duration: 3000,
+  //       style: {
+  //         background: theme === "light" ? "#fff" : "#1e293b",
+  //         color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //         border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //       },
+  //     });
+  //     return;
+  //   }
+  //   console.log(`[AICall] Generating suggestion from audio: size=${blob.size}, type=${blob.type}`);
+  //   const transcriptionText = await transcribeAndGenerate("", "", "transcribe", blob, currentUser.id);
+  //   if (!transcriptionText) {
+  //     console.error("[AICall] No transcription for suggestion");
+  //     return;
+  //   }
+  //   // Filter generic transcriptions
+  //   const genericPrompts = ["bom dia", "good morning", "hello", "hi"];
+  //   if (genericPrompts.some((gp) => transcriptionText.toLowerCase().trim().startsWith(gp))) {
+  //     console.warn("[AICall] Generic transcription ignored:", transcriptionText);
+  //     return;
+  //   }
+  //   const suggestionText = await transcribeAndGenerate(transcriptionText, transcriptionText, "suggest", undefined, currentUser.id);
+  //   if (suggestionText) {
+  //     setSuggestion("");
+  //     await simulateStreamingBChunk(suggestionText, (chunk) => setSuggestion((prev) => (prev ? prev + chunk : chunk)), 5, 200, abortControllerRef.current?.signal);
+  //   }
+  // } catch (error: any) {
+  //   console.error("[AICall] Failed to generate suggestion:", error);
+  //   if (error.message.includes("Daily AI usage limit reached")) {
+  //     setIsRecording(false);
+  //     toast.error("Daily AI usage limit reached", {
+  //       duration: 3000,
+  //       style: {
+  //         background: theme === "light" ? "#fff" : "#1e293b",
+  //         color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //         border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //       },
+  //     });
+  //   }
+  // }
+  // };
 
 
   // useEffect(() => {
@@ -887,10 +888,14 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
           }
         };
 
+        // mediaRecorderRef.current.onstart = () => {
+        //   console.log(`[AICall] Recording started with MIME type: ${mimeType}`);
+        //   bufferIntervalRef.current = setInterval(maintainAudioBuffer, 1000);
+        //   suggestionIntervalRef.current = setInterval(generateSuggestions, 10000);
+        // };
         mediaRecorderRef.current.onstart = () => {
           console.log(`[AICall] Recording started with MIME type: ${mimeType}`);
-          bufferIntervalRef.current = setInterval(maintainAudioBuffer, 1000);
-          suggestionIntervalRef.current = setInterval(generateSuggestions, 10000);
+          setTimeout(() => maintainAudioBuffer(), 1000);
         };
 
         mediaRecorderRef.current.onstop = async () => {
@@ -1008,168 +1013,284 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
     }
   };
 
+  // const handleSubmit = async (prompt: string, audioBlob?: Blob | null, transcription?: string) => {
+  //   if (!currentUser?.id) {
+  //     console.error("[AICall] No user ID available");
+  //     toast.error("User not authenticated", {
+  //       duration: 3000,
+  //       style: {
+  //         background: theme === "light" ? "#fff" : "#1e293b",
+  //         color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //         border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //       },
+  //     });
+  //     router.push("/my-space/auth/login");
+  //     return;
+  //   }
+
+  //   const payload = {
+  //     callId,
+  //     userId: currentUser.id,
+  //     prompt,
+  //     transcription,
+  //     isShared,
+  //     createdAt: new Date().toISOString()
+  //   }
+
+  //   if (!prompt.trim()) {
+  //     toast.error("Prompt cannot be empty", {
+  //       duration: 3000,
+  //       style: {
+  //         background: theme === "light" ? "#fff" : "#1e293b",
+  //         color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //         border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //       },
+  //     });
+  //     return;
+  //   }
+
+  //   const canUse = await checkAIUsage(currentUser.id);
+  //   if (!canUse) {
+  //     toast.error("Daily AI usage limit reached", {
+  //       duration: 3000,
+  //       style: {
+  //         background: theme === "light" ? "#fff" : "#1e293b",
+  //         color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //         border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //       },
+  //     });
+  //     return;
+  //   }
+
+  //   const toastId = toast.loading("Generating response...", {
+  //     style: {
+  //       background: theme === "light" ? "#fff" : "#1e293b",
+  //       color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //       border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //     },
+  //   });
+  //   setIsResponseStreaming(true);
+  //   setIsExpanded(true);
+  //   try {
+  //     abortControllerRef.current = new AbortController();
+  //     let finalBlob = audioBlob;
+  //     let finalTranscription = transcription;
+
+  //     if (isRecording && mediaRecorderRef.current && audioTimestampsRef.current.length > 0) {
+  //       mediaRecorderRef.current.stop();
+  //       await new Promise((resolve) => {
+  //         mediaRecorderRef.current!.onstop = resolve;
+  //       });
+  //       const blobs = audioTimestampsRef.current.map(({ blob }) => blob);
+  //       finalBlob = new Blob(blobs, { type: mediaRecorderRef.current?.mimeType });
+  //       console.log(`[AICall] Using buffered audio for prompt: size=${finalBlob.size}, type=${finalBlob.type}`);
+  //       if (finalBlob.size > 0) {
+  //         // finalTranscription = await transcribeAudio(finalBlob, currentUser.id);
+  //         setAudioBlob(finalBlob);
+  //         // setTranscription(finalTranscription || null);
+  //       } else {
+  //         console.error("[AICall] Buffered audio is empty");
+  //         toast.error("No audio recorded for transcription", {
+  //           duration: 3000,
+  //           style: {
+  //             background: theme === "light" ? "#fff" : "#1e293b",
+  //             color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //             border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //           },
+  //         });
+  //       }
+  //     }
+
+  //     const res = await onSubmit(prompt, finalBlob ?? undefined, finalTranscription);
+  //     toast.dismiss(toastId);
+  //     if (res) {
+  //       setResponse("");
+  //       await simulateStreamingBChunk(res, (chunk) => setResponse((prev) => (prev ? prev + chunk : chunk)),
+  //         5,
+  //         200,
+  //         abortControllerRef.current.signal
+  //       );
+  //       console.log(`[AICallModal] AI response received: ${res}`)
+
+  //       if (isShared && videoSocket && callId) {
+  //         console.log(`[AICall Emitn submit-ai-content callId=${callId}]`)
+  //         videoSocket.emit(
+  //           'submit-ai-content',
+  //           { payload },
+  //           (response: { success: boolean; contentId: string; error?: string }) => {
+  //             if (response.error) {
+  //               console.error(`[AICall] submit-ai-content failed:`, response.error);
+  //               toast.error(`Failed to share AI content: ${response.error}`, {
+  //                 duration: 3000,
+  //                 style: {
+  //                   background: theme === 'light' ? '#fff' : '#1e293b',
+  //                   color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+  //                   border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+  //                 },
+  //               });
+  //             } else {
+  //               console.log(`[AICall] AI content shared: contentId=${response.contentId}`);
+  //               toast.success('AI content shared', {
+  //                 duration: 3000,
+  //                 style: {
+  //                   background: theme === 'light' ? '#fff' : '#1e293b',
+  //                   color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+  //                   border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+  //                 },
+  //               });
+  //             }
+  //           }
+  //         )
+  //       }
+
+  //       toast.success("Response generated successfully", {
+  //         duration: 3000,
+  //         style: {
+  //           background: theme === "light" ? "#fff" : "#1e293b",
+  //           color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //           border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //         },
+  //       });
+  //     } else {
+  //       toast.error("No response received from AI", {
+  //         duration: 3000,
+  //         style: {
+  //           background: theme === "light" ? "#fff" : "#1e293b",
+  //           color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //           border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //         },
+  //       });
+  //     }
+  //   } catch (error: any) {
+  //     console.error("[AICall] Failed to get AI response:", error);
+  //     toast.dismiss(toastId);
+  //     toast.error(`Failed to generate response: ${error.message}`, {
+  //       duration: 3000,
+  //       style: {
+  //         background: theme === "light" ? "#fff" : "#1e293b",
+  //         color: theme === "light" ? "#1f2937" : "#f4f4f6",
+  //         border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+  //       },
+  //     });
+  //   } finally {
+  //     setIsResponseStreaming(false);
+  //     // Do not reset audioBlob or transcription here to preserve download button
+  //   }
+  // };
+
   const handleSubmit = async (prompt: string, audioBlob?: Blob | null, transcription?: string) => {
-    if (!currentUser?.id) {
-      console.error("[AICall] No user ID available");
-      toast.error("User not authenticated", {
+    if (!currentUser?.id || !callId) {
+      console.error(`[AICall] Cannot submit: userId=${currentUser?.id}, callId=${callId}`);
+      toast.error('Cannot submit: invalid user or call', {
         duration: 3000,
         style: {
-          background: theme === "light" ? "#fff" : "#1e293b",
-          color: theme === "light" ? "#1f2937" : "#f4f4f6",
-          border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-        },
-      });
-      router.push("/my-space/auth/login");
-      return;
-    }
-    
-    const payload = {
-      callId,
-      userId: currentUser.id,
-      prompt,
-      transcription,
-      isShared,
-      createdAt: new Date().toISOString()
-    }
-
-    if (!prompt.trim()) {
-      toast.error("Prompt cannot be empty", {
-        duration: 3000,
-        style: {
-          background: theme === "light" ? "#fff" : "#1e293b",
-          color: theme === "light" ? "#1f2937" : "#f4f4f6",
-          border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+          background: theme === 'light' ? '#fff' : '#1e293b',
+          color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+          border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
         },
       });
       return;
     }
 
-    const canUse = await checkAIUsage(currentUser.id);
-    if (!canUse) {
-      toast.error("Daily AI usage limit reached", {
-        duration: 3000,
-        style: {
-          background: theme === "light" ? "#fff" : "#1e293b",
-          color: theme === "light" ? "#1f2937" : "#f4f4f6",
-          border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-        },
-      });
-      return;
-    }
-
-    const toastId = toast.loading("Generating response...", {
+    const toastId = toast.loading('Generating AI response...', {
       style: {
-        background: theme === "light" ? "#fff" : "#1e293b",
-        color: theme === "light" ? "#1f2937" : "#f4f4f6",
-        border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+        background: theme === 'light' ? '#fff' : '#1e293b',
+        color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+        border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
       },
     });
-    setIsResponseStreaming(true);
-    setIsExpanded(true);
-    try {
-      abortControllerRef.current = new AbortController();
-      let finalBlob = audioBlob;
-      let finalTranscription = transcription;
 
-      if (isRecording && mediaRecorderRef.current && audioTimestampsRef.current.length > 0) {
-        mediaRecorderRef.current.stop();
-        await new Promise((resolve) => {
-          mediaRecorderRef.current!.onstop = resolve;
+    try {
+      const result = await onSubmit(prompt, audioBlob, transcription);
+      toast.dismiss(toastId);
+
+      if (!result) {
+        toast.error('No response received from AI', {
+          duration: 3000,
+          style: {
+            background: theme === 'light' ? '#fff' : '#1e293b',
+            color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+            border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+          },
         });
-        const blobs = audioTimestampsRef.current.map(({ blob }) => blob);
-        finalBlob = new Blob(blobs, { type: mediaRecorderRef.current?.mimeType });
-        console.log(`[AICall] Using buffered audio for prompt: size=${finalBlob.size}, type=${finalBlob.type}`);
-        if (finalBlob.size > 0) {
-          // finalTranscription = await transcribeAudio(finalBlob, currentUser.id);
-          setAudioBlob(finalBlob);
-          // setTranscription(finalTranscription || null);
-        } else {
-          console.error("[AICall] Buffered audio is empty");
-          toast.error("No audio recorded for transcription", {
-            duration: 3000,
-            style: {
-              background: theme === "light" ? "#fff" : "#1e293b",
-              color: theme === "light" ? "#1f2937" : "#f4f4f6",
-              border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-            },
-          });
-        }
+        return;
       }
 
-      const res = await onSubmit(prompt, finalBlob ?? undefined, finalTranscription);
-      toast.dismiss(toastId);
-      if (res) {
-        setResponse("");
-        await simulateStreamingBChunk(res, (chunk) => setResponse((prev) => (prev ? prev + chunk : chunk)),
+      const payload = {
+        callId,
+        userId: currentUser.id,
+        prompt: typeof result === 'string' ? prompt : (result as { prompt: string; transcription?: string }).prompt,
+        transcription: typeof result === 'string' ? transcription : (result as { prompt: string; transcription?: string }).transcription,
+        response: typeof result === 'string' ? result : undefined,
+        isShared,
+        createdAt: new Date().toISOString(),
+      };
+
+      if (audioBlob && typeof result === "string") {
+        // Audio submission: stream response
+        setResponse('');
+        setIsResponseStreaming(true);
+        await simulateStreamingBChunk(
+          result as string,
+          (chunk) => setResponse((prev) => (prev ? prev + ' ' + chunk : chunk)),
           5,
           200,
-          abortControllerRef.current.signal
+          abortControllerRef.current!.signal
         );
-        console.log(`[AICallModal] AI response received: ${res}`)
-
-        if (isShared && videoSocket && callId) {
-          console.log(`[AICall Emitn submit-ai-content callId=${callId}]`)
-          videoSocket.emit(
-            'submit-ai-content',
-            { payload },
-            (response: { success: boolean; contentId: string; error?: string }) => {
-              if (response.error) {
-                console.error(`[AICall] submit-ai-content failed:`, response.error);
-                toast.error(`Failed to share AI content: ${response.error}`, {
-                  duration: 3000,
-                  style: {
-                    background: theme === 'light' ? '#fff' : '#1e293b',
-                    color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-                    border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
-                  },
-                });
-              } else {
-                console.log(`[AICall] AI content shared: contentId=${response.contentId}`);
-                toast.success('AI content shared', {
-                  duration: 3000,
-                  style: {
-                    background: theme === 'light' ? '#fff' : '#1e293b',
-                    color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-                    border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
-                  },
-                });
-              }
-            }
-          )
-        }
-
-        toast.success("Response generated successfully", {
-          duration: 3000,
-          style: {
-            background: theme === "light" ? "#fff" : "#1e293b",
-            color: theme === "light" ? "#1f2937" : "#f4f4f6",
-            border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-          },
-        });
+        setIsResponseStreaming(false);
+        console.log(`[AICallModal] AI response received: ${result}`);
       } else {
-        toast.error("No response received from AI", {
-          duration: 3000,
-          style: {
-            background: theme === "light" ? "#fff" : "#1e293b",
-            color: theme === "light" ? "#1f2937" : "#f4f4f6",
-            border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
-          },
+        // Text-only submission: set static response
+        setResponse('Pending response...');
+        setTranscription(transcription || null);
+      }
+
+      if (videoSocket) {
+        console.log(`[AICall] Emitting submit-ai-content: callId=${callId}, payload=`, payload);
+        videoSocket.emit('submit-ai-content', payload, (response: { success: boolean; contentId?: string; error?: string }) => {
+          if (response.error) {
+            console.error(`[AICall] submit-ai-content failed:`, response.error);
+            toast.error(`Failed to share AI content: ${response.error}`, {
+              duration: 3000,
+              style: {
+                background: theme === 'light' ? '#fff' : '#1e293b',
+                color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+                border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+              },
+            });
+          } else {
+            console.log(`[AICall] AI content shared: contentId=${response.contentId}`);
+            toast.success('AI content shared', {
+              duration: 3000,
+              style: {
+                background: theme === 'light' ? '#fff' : '#1e293b',
+                color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+                border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+              },
+            });
+          }
         });
       }
+
+      toast.success('Response generated successfully', {
+        duration: 3000,
+        style: {
+          background: theme === 'light' ? '#fff' : '#1e293b',
+          color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+          border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+        },
+      });
     } catch (error: any) {
-      console.error("[AICall] Failed to get AI response:", error);
+      console.error('[AICall] Failed to process prompt:', error);
       toast.dismiss(toastId);
       toast.error(`Failed to generate response: ${error.message}`, {
         duration: 3000,
         style: {
-          background: theme === "light" ? "#fff" : "#1e293b",
-          color: theme === "light" ? "#1f2937" : "#f4f4f6",
-          border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+          background: theme === 'light' ? '#fff' : '#1e293b',
+          color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+          border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
         },
       });
-    } finally {
-      setIsResponseStreaming(false);
-      // Do not reset audioBlob or transcription here to preserve download button
     }
   };
 
@@ -1192,6 +1313,36 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
   };
 
   useEffect(() => {
+    if (!isOpen) {
+      console.log(`[AICallModal] Resetting state: isOpen=${isOpen}`);
+      setPrompt('');
+      setResponse(null);
+      setTranscription(null);
+      setIsExpanded(false);
+      setIsRecording(false);
+      setAudioBlob(null);
+      setSuggestion(null);
+      setAIContentHistory([]);
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current = null;
+      }
+      if (sourceNodeRef.current) {
+        sourceNodeRef.current.disconnect();
+        sourceNodeRef.current = null;
+      }
+      if (destinationRef.current) {
+        destinationRef.current.disconnect();
+        destinationRef.current = null;
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     const handleResize = () => {
       setPosition((prev) => {
         const modalElement = document.getElementById(isExpanded ? "expanded-ai-call-modal" : "mini-ai-call-modal");
@@ -1207,13 +1358,18 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+
   }, [isExpanded]);
+
+  useEffect(() => {
+    console.log(`[AICallModal] isExpanded changed: isExpanded=${isExpanded}, callId=${callId}, localStream=${!!localStream}, peerStream=${!!peerStream}`);
+  }, [isExpanded, callId, localStream, peerStream]);
 
   if (!isOpen) return null;
 
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {!isExpanded ? (
           <MiniAICallModal
             theme={theme}

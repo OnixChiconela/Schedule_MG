@@ -4,12 +4,20 @@ export type User = {
     email: string
     firstName: string
     lastName: string
-    role: "OWNER" | "ADMIN" | "COLABORATOR" | "GUEST";
+    role: "OWNER" | "ADMIN" | "COLLABORATOR" | "GUEST";
     createdAt: string
     updatedAt: string
 
-    visualType: "emoji" | "initial" | undefined
-    visualValue: string
+    visualType?: "emoji" | "initial"
+    visualValue?: string
+    planType: "FREE" | "PRO"
+    subscriptions?: Array<{
+        id: string
+        planId: string
+        status: "ACTIVE" | "PENDING" | "CANCELLED"
+        startDate: string
+        endDate?: string | null
+    }>
 }
 
 export type PartnershipMembers = {
@@ -21,4 +29,27 @@ export type PartnershipMembers = {
     acceptedAt: string
     role: string
     user: User
+}
+
+export type Plan = {
+    id: string
+    paypalPlanId?: string
+    name: string
+    description?: string
+    price: number,
+    currency: string
+    responseLimit?: string
+    charLimit?: string
+    partnershipLimit?: number
+    collaboratorLimit?: string
+    contextWindow?: string
+    features?: {
+        hearsAudio?: boolean
+        summarizeChats?: 'limited' | 'unlimited'
+        telepathy?: boolean
+        [key: string]: any
+    }
+
+    createdAt: Date
+    updatedAt: Date
 }

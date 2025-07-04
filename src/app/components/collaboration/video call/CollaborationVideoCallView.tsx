@@ -565,80 +565,164 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
         return <div className="h-full flex items-center justify-center text-gray-400">Please log in</div>;
     }
 
-    const handleAICallSubmit = async (
-        prompt: string,
-        audioBlob?: Blob,
-        transcription?: string
-    ) => {
+    // const handleAICallSubmit = async (
+    //     prompt: string,
+    //     audioBlob?: Blob,
+    //     transcription?: string
+    // ) => {
 
+    //     if (!currentUser?.id) {
+    //         toast.error("User not authenticated", {
+    //             duration: 3000,
+    //             style: {
+    //                 background: theme === "light" ? "#fff" : "#1e293b",
+    //                 color: theme === "light" ? "#1f2937" : "#f4f4f6",
+    //                 border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+    //             },
+    //         });
+    //         return null;
+    //     }
+
+    //     if (!prompt.trim()) {
+    //         toast.error("Prompt cannot be empty", {
+    //             duration: 3000,
+    //             style: {
+    //                 background: theme === "light" ? "#fff" : "#1e293b",
+    //                 color: theme === "light" ? "#1f2937" : "#f4f4f6",
+    //                 border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+    //             },
+    //         });
+    //         return null;
+    //     }
+
+    //     const canUse = await checkAIUsage(currentUser.id)
+    //     if (!canUse) {
+    //         console.error("[AICall] Daily AI usage limit reached");
+    //         toast.error("Daily AI usage limit reached", {
+    //             duration: 3000,
+    //             style: {
+    //                 background: theme === "light" ? "#fff" : "#1e293b",
+    //                 color: theme === "light" ? "#1f2937" : "#f4f4f6",
+    //                 border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+    //             },
+    //         });
+    //         return null;
+    //     }
+    //     toast.success("Here")
+    //     console.log(`[AiCall] Prompt: ${prompt}, Audio Blob:`, audioBlob, `Transcription: ${transcription}`)
+    //     try {
+    //         const fullPrompt = transcription ? `${prompt} (Context): ${transcription}` : prompt;
+
+    //         let res;
+    //         if (audioBlob) {
+    //             // Chamada com audio: usa multipart/form-data
+    //             res = await processAudioWithAI("generate", audioBlob, currentUser.id, {
+    //                 prompt: fullPrompt,
+    //                 transcription,
+    //             });
+    //         } else {
+    //             // Chamada sem audio: usa JSON
+    //             res = await callAITextOnly("generate", {
+    //                 prompt: fullPrompt,
+    //                 userId: currentUser.id,
+    //             });
+    //         }
+
+    //         if (!res?.text) {
+    //             throw new Error("No response received");
+    //         }
+
+    //         return res.text;
+    //     } catch (error: any) {
+    //         console.error("[AICall] Failed to process prompt:", error);
+    //         toast.error("Failed to get AI response", { /* ... estilo omitido */ });
+    //         return null;
+    //     }
+    // }
+
+    const handleAICallSubmit = async (prompt: string, audioBlob?: Blob | null, transcription?: string) => {
         if (!currentUser?.id) {
-            toast.error("User not authenticated", {
+            toast.error('User not authenticated', {
                 duration: 3000,
                 style: {
-                    background: theme === "light" ? "#fff" : "#1e293b",
-                    color: theme === "light" ? "#1f2937" : "#f4f4f6",
-                    border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+                    background: theme === 'light' ? '#fff' : '#1e293b',
+                    color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+                    border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
                 },
             });
             return null;
         }
 
         if (!prompt.trim()) {
-            toast.error("Prompt cannot be empty", {
+            toast.error('Prompt cannot be empty', {
                 duration: 3000,
                 style: {
-                    background: theme === "light" ? "#fff" : "#1e293b",
-                    color: theme === "light" ? "#1f2937" : "#f4f4f6",
-                    border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+                    background: theme === 'light' ? '#fff' : '#1e293b',
+                    color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+                    border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
                 },
             });
             return null;
         }
 
-        const canUse = await checkAIUsage(currentUser.id)
+        const canUse = await checkAIUsage(currentUser.id);
         if (!canUse) {
-            console.error("[AICall] Daily AI usage limit reached");
-            toast.error("Daily AI usage limit reached", {
+            console.error('[AICall] Daily AI usage limit reached');
+            toast.error('Daily AI usage limit reached', {
                 duration: 3000,
                 style: {
-                    background: theme === "light" ? "#fff" : "#1e293b",
-                    color: theme === "light" ? "#1f2937" : "#f4f4f6",
-                    border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+                    background: theme === 'light' ? '#fff' : '#1e293b',
+                    color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+                    border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
                 },
             });
             return null;
         }
-        toast.success("Here")
-        console.log(`[AiCall] Prompt: ${prompt}, Audio Blob:`, audioBlob, `Transcription: ${transcription}`)
-        try {
-            const fullPrompt = transcription ? `${prompt} (Context): ${transcription}` : prompt;
 
-            let res;
+        console.log(`[AICall] Prompt: ${prompt}, Audio Blob:`, audioBlob, `Transcription: ${transcription}`);
+
+        try {
             if (audioBlob) {
-                // Chamada com audio: usa multipart/form-data
-                res = await processAudioWithAI("generate", audioBlob, currentUser.id, {
+                // Handle audio submission via HTTP
+                const fullPrompt = transcription ? `${prompt} (Context): ${transcription}` : prompt;
+                const res = await processAudioWithAI('generate', audioBlob, currentUser.id, {
                     prompt: fullPrompt,
                     transcription,
                 });
-            } else {
-                // Chamada sem audio: usa JSON
-                res = await callAITextOnly("generate", {
-                    prompt: fullPrompt,
-                    userId: currentUser.id,
-                });
+
+                if (!res?.text) {
+                    throw new Error('No response received');
+                }
+
+                // Forward AI response to gateway for storage and broadcasting
+                // await api.post('/video-call/forward-ai-response', {
+                //     callId,
+                //     userId: currentUser.id,
+                //     prompt,
+                //     response: res.text,
+                //     transcription,
+                //     isShared: isShared, // Assume isShared is in scope (from state)
+                //     createdAt: new Date().toISOString(),
+                // });
+
+                return res.text;
             }
 
-            if (!res?.text) {
-                throw new Error("No response received");
-            }
-
-            return res.text;
+            // For text-only, return to AICallModal to emit submit-ai-content
+            return { prompt, transcription };
         } catch (error: any) {
-            console.error("[AICall] Failed to process prompt:", error);
-            toast.error("Failed to get AI response", { /* ... estilo omitido */ });
+            console.error('[AICall] Failed to process prompt:', error);
+            toast.error('Failed to get AI response', {
+                duration: 3000,
+                style: {
+                    background: theme === 'light' ? '#fff' : '#1e293b',
+                    color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+                    border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+                },
+            });
             return null;
         }
-    }
+    };
 
     if (mediaError) {
         return (

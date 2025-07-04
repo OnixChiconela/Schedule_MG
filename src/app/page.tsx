@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { IoMdArrowForward } from 'react-icons/io'
 import { FaClock } from 'react-icons/fa'
@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import FloatingWaitingButton from './components/buttons/FloationgWaitingButton'
 import { Languages, Map, MessageSquareReply, Minimize, StarIcon } from 'lucide-react'
+import { awakeSv } from './api/actions/awake'
 
 export default function LandingPage() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false)
@@ -29,6 +30,13 @@ export default function LandingPage() {
   const getStart = () => {
     router.push("/dashboard")
   }
+
+  useEffect(() => {
+    const awakeServer = async () => {
+      awakeSv()
+    }
+    awakeServer()
+  },[])
 
   return (
     <ClientOnly>
@@ -63,7 +71,7 @@ export default function LandingPage() {
                             </span>
                           </h1>
                           <p className={`text-lg sm:text-xl max-w-2xl mb-8 text-center ${theme == "light" ? "text-gray-600" : "text-neutral-400/90"}`}>
-                            {`Scheuor is your spacce for real-time, meaningful conversations, solo or in partnership. Let AI assist and enhace your interaction, every step or of the way.`}
+                            {`Scheuor is your space for real-time, meaningful conversations, solo or in partnership. Let AI assist and enhace your interaction, every step or of the way.`}
                           </p>
                           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <div
@@ -117,10 +125,10 @@ export default function LandingPage() {
                   <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 hover:shadow-lg ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                     <div className="flex-none md:flex-1 lg:max-w-xl">
                       <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
-                        <Image
+                        {/* <Image
                           alt="calendar"
                           src={require("@/../public/images/mybss.png")}
-                        />
+                        /> */}
                       </div>
                     </div>
                     <div className="flex-1 text-center lg:text-left">
@@ -156,20 +164,20 @@ export default function LandingPage() {
                     </div>
                     <div className="flex-1 lg:max-w-xl ">
                       <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
-                        <Image
+                        {/* <Image
                           alt="calendar"
                           src={require("@/../public/images/calendar.png")}
-                        />
+                        /> */}
                       </div>
                     </div>
                   </div>
                   <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 hover:shadow-lg ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                     <div className="flex-none md:flex-1 ">
                       <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 hidden lg:flex">
-                        <Image
+                        {/* <Image
                           alt="calendar"
                           src={require("@/../public/images/road.png")}
-                        />
+                        /> */}
                       </div>
                     </div>
                     <div className="flex-1 text-center lg:text-left">
@@ -193,10 +201,10 @@ export default function LandingPage() {
                   <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 hover:shadow-lg ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                     <div className="flex-none md:flex-1 lg:max-w-xl">
                       <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">
-                        <Image
+                        {/* <Image
                           alt="calendar"
                           src={require("@/../public/images/mybss.png")}
-                        />
+                        /> */}
                       </div>
                     </div>
                     <div className="flex-1 text-center lg:text-left">
@@ -217,10 +225,10 @@ export default function LandingPage() {
                   <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 hover:shadow-lg ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                     <div className="flex-none md:flex-1 lg:max-w-xl">
                       <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">
-                        <Image
+                        {/* <Image
                           alt="calendar"
                           src={require("@/../public/images/mybss.png")}
-                        />
+                        /> */}
                       </div>
                     </div>
                     <div className="flex-1 text-center lg:text-left">
@@ -241,10 +249,10 @@ export default function LandingPage() {
                   <div className={`flex flex-col items-center gap-6 lg:gap-16 lg:flex-row transition rounded-2xl hover:scale-102 p-6 hover:shadow-lg ${theme == "light" ? "hover:bg-neutral-100" : "hover:bg-slate-900/30"}`}>
                     <div className="flex-none md:flex-1 lg:max-w-xl">
                       <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">
-                        <Image
+                        {/* <Image
                           alt="calendar"
                           src={require("@/../public/images/mybss.png")}
-                        />
+                        /> */}
                       </div>
                     </div>
                     <div className="flex-1 text-center lg:text-left">

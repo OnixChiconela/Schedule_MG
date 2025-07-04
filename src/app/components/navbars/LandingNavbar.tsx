@@ -56,32 +56,32 @@ const LandingNavbar = () => {
                                     : 'hover:bg-slate-600 hover:text-fuchsia-400'
                                     } transition`}
                             >
-                                Features
+                                {`How it works`}
                             </Link>
                             <div
                                 onClick={() => tryDemo()}
                                 className={`px-3 py-2 rounded-md ${theme === 'light'
                                     ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                     : 'hover:bg-slate-600 hover:text-fuchsia-400'
-                                    } transition`}
+                                    } transition cursor-pointer`}
                             >
                                 Try Demo
                             </div>
                             <a
-                                href="mailto:josechiconela@icloud.com"
+                                href="/pricing"
                                 className={`px-3 py-2 rounded-md ${theme === 'light'
                                     ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                     : 'hover:bg-slate-600 hover:text-fuchsia-400'
                                     } transition`}
                             >
-                                Contact
+                                {`Pricing`}
                             </a>
                             <div
                                 onClick={() => router.push(`/my-space/auth/login`)}
                                 className={`px-3 py-2 rounded-md ${theme === 'light'
                                     ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                     : 'hover:bg-slate-600 hover:text-fuchsia-400'
-                                    } transition`}
+                                    } transition cursor-pointer`}
                             >
                                 Log In
                             </div>
@@ -141,33 +141,33 @@ const LandingNavbar = () => {
                                         } transition`}
                                     onClick={toggleMenu}
                                 >
-                                    Features
+                                    {`How it works`}
                                 </Link>
                                 <div
                                     onClick={() => tryDemo()}
                                     className={`text-base font-medium py-2 px-4 rounded-md ${theme === 'light'
                                         ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                         : 'hover:bg-slate-600 hover:text-fuchsia-400 text-neutral-200'
-                                        } transition`}
+                                        } transition cursor-pointer`}
                                 >
                                     Try Demo
                                 </div>
                                 <a
-                                    href="mailto:josechiconela@icloud.com"
+                                    href="/pricing"
                                     className={`text-base font-medium py-2 px-4 rounded-md ${theme === 'light'
                                         ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                         : 'hover:bg-slate-600 hover:text-fuchsia-400 text-neutral-200'
                                         } transition`}
                                     onClick={toggleMenu}
                                 >
-                                    Contact
+                                    {`Pricing`}
                                 </a>
                                 <div
                                     onClick={() => router.push(`/my-space/auth/login`)}
                                     className={`text-base font-medium py-2 px-4 rounded-md ${theme === 'light'
                                         ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                         : 'hover:bg-slate-600 hover:text-fuchsia-400 text-neutral-200'
-                                        } transition`}
+                                        } transition cursor-pointer`}
                                 >
                                     Log In
                                 </div>
