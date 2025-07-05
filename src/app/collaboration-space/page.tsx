@@ -87,7 +87,7 @@ export default function CollaborationSpace() {
 
     const openCreateModal = () => {
         if (!currentUser) {
-            toast.error("login to create your team")
+            toast.error("login to create your partnership")
             router.push("/my-space/auth/login")
         }
         setIsCreateModalOpen(true)

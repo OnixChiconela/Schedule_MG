@@ -103,7 +103,6 @@ export default function CreatePartnershipModal({
                 description: form.description,
                 invitedUserIds: form.invitedUserIds,
             };
-            toast.error(form.name)
             const res = await createCollab(data)
             if (!res) {
                 throw new Error('Failed to create team: Invalid response from server');
