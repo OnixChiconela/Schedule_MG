@@ -16,6 +16,7 @@ import { getCollabMembers } from '@/app/api/actions/collaboration/getCollabMembe
 import { transcribeAndGenerate } from '@/app/api/actions/collaboration/video-call/transcribeAndGenerate';
 import { checkAIUsage } from '@/app/api/actions/AI/checkAIUsage';
 import { callAITextOnly, processAudioWithAI } from '@/app/api/actions/collaboration/video-call/processAudioWithAI';
+import Avatar from '../../Avatar';
 
 interface VideoCallViewProps {
     partnershipId: string;
@@ -851,6 +852,14 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                                 ) : (
                                     <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-400 rounded-lg">
                                         <p>Video Disabled</p>
+                                        <div>
+                                            <Avatar 
+                                                name={`${currentUser.firstName} ${currentUser.lastName}`}
+                                                visualType={currentUser.visualType}
+                                                visualValue={currentUser.visualValue}
+                                                size='medium'
+                                            />
+                                        </div>
                                     </div>
                                 )}
                                 <div className="absolute bottom-4 left-4 flex gap-2">

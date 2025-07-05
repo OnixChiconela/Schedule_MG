@@ -228,6 +228,7 @@ export default function DashboardPage() {
                             isOpen={true}
                             
                         /> */}
+                        
                     </section>
                     {/* <section className="mb-6">
                         <EventSuggestions userCategories={userInterests} location={location} />

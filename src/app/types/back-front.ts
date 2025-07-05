@@ -47,6 +47,7 @@ export type Plan = {
         hearsAudio?: boolean
         summarizeChats?: 'limited' | 'unlimited'
         telepathy?: boolean
+        recordAudio?: boolean
         [key: string]: any
     }
 

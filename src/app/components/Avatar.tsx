@@ -4,7 +4,7 @@ import { useTheme } from "../themeContext"
 import { getAvatarFallback } from "./avatarUtils"
 
 interface AvatarProps {
-    name: string
+    name?: string
     visualType?: 'emoji' | 'initial'
     visualValue?: string
     imageUrl?: string
@@ -50,7 +50,7 @@ const Avatar: React.FC<AvatarProps> = ({
                 className={`${baseStyles} text-white`}
                 style={{ backgroundColor: visualValue }}
             >
-                {getAvatarFallback(name)}
+                {getAvatarFallback(name!)}
             </div>
         );
     }
@@ -61,7 +61,7 @@ const Avatar: React.FC<AvatarProps> = ({
             className={`${baseStyles} text-white ${theme === "light" ? "bg-gray-500" : "bg-gray-600"
                 }`}
         >
-            {getAvatarFallback(name)}
+            {getAvatarFallback(name!)}
         </div>
     );
 }

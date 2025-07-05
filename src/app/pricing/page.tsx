@@ -63,10 +63,10 @@ const PricingPage = () => {
                             <div>
                                 <div className="flex flex-col space-y-8">
                                     <h2 className={`text-4xl leading-relaxed font-bold ${theme === "light" ? "text-gray-900" : "text-gray-200"}`}>
-                                        You can always go for free. What's matters is the achievement.
+                                        {`You can always start for free. What matters is the progress.`}
                                     </h2>
                                     <p className={`text-xl leading-relaxed ${theme === "light" ? "text-gray-800" : "text-gray-300"}`}>
-                                        Using for chat, meetings, for your personal things or just curiosity, you can do it without paying anything
+                                        {`Whether you're here to chat, host meetings, organize your personal space, or simply explore, you can start without spending a cent.`}
                                     </p>
                                 </div>
                             </div>
@@ -104,7 +104,9 @@ const PricingPage = () => {
                                                 {plan.responseLimit && (
                                                     <li className="flex gap-2 items-center">
                                                         <Check size={15} color="green" />
-                                                        {plan.responseLimit === null ? 'Unlimited responses' : `${plan.responseLimit} responses per day`}
+                                                        {Number(plan.responseLimit) >= 99999
+                                                            ? 'Unlimited responses'
+                                                            : `${plan.responseLimit} responses per day`}
                                                     </li>
                                                 )}
                                                 {plan.charLimit && (
@@ -141,6 +143,12 @@ const PricingPage = () => {
                                                     <li className="flex gap-2 items-center">
                                                         <Check size={15} color="green" />
                                                         Telepathy in your call AI modal (for allowed users)
+                                                    </li>
+                                                )}
+                                                {plan.features?.recordAudio && (
+                                                    <li className="flex gap-2 items-center">
+                                                        <Check size={15} color="green" />
+                                                        Record and download meeting audios (yours or from others)
                                                     </li>
                                                 )}
                                                 {plan.name === 'Pro' && (
