@@ -65,41 +65,41 @@ const Auth = () => {
       // toast.success removido, já gerenciado no authStore
     }
   }, [error, theme]);
-   useEffect(() => {
-    if (inviteToken && mode === 'register' && currentUser) {
-      const complete = async () => {
-        try {
-          const completeData = await completeInvite(inviteToken, currentUser.id);
-          toast.success(`Successfully joined ${completeData.partnership.name}!`);
-          router.push(`/collaboration-space/${completeData.partnership.id}`);
-        } catch (err: any) {
-          toast.error(err.message || 'Failed to join partnership.');
-        }
-      };
-      complete();
-    }
-  }, [currentUser, inviteToken, mode, router]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const success = await submit(setCurrentUser);
-    if (success && (mode === 'login' || mode === 'register')) {
-      // Redirecionar para dashboard ou página de convite
-      if (inviteToken && mode === 'login') {
-        router.push(`/collaboration-space/invite/${inviteToken}`);
-      } else {
-        router.push('/dashboard');
-      }
-    }
-  };
+  //  useEffect(() => {
+  //   if (inviteToken && mode === 'register' && currentUser) {
+  //     const complete = async () => {
+  //       try {
+  //         const completeData = await completeInvite(inviteToken, currentUser.id);
+  //         toast.success(`Successfully joined ${completeData.partnership.name}!`);
+  //         router.push(`/collaboration-space/${completeData.partnership.id}`);
+  //       } catch (err: any) {
+  //         toast.error(err.message || 'Failed to join partnership.');
+  //       }
+  //     };
+  //     complete();
+  //   }
+  // }, [currentUser, inviteToken, mode, router]);
 
   // const handleSubmit = async (e: React.FormEvent) => {
   //   e.preventDefault();
   //   const success = await submit(setCurrentUser);
-  //   if (success && (mode === "login" || mode === "register")) {
-  //     router.push("/dashboard");
+  //   if (success && (mode === 'login' || mode === 'register')) {
+  //     // Redirecionar para dashboard ou página de convite
+  //     if (inviteToken && mode === 'login') {
+  //       router.push(`/collaboration-space/invite/${inviteToken}`);
+  //     } else {
+  //       router.push('/dashboard');
+  //     }
   //   }
   // };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const success = await submit(setCurrentUser);
+    if (success && (mode === "login" || mode === "register")) {
+      router.push("/dashboard");
+    }
+  };
 
   const handleModeSwitch = (newMode: "login" | "register" | "forgot-password") => {
     setIsSwitching(true);
