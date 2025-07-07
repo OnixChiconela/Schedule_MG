@@ -541,6 +541,13 @@ const CollabMembersModal: React.FC<CollabMembersModalProps> = ({ partnership, on
 
   const handleInviteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const toastId = toast.loading("Sending invite", {
+      style: {
+        background: theme === "light" ? "#fff" : "#1e293b",
+        color: theme === "light" ? "#1f2937" : "#f4f4f6",
+        border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+      },
+    });
     if (isEmailInviteMode) {
       if (!inviteEmail) {
         toast.error("Please enter an email address.");
@@ -567,8 +574,11 @@ const CollabMembersModal: React.FC<CollabMembersModalProps> = ({ partnership, on
         });
       } catch (error: any) {
         const errorMessage = error.message || "Unknown error";
+        toast.dismiss(toastId);
         toast.error(`Failed to generate invite link: ${errorMessage}`);
         console.error("Invite by email error:", error);
+      } finally {
+        toast.dismiss(toastId)
       }
     } else {
       if (!inviteUserId) {
@@ -585,8 +595,11 @@ const CollabMembersModal: React.FC<CollabMembersModalProps> = ({ partnership, on
         setInviteSearchQuery("");
         setInviteRole("COLLABORATOR");
       } catch (error) {
+        toast.dismiss(toastId)
         toast.error("Failed to send invitation");
         console.error("Invite error:", error);
+      } finally {
+        toast.dismiss(toastId)
       }
     }
   };
