@@ -60,47 +60,63 @@ const useAuthStore = create<AuthState>((set, get) => ({
     set({ loading: true, error: null, fieldErrors: {} });
 
     const toastId = toast.loading(
-      mode === "login" ? "Signing in..." : mode === "register" ? "Creating account..." : "Sending reset link..."
+      mode === 'login' ? 'Signing in...' : mode === 'register' ? 'Creating account...' : 'Sending reset link...'
     );
 
     try {
-      const schema = mode === "register" ? registerSchema : mode === "forgot-password" ? forgotPasswordSchema : loginSchema;
-      const data = mode === "register"
+      const schema = mode === 'register' ? registerSchema : mode === 'forgot-password' ? forgotPasswordSchema : loginSchema;
+      const data = mode === 'register'
         ? { email, hashedPassword, firstName, lastName }
-        : mode === "forgot-password"
-        ? { email }
-        : { email, hashedPassword };
+        : mode === 'forgot-password'
+          ? { email }
+          : { email, hashedPassword };
 
       schema.parse(data);
 
-      const endpoint = mode === "register"
-        ? "/users/create-user"
-        : mode === "forgot-password"
-        ? "/auth/forgot-password"
-        : "/auth/login";
+      const endpoint = mode === 'register'
+        ? '/users/create-user'
+        : mode === 'forgot-password'
+          ? '/auth/forgot-password'
+          : '/auth/login';
 
       const response = await api.post(endpoint, data, { withCredentials: true });
-      // console.log("Auth response:", response.data);
+      // console.log('API response:', response.data);
 
-      if (mode === "login") {
+      if (mode === 'login') {
         const { user, token, refreshToken } = response.data;
-        // console.log(user, " ", token, " ", refreshToken)
-        await saveTokenAndUserToStorage(token, user, refreshToken);
-        setCurrentUser(user);
-        toast.success("Signed in successfully!", { id: toastId });
-      } else if (mode === "forgot-password") {
-        setError(response.data.message || "Password reset email sent");
-        toast.success("Password reset email sent!", { id: toastId });
+        // console.log('Login data received:', { user, token, refreshToken });
+        if (!user || !token || !refreshToken) {
+          throw new Error('Invalid login response: missing user, token, or refreshToken');
+        }
+
+        try {
+          await saveTokenAndUserToStorage(token, user, refreshToken);
+          setCurrentUser(user);
+          toast.success('Signed in successfully!', { id: toastId });
+        } catch (saveError: any) {
+          // console.error('Error saving authentication data:', saveError.message);
+          throw new Error('Failed to save authentication data');
+        }
+      } else if (mode === 'forgot-password') {
+        setError(response.data.message || 'Password reset email sent');
+        toast.success('Password reset email sent!', { id: toastId });
         set({ loading: false });
         return true;
-      } else if (mode === "register") {
-        // Login automático após registro
-        const loginResponse = await api.post("/auth/login", { email, hashedPassword }, { withCredentials: true });
-        // console.log("Login response after register:", loginResponse.data);
+      } else if (mode === 'register') {
+        const loginResponse = await api.post('/auth/login', { email, hashedPassword }, { withCredentials: true });
+        // console.log('Login response after register:', loginResponse.data);
         const { user, token, refreshToken } = loginResponse.data;
-        await saveTokenAndUserToStorage(token, user,refreshToken);
-        setCurrentUser(user);
-        toast.success("Account created and signed in!", { id: toastId });
+        if (!user || !token || !refreshToken) {
+          throw new Error('Invalid login response after register: missing user, token, or refreshToken');
+        }
+        try {
+          await saveTokenAndUserToStorage(token, user, refreshToken);
+          setCurrentUser(user);
+          toast.success('Account created and signed in!', { id: toastId });
+        } catch (saveError: any) {
+          console.error('Error saving authentication data after register:', saveError.message);
+          throw new Error('Failed to save authentication data');
+        }
         set({ loading: false });
         return true;
       }
@@ -108,17 +124,17 @@ const useAuthStore = create<AuthState>((set, get) => ({
       set({ loading: false });
       return true;
     } catch (err: any) {
-      // console.error("Auth error:", err);
+      console.error('Auth error:', err.message);
       if (err instanceof z.ZodError) {
-        const fieldErrors: Partial<Record<"email" | "hashedPassword" | "firstName" | "lastName", string>> = {};
+        const fieldErrors: Partial<Record<'email' | 'hashedPassword' | 'firstName' | 'lastName', string>> = {};
         err.errors.forEach((e) => {
           if (e.path[0] in fieldErrors) {
             fieldErrors[e.path[0] as keyof typeof fieldErrors] = e.message;
           }
         });
         setFieldErrors(fieldErrors);
-        setError("Please correct the errors below");
-        toast.error("Please correct the errors below", { id: toastId });
+        setError('Please correct the errors below');
+        toast.error('Please correct the errors below', { id: toastId });
       } else {
         const errorMessage = err.response?.data?.message || `An error occurred during ${mode}`;
         setError(errorMessage);

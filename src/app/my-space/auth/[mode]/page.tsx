@@ -8,8 +8,8 @@ import { useEffect, useState } from "react";
 import { Divider } from "@/app/components/navbars/SideNavbar";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
-import { acceptInviteToken } from "@/app/api/actions/collaboration/getInvite";
 import toast from "react-hot-toast";
+import { acceptInviteToken } from "@/app/api/actions/collaboration/getInvite";
 
 const Auth = () => {
   const { theme } = useTheme();
@@ -82,6 +82,7 @@ const Auth = () => {
   // };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    toast.success(`SUBMIT MODE: ${mode}`,)
     e.preventDefault()
     const success = await submit(setCurrentUser)
 
@@ -102,6 +103,7 @@ const Auth = () => {
   // const handleSubmit = async (e: React.FormEvent) => {
   //   e.preventDefault();
   //   const success = await submit(setCurrentUser);
+  //   console.log("succes",success)
   //   if (success && (mode === "login" || mode === "register")) {
   //     router.push("/dashboard");
   //   }
@@ -121,7 +123,7 @@ const Auth = () => {
     <div
       className={`min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center 
         ${theme == "light" ? "bg-neutral-200" : "bg-black/50"}`}
-    // style={{ backgroundImage: `url(/images/scheuor_final.png)` }}
+      // style={{ backgroundImage: `url(/images/scheuor_final.png)` }}
     >
       <AnimatePresence mode="wait">
         {!isSwitching && (
@@ -131,8 +133,9 @@ const Auth = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
             transition={{ duration: 0.5 }}
-            className={`w-[90vw] max-w-6xl rounded-lg shadow-lg overflow-hidden flex backdrop-blur-xl ${theme === "light" ? "bg-white/50" : "bg-slate-900/50"
-              }`}
+            className={`w-[90vw] max-w-6xl rounded-lg shadow-lg overflow-hidden flex backdrop-blur-xl ${
+              theme === "light" ? "bg-white/50" : "bg-slate-900/50"
+            }`}
           >
             <div
               className={`hidden md:block w-1/2 bg-cover bg-center ${imageConfig.fallback || ""} ${imageConfig.className || ""}`}
@@ -143,8 +146,9 @@ const Auth = () => {
 
             <div className="w-full md:w-1/2 p-10 flex flex-col justify-between">
               <h2
-                className={`text-3xl font-semibold mb-6 text-center ${theme === "light" ? "text-neutral-800" : "text-neutral-200"
-                  }`}
+                className={`text-3xl font-semibold mb-6 text-center ${
+                  theme === "light" ? "text-neutral-800" : "text-neutral-200"
+                }`}
               >
                 {mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : "Reset Password"}
               </h2>
@@ -161,8 +165,9 @@ const Auth = () => {
                         type="text"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className={`w-full p-3 rounded-lg border focus:ring-2 focus:ring-fuchsia-900 outline-none transition-all ${theme === "light" ? "bg-gray-100 border-gray-300" : "bg-slate-700 border-slate-600 text-white"
-                          } ${fieldErrors.firstName ? "border-red-500" : ""}`}
+                        className={`w-full p-3 rounded-lg border focus:ring-2 focus:ring-fuchsia-900 outline-none transition-all ${
+                          theme === "light" ? "bg-gray-100 border-gray-300" : "bg-slate-700 border-slate-600 text-white"
+                        } ${fieldErrors.firstName ? "border-red-500" : ""}`}
                         placeholder="First name"
                         aria-label="First name"
                         aria-invalid={!!fieldErrors.firstName}
@@ -183,8 +188,9 @@ const Auth = () => {
                         type="text"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className={`w-full p-3 rounded-lg border focus:ring-2 focus:ring-fuchsia-900 outline-none transition-all ${theme === "light" ? "bg-gray-100 border-gray-300" : "bg-slate-700 border-slate-600 text-white"
-                          } ${fieldErrors.lastName ? "border-red-500" : ""}`}
+                        className={`w-full p-3 rounded-lg border focus:ring-2 focus:ring-fuchsia-900 outline-none transition-all ${
+                          theme === "light" ? "bg-gray-100 border-gray-300" : "bg-slate-700 border-slate-600 text-white"
+                        } ${fieldErrors.lastName ? "border-red-500" : ""}`}
                         placeholder="Last name"
                         aria-label="Last name"
                         aria-invalid={!!fieldErrors.lastName}
@@ -209,8 +215,9 @@ const Auth = () => {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className={`w-full p-3 rounded-lg border focus:ring-2 focus:ring-fuchsia-900 outline-none transition-all ${theme === "light" ? "bg-gray-100 border-gray-300" : "bg-slate-700 border-slate-600 text-white"
-                        } ${fieldErrors.email ? "border-red-500" : ""}`}
+                      className={`w-full p-3 rounded-lg border focus:ring-2 focus:ring-fuchsia-900 outline-none transition-all ${
+                        theme === "light" ? "bg-gray-100 border-gray-300" : "bg-slate-700 border-slate-600 text-white"
+                      } ${fieldErrors.email ? "border-red-500" : ""}`}
                       placeholder="Email"
                       aria-label="Email"
                       aria-invalid={!!fieldErrors.email}
@@ -234,8 +241,9 @@ const Auth = () => {
                       type="password"
                       value={hashedPassword}
                       onChange={(e) => setPassword(e.target.value)}
-                      className={`w-full p-3 rounded-lg border focus:ring-2 focus:ring-fuchsia-900 outline-none transition-all ${theme === "light" ? "bg-gray-100 border-gray-300" : "bg-slate-700 border-slate-600 text-white"
-                        } ${fieldErrors.hashedPassword ? "border-red-500" : ""}`}
+                      className={`w-full p-3 rounded-lg border focus:ring-2 focus:ring-fuchsia-900 outline-none transition-all ${
+                        theme === "light" ? "bg-gray-100 border-gray-300" : "bg-slate-700 border-slate-600 text-white"
+                      } ${fieldErrors.hashedPassword ? "border-red-500" : ""}`}
                       placeholder="Password"
                       aria-label="Password"
                       aria-invalid={!!fieldErrors.hashedPassword}
@@ -252,10 +260,11 @@ const Auth = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full p-3 rounded-md text-lg font-medium transition-all ${theme === "light"
-                    ? "bg-neutral-800 text-white hover:bg-neutral-900"
-                    : "bg-neutral-900 text-white hover:bg-black"
-                    } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`w-full p-3 rounded-md text-lg font-medium transition-all ${
+                    theme === "light"
+                      ? "bg-neutral-800 text-white hover:bg-neutral-900"
+                      : "bg-neutral-900 text-white hover:bg-black"
+                  } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   {mode === "login" ? "Continue" : mode === "register" ? "Continue" : "Send Reset Link"}
                 </button>

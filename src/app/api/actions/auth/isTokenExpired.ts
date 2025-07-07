@@ -27,5 +27,6 @@ export const getUserFromStorage = (): any | null => {
 
 export const clearStorage = () => {
     localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
 };
