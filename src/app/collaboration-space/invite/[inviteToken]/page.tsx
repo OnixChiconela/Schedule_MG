@@ -11,6 +11,7 @@ import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { motion } from "framer-motion"
+import CollaborationVideoCallView from "@/app/components/collaboration/video call/CollaborationVideoCallView"
 
 interface InviteDate {
     inviteToken: string

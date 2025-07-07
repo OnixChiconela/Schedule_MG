@@ -1,33 +1,56 @@
 import axios from "axios"
-import { clearStorage } from "./actions/auth/isTokenExpired"
+import { clearStorage, getTokenFromStorage, isTokenExpired } from "./actions/auth/isTokenExpired"
 
-const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_FIND_BACKEND || 'http://localhost:8050/api'
-})
 // const api = axios.create({
-//     baseURL: 'http://localhost:8050/api'
+//     baseURL: process.env.NEXT_PUBLIC_FIND_BACKEND || 'http://localhost:8050/api'
 // })
+const api = axios.create({
+    baseURL: 'http://localhost:8050/api'
+})
 
-api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('access_token')
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`
-        }
-        return config
-    },
-    (error) => Promise.reject(error)
-)
+api.interceptors.request.use(async (config) => {
+  const token = getTokenFromStorage()
 
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      clearStorage();
-      window.location.href = '/my-space/auth/login'; // Redireciona para a página de login
+  if (isTokenExpired(token)) {
+    try {
+      const refreshToken = localStorage.getItem('refresh_token')
+      const res = await axios.post('/auth/refresh-token', {refreshToken})
+      const newAccessToken = res.data.accessToken
+
+      localStorage.setItem('access_token', newAccessToken)
+      config.headers['Authorization'] = `Bearer ${newAccessToken}`
+    } catch (err) {
+      clearStorage()
+      window.location.href = '/my-space/auth/login';
+      return config
     }
-    return Promise.reject(error);
+  } else {
+    config.headers['Authorization'] = `Bearer ${token}`
   }
-);
+
+  return config
+})
+// api.interceptors.request.use(
+//     (config) => {
+//         const token = localStorage.getItem('access_token')
+//         if (token) {
+//             config.headers.Authorization = `Bearer ${token}`
+//         }
+//         return config
+//     },
+//     (error) => Promise.reject(error)
+// )
+
+// api.interceptors.response.use(
+//   (response) => response,
+//   (error) => {
+//     if (error.response?.status === 401) {
+//       clearStorage();
+//       window.location.href = '/my-space/auth/login'; // Redireciona para a página de login
+//     }
+//     return Promise.reject(error);
+//   }
+// );
+
 
 export default api

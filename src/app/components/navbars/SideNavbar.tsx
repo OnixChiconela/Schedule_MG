@@ -114,10 +114,12 @@ export default function SideNavbar({
   };
 
   const handleSettingsClick = () => {
-    router.push('/settings');
+    toast.success("coming soon")
+    // router.push('/settings');
   };
   const handleProfileClick = () => {
-    router.push('/profile');
+    toast.success("coming soon")
+    // router.push('/profile');
   };
   const handleLogoutClick = async () => {
     if (currentUser) {
@@ -130,7 +132,7 @@ export default function SideNavbar({
       })
       try {
         const logout = await api.post("/auth/logout")
-        if(logout) {
+        if (logout) {
           await clearTokenFromStorage()
           setCurrentUser(null)
           router.refresh()
@@ -190,8 +192,8 @@ export default function SideNavbar({
                     whileTap="tap"
                     variants={buttonVariants}
                     className={`px-3 py-2 rounded-lg ${theme === "light"
-                        ? "bg-gray-200 text-gray-900"
-                        : "bg-slate-800 text-gray-200"
+                      ? "bg-gray-200 text-gray-900"
+                      : "bg-slate-800 text-gray-200"
                       }`}
                   >
                     {theme === "light" ? <Sun size={20} /> : <MoonStar size={20} />}

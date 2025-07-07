@@ -193,11 +193,15 @@ export default function DashboardPage() {
                         />
                     </section>
                     <section className="mb-6">
+                        {corners ? (
                         <h2 className={`text-xl sm:text-[22px] font-semibold mb-3 sm:mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-gray-100'}`}>
                             Upcoming
                         </h2>
+                        ) : (
+                            <div></div>
+                        )}
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                            {corners.slice(0, 3).map((corner) => (
+                            {corners && corners.slice(0, 3).map((corner) => (
                                 <motion.div
                                     key={corner.id}
                                     className={`p-3 sm:p-5 rounded-xl shadow-lg border-l-4 border-fuchsia-800 bg-gradient-to-br ${theme === 'light' ? 'from-white to-gray-50' : 'from-slate-800 to-slate-700'} min-h-[120px] cursor-pointer`}

@@ -1,3 +1,4 @@
+import toast from "react-hot-toast"
 import api from "../../api"
 
 export const inviteByEmail = async (
@@ -7,8 +8,8 @@ export const inviteByEmail = async (
     role: string
 ) => {
     try {
-        const res = await api.post(`/collaboration/patnerships/invite-by-email/members`, {
-            partnershipId, email, ownerId, role
+        const res = await api.post(`/collaboration/${partnershipId}/invite-by-email/members`, {
+            email, ownerId, role
         }, {
             withCredentials: true
         })

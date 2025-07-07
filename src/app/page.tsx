@@ -36,7 +36,7 @@ export default function LandingPage() {
       awakeSv()
     }
     awakeServer()
-  },[])
+  }, [])
 
   return (
     <ClientOnly>
@@ -307,11 +307,19 @@ export default function LandingPage() {
                   </div>
                   <div className='grid lg:grid-cols-2 gap-8 lg:gap-8'>
                     <div>
-                      <h3 className={`p-2 bg-gradient-to-r w-[30%] rounded-xl mb-5 ${theme == "light"
+                      {/* <h3 className={`p-2 bg-gradient-to-r w-[30%] rounded-xl mb-5 ${theme == "light"
                         ? "from-neutral-800 to-neutral-400 text-neutral-50"
                         : "from-neutral-200 to-neutral-600 text-neutral-800"} font-semibold transition-colors`}>
                         Partners
-                      </h3>
+                      </h3> */}
+                      <span className={`p-2 bg-gradient-to-l w-[30%] rounded-xl mb-5 flex ${theme === "light" 
+                          ? "from-neutral-400 to-neutral-800" : "from-neutral-600 to-neutral-200"} transition-colors`}>
+                          <h3 className={`  ${theme == "light"
+                            ? " text-neutral-50"
+                            : " text-neutral-800"} font-semibold `}>
+                            Partners
+                          </h3>
+                        </span>
                       <div className="flex-none md:flex-1">
                         <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">
                           {/* <Image
@@ -323,11 +331,14 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <div className="flex justify-end">
-                        <h3 className={`p-2 bg-gradient-to-r w-[30%] rounded-xl mb-5 flex justify-end  ${theme == "light"
-                          ? "from-neutral-400 to-neutral-800 text-neutral-50"
-                          : "from-neutral-600 to-neutral-200 text-neutral-800"} font-semibold transition-colors`}>
-                          Guest
-                        </h3>
+                        <span className={`p-2 bg-gradient-to-r w-[30%] rounded-xl mb-5 flex justify-end ${theme === "light" 
+                          ? "from-neutral-400 to-neutral-800" : "from-neutral-600 to-neutral-200"} transition-colors`}>
+                          <h3 className={`  ${theme == "light"
+                            ? " text-neutral-50"
+                            : " text-neutral-800"} font-semibold `}>
+                            Guest
+                          </h3>
+                        </span>
                       </div>
                       <div className="flex-none md:flex-1">
                         <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">

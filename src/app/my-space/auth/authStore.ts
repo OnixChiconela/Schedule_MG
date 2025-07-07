@@ -83,9 +83,9 @@ const useAuthStore = create<AuthState>((set, get) => ({
       console.log("Auth response:", response.data);
 
       if (mode === "login") {
-        const { user, token } = response.data;
+        const { user, token, refreshToken } = response.data;
         console.log(user, " ", token)
-        await saveTokenAndUserToStorage(token, user);
+        await saveTokenAndUserToStorage(token, user, refreshToken);
         setCurrentUser(user);
         toast.success("Signed in successfully!", { id: toastId });
       } else if (mode === "forgot-password") {
@@ -97,8 +97,8 @@ const useAuthStore = create<AuthState>((set, get) => ({
         // Login automático após registro
         const loginResponse = await api.post("/auth/login", { email, hashedPassword }, { withCredentials: true });
         console.log("Login response after register:", loginResponse.data);
-        const { user, token } = loginResponse.data;
-        await saveTokenAndUserToStorage(token, user);
+        const { user, token, refreshToken } = loginResponse.data;
+        await saveTokenAndUserToStorage(token, user,refreshToken);
         setCurrentUser(user);
         toast.success("Account created and signed in!", { id: toastId });
         set({ loading: false });
