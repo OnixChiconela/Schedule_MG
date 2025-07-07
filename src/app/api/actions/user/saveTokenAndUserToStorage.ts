@@ -7,6 +7,7 @@ export const saveTokenAndUserToStorage = async (token: string, user: User, refre
         localStorage.setItem('refresh_token', refreshToken)
         localStorage.setItem('user_data', JSON.stringify(user))
     } catch (error: any) {
-        console.log(error)
+        // console.log(error)
+        throw new Error(error)
     }
 }

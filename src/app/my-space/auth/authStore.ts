@@ -80,11 +80,11 @@ const useAuthStore = create<AuthState>((set, get) => ({
         : "/auth/login";
 
       const response = await api.post(endpoint, data, { withCredentials: true });
-      console.log("Auth response:", response.data);
+      // console.log("Auth response:", response.data);
 
       if (mode === "login") {
         const { user, token, refreshToken } = response.data;
-        console.log(user, " ", token)
+        // console.log(user, " ", token, " ", refreshToken)
         await saveTokenAndUserToStorage(token, user, refreshToken);
         setCurrentUser(user);
         toast.success("Signed in successfully!", { id: toastId });
@@ -96,7 +96,7 @@ const useAuthStore = create<AuthState>((set, get) => ({
       } else if (mode === "register") {
         // Login automático após registro
         const loginResponse = await api.post("/auth/login", { email, hashedPassword }, { withCredentials: true });
-        console.log("Login response after register:", loginResponse.data);
+        // console.log("Login response after register:", loginResponse.data);
         const { user, token, refreshToken } = loginResponse.data;
         await saveTokenAndUserToStorage(token, user,refreshToken);
         setCurrentUser(user);
@@ -108,7 +108,7 @@ const useAuthStore = create<AuthState>((set, get) => ({
       set({ loading: false });
       return true;
     } catch (err: any) {
-      console.error("Auth error:", err);
+      // console.error("Auth error:", err);
       if (err instanceof z.ZodError) {
         const fieldErrors: Partial<Record<"email" | "hashedPassword" | "firstName" | "lastName", string>> = {};
         err.errors.forEach((e) => {
