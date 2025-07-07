@@ -82,7 +82,7 @@ const Auth = () => {
   // };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    toast.success(`SUBMIT MODE: ${mode}`,)
+    // toast.success(`SUBMIT MODE: ${mode}`,)
     e.preventDefault()
     const success = await submit(setCurrentUser)
 
