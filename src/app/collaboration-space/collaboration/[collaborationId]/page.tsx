@@ -131,7 +131,7 @@ export default function CollaborationPage() {
           </div>
         ) : panelContents[index] === "Notes" ? (
           <div className="overflow-y-auto h-[84vh] w-full p-4">
-            {selectedFolderId === null ? <div>chamaaa</div> : "ahh"}
+            {selectedFolderId === null ? <div className="text-gray-500">Notes(coming soon)</div> : ""}
           </div>
         ) : panelContents[index] === "Emails" ? (
           <div className="text-gray-500">Emails (Coming Soon)</div>

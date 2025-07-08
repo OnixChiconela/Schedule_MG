@@ -9,7 +9,6 @@ export const transcribeAndGenerate = async (
     audioBlob?: Blob,
     userId?: string,
 ) => {
-    toast.success(`The god damn prompt: ${prompt}`)
     if (!userId) {
         throw new Error("User ID is required")
     }
