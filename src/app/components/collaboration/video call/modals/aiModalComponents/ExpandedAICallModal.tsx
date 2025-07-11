@@ -1,12 +1,14 @@
 "use client"
 
 import { useDraggable } from '@dnd-kit/core';
-import { motion } from 'framer-motion';
+import { motion, useAnimation } from 'framer-motion';
 import { Sparkles, Mic, MicOff, X, Download, Send, Brain } from 'lucide-react';
 import { FaExchangeAlt } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { useUser } from '@/app/context/UserContext';
+import ReactMarkdown from "react-markdown"
+import remarkGfm from 'remark-gfm';
 
 
 interface AICallContent {
@@ -43,6 +45,7 @@ interface ExpandedAICallModalProps {
   setIsShared: (value: boolean) => void;
   aiContentHistory: AICallContent[];
   toggleSharing: () => void;
+  isGenerating: boolean
 }
 
 interface AICallContent {
@@ -51,6 +54,7 @@ interface AICallContent {
   userId: string;
   prompt: string;
   response?: string;
+  transcription?: string
   isShared: boolean;
   createdAt: string;
 }
@@ -79,6 +83,7 @@ function ExpandedAICallModal({
   setIsShared,
   aiContentHistory,
   toggleSharing,
+  isGenerating
 }: ExpandedAICallModalProps) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: 'expanded-ai-call-modal',
@@ -132,6 +137,41 @@ function ExpandedAICallModal({
     }
   };
 
+  const shareButtonControls = useAnimation();
+
+  useEffect(() => {
+    if (isShared) {
+      shareButtonControls.start({
+        backgroundColor: ['#2dd4bf', '#14b8a6', '#2dd4bf'],
+        transition: {
+          repeat: Infinity,
+          duration: 1.5,
+          ease: 'easeInOut',
+        },
+      });
+    } else {
+      shareButtonControls.stop();
+      shareButtonControls.set({
+        backgroundColor: theme === 'light' ? '#e5e7eb' : '#374151',
+      });
+    }
+  }, [isShared, theme, shareButtonControls]);
+
+  useEffect(() => {
+    if (isResponseStreaming) {
+      toast.loading('Generating AI response...', {
+        id: 'generating-toast', // ID único para o toast
+        style: {
+          background: theme === 'light' ? '#fff' : '#1e293b',
+          color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+          border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+        },
+      });
+    } else {
+      toast.dismiss('generating-toast'); // Remove o toast quando o streaming termina
+    }
+  }, [isResponseStreaming, theme]);
+
   const style = {
     position: 'fixed' as const,
     left: `${position.x}px`,
@@ -142,6 +182,9 @@ function ExpandedAICallModal({
     zIndex: isDragging ? 1002 : 1000,
   };
 
+  const latestContent = aiContentHistory[aiContentHistory.length - 1]
+  console.log("latest response", latestContent)
+
   return (
     <motion.div
       ref={setNodeRef}
@@ -149,7 +192,7 @@ function ExpandedAICallModal({
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className={`rounded-xl p-6 w-[80%] max-w-lg max-h-[400px] overflow-y-auto flex flex-col shadow-xl ${theme === 'light' ? 'bg-white border border-gray-200' : 'bg-slate-900 border border-slate-600'
+      className={`rounded-xl p-6 w-[80%] max-w-lg max-h-[500px] flex flex-col shadow-xl ${theme === 'light' ? 'bg-white border border-gray-200' : 'bg-slate-900 border border-slate-600'
         } hover:shadow-xl transition-shadow duration-200 select-none`}
       role="dialog"
       aria-modal="true"
@@ -166,7 +209,7 @@ function ExpandedAICallModal({
           <div className="flex items-center gap-2">
             <Sparkles size={18} />
             <h2
-              className={`text-xl font-semibold ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'
+              className={`text-lg font-semibold ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'
                 }`}
             >
               AI Interaction
@@ -235,58 +278,227 @@ function ExpandedAICallModal({
       </div>
 
       {/* Content Area */}
-      <div className="mb-4 max-h-[120px] ">
-        {(response !== null || suggestion !== null || isResponseStreaming) && (
-          <div className="mb-2">
+      <div className="mb-4 ">
+        {isGenerating && !latestContent && !suggestion ? (
+          <div className="flex justify-center items-center h-[100px]">
+            <motion.p
+              animate={{
+                opacity: [0.5, 1, 0.5],
+                transition: { repeat: Infinity, duration: 1.5, ease: 'easeInOut' },
+              }}
+              className={`text-sm font-medium ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-300'
+                }`}
+              data-testid="generating-indicator"
+            >
+              Generating...
+            </motion.p>
+          </div>
+        ) : latestContent ? (
+          <div className="mb-4">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles size={16} />
               <h3
-                className={`text-sm font-medium ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-300'
-                  }`}
+                className={`text-base font-semibold ${
+                  theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'
+                }`}
               >
                 Response {isShared && <span className="text-xs text-teal-500">(Telepathy)</span>}
               </h3>
             </div>
-            {isResponseStreaming && !response?.length && !suggestion?.length ? (
-              <div className="flex justify-center items-center h-[100px]">
-                <div
-                  className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${theme === 'light' ? 'border-neutral-800' : 'border-neutral-300'
-                    }`}
-                  data-testid="response-loading-spinner"
-                ></div>
-              </div>
-            ) : (
-              <p
-                className={`w-full p-3 rounded-lg h-[100px] overflow-y-auto ${theme === 'light'
-                  ? 'bg-gray-50/20 text-neutral-800 border border-gray-200/30'
-                  : 'bg-slate-800/20 text-neutral-200 border border-slate-600/30'
-                  }`}
-                data-testid="response-text"
+            {latestContent.response ? (
+              <div
+                className={`w-full p-4 h-[200px] rounded-lg overflow-y-auto ${
+                  theme === 'light'
+                    ? 'bg-gray-50/20 text-neutral-800 border border-gray-200/30'
+                    : 'bg-slate-800/20 text-neutral-200 border border-slate-600/30'
+                }`}
+                data-testid={`response-text-${latestContent.id}`}
                 aria-live="polite"
               >
-                {response || suggestion || 'No response yet'}
-              </p>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    h1: ({ children }) => (
+                      <h1 className={`text-xl font-bold mb-3 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                        {children}
+                      </h1>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 className={`text-lg font-semibold mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                        {children}
+                      </h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 className={`text-base font-medium mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                        {children}
+                      </h3>
+                    ),
+                    p: ({ children }) => (
+                      <p className={`text-sm mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                        {children}
+                        {isResponseStreaming && <span className="text-gray-500 ml-1">generating...</span>}
+                      </p>
+                    ),
+                    ul: ({ children }) => (
+                      <ul className={`list-disc list-inside mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                        {children}
+                      </ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol className={`list-decimal list-inside mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                        {children}
+                      </ol>
+                    ),
+                    li: ({ children }) => (
+                      <li className="text-sm">{children}</li>
+                    ),
+                    strong: ({ children }) => (
+                      <strong className="font-bold">{children}</strong>
+                    ),
+                    em: ({ children }) => (
+                      <em className="italic">{children}</em>
+                    ),
+                    code: ({ children }) => (
+                      <code className={`bg-gray-200 dark:bg-slate-700 px-1 py-0.5 rounded ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                        {children}
+                      </code>
+                    ),
+                    blockquote: ({ children }) => (
+                      <blockquote className={`border-l-4 border-gray-300 pl-4 italic mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                        {children}
+                      </blockquote>
+                    ),
+                  }}
+                >
+                  {latestContent.response}
+                </ReactMarkdown>
+              </div>
+            ) : (
+              <div />
+            )}
+            {(latestContent.transcription || transcription) && (
+              <div className="mt-4">
+                <h4
+                  className={`text-sm font-medium ${
+                    theme === 'light' ? 'text-neutral-800' : 'text-neutral-300'
+                  }`}
+                >
+                  Transcription {isShared && <span className="text-xs text-teal-500">(Shared)</span>}
+                </h4>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    p: ({ children }) => (
+                      <p className={`text-sm mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                        {children}
+                      </p>
+                    ),
+                    ul: ({ children }) => (
+                      <ul className={`list-disc list-inside mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                        {children}
+                      </ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol className={`list-decimal list-inside mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                        {children}
+                      </ol>
+                    ),
+                    li: ({ children }) => (
+                      <li className="text-sm">{children}</li>
+                    ),
+                    strong: ({ children }) => (
+                      <strong className="font-bold">{children}</strong>
+                    ),
+                    em: ({ children }) => (
+                      <em className="italic">{children}</em>
+                    ),
+                  }}
+                >
+                  {latestContent.transcription || transcription}
+                </ReactMarkdown>
+              </div>
             )}
           </div>
-        )}
-        {transcription !== null && (
-          <div className="mb-2">
-            <h3
-              className={`text-sm font-medium ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-300'
+        ) : suggestion ? (
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles size={16} />
+              <h3
+                className={`text-base font-semibold ${
+                  theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'
                 }`}
+              >
+                Suggestion {isShared && <span className="text-xs text-teal-500">(Telepathy)</span>}
+              </h3>
+            </div>
+            <div
+              className={`w-full p-4 rounded-lg overflow-y-auto ${
+                theme === 'light'
+                  ? 'bg-gray-50/20 text-neutral-800 border border-gray-200/30'
+                  : 'bg-slate-800/20 text-neutral-200 border border-slate-600/30'
+              }`}
+              data-testid="suggestion-text"
+              aria-live="polite"
             >
-              Transcription {isShared && <span className="text-xs text-teal-500">(Shared)</span>}
-            </h3>
-            <p
-              className={`w-full p-3 rounded-lg h-[80px] overflow-y-auto ${theme === 'light'
-                ? 'bg-gray-50/20 text-neutral-800 border border-gray-200/30'
-                : 'bg-slate-800/20 text-neutral-200 border border-slate-600/30'
-                }`}
-            >
-              {transcription}
-            </p>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  h1: ({ children }) => (
+                    <h1 className={`text-xl font-bold mb-3 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                      {children}
+                    </h1>
+                  ),
+                  h2: ({ children }) => (
+                    <h2 className={`text-lg font-semibold mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                      {children}
+                    </h2>
+                  ),
+                  h3: ({ children }) => (
+                    <h3 className={`text-base font-medium mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                      {children}
+                    </h3>
+                  ),
+                  p: ({ children }) => (
+                    <p className={`text-sm mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                      {children}
+                    </p>
+                  ),
+                  ul: ({ children }) => (
+                    <ul className={`list-disc list-inside mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                      {children}
+                    </ul>
+                  ),
+                  ol: ({ children }) => (
+                    <ol className={`list-decimal list-inside mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                      {children}
+                    </ol>
+                  ),
+                  li: ({ children }) => (
+                    <li className="text-sm">{children}</li>
+                  ),
+                  strong: ({ children }) => (
+                    <strong className="font-bold">{children}</strong>
+                  ),
+                  em: ({ children }) => (
+                    <em className="italic">{children}</em>
+                  ),
+                  code: ({ children }) => (
+                    <code className={`bg-gray-200 dark:bg-slate-700 px-1 py-0.5 rounded ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                      {children}
+                    </code>
+                  ),
+                  blockquote: ({ children }) => (
+                    <blockquote className={`border-l-4 border-gray-300 pl-4 italic mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                      {children}
+                    </blockquote>
+                  ),
+                }}
+              >
+                {suggestion}
+              </ReactMarkdown>
+            </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Footer */}
@@ -357,8 +569,8 @@ function ExpandedAICallModal({
             className={`px-4 py-2 rounded-lg font-medium ${!prompt.trim()
               ? 'opacity-50 cursor-not-allowed'
               : theme === 'light'
-                ? "bg-neutral-800 hover:bg-neutral-900 text-white"
-                : "bg-neutral-950 hover:bg-black text-white"
+                ? 'bg-neutral-800 hover:bg-neutral-900 text-white'
+                : 'bg-neutral-950 hover:bg-black text-white'
               }`}
             aria-label="Send prompt to AI"
           >

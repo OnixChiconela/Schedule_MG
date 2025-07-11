@@ -9,7 +9,7 @@ import CreateCallModal from './modals/CreateCallModal';
 import JoinCallModal from './modals/JoinCallModal';
 import toast from 'react-hot-toast';
 import { useNotifications } from '@/app/context/NotificationContext';
-import AICallModal from './modals/AiCallModal';
+import AICallModal, { AICallContent } from './modals/AiCallModal';
 import { PartnershipDetails } from '../CollaborationChatView';
 import { getCollabById } from '@/app/api/actions/collaboration/getCollabById';
 import { getCollabMembers } from '@/app/api/actions/collaboration/getCollabMembers';
@@ -22,10 +22,21 @@ interface VideoCallViewProps {
     partnershipId: string;
 }
 
+// interface PeerConnection {
+//     peer: Peer.Instance;
+//     userId: string;
+//     stream: MediaStream | null
+// }
+
+
 interface PeerConnection {
     peer: Peer.Instance;
     userId: string;
     stream: MediaStream | null;
+    name?: string; // Nome completo do usuário (firstName + lastName)
+    visualType?: 'emoji' | 'initial'; // Tipo de avatar
+    visualValue?: string; // Valor do avatar (emoji ou cor)
+    videoEnabled?: boolean;
 }
 
 interface JoinCallData {
@@ -36,7 +47,7 @@ interface JoinCallData {
 type PartnershipMembership = {
     userId: string;
     partnershipId: string;
-    role: "OWNER" | "ADMIN" | "COLABORATOR" | "GUEST";
+    role: "OWNER" | "ADMIN" | "COLLABORATOR" | "GUEST";
     joinedAt: Date;
 };
 
@@ -61,10 +72,11 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
     const lastSignalTimes = useRef<Map<string, number>>(new Map());
     const pendingPeers = useRef<Set<string>>(new Set());
     const isCreatorRef = useRef<boolean>(false);
+    const [userMap, setUserMap] = useState<Map<string, { firstName: string; lastName: string; visualType?: 'emoji' | 'initial'; visualValue?: string }>>(new Map());
 
     const isAuthorized = partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "OWNER"
         || partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "ADMIN"
-        || partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "COLABORATOR"
+        || partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "COLLABORATOR"
         || false
 
     useEffect(() => {
@@ -73,6 +85,30 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
             console.log(`[Socket] Initial videoSocket state: id=${videoSocket.id}, connected=${videoSocket.connected}`);
         }
     }, [userId, partnershipId, videoSocket]);
+
+
+    const getUserData = (userId: string) => {
+        return userMap.get(userId) || {
+            firstName: 'Unknown',
+            lastName: "User",
+            visualType: 'initial',
+            visualValue: "#4B5EFC"
+        }
+        useEffect(() => {
+            if (currentUser) {
+                setUserMap((prev) => {
+                    const newMap = new Map(prev);
+                    newMap.set(userId, {
+                        firstName: currentUser.firstName,
+                        lastName: currentUser.lastName,
+                        visualType: currentUser.visualType,
+                        visualValue: currentUser.visualValue,
+                    });
+                    return newMap;
+                });
+            }
+        }, [currentUser, userId]);
+    }
 
     useEffect(() => {
         let isMounted = true;
@@ -249,7 +285,9 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                     console.log(`[Peer] Updating stream for existing peer ${joinedUserId}`);
                     return prev.map((p) => (p.userId === joinedUserId ? { ...p, stream } : p));
                 }
-                return [...prev, { peer, userId: joinedUserId, stream }];
+                // return [...prev, { peer, userId: joinedUserId, stream }];
+                const hasVideo = stream.getVideoTracks().some((track) => track.enabled);
+                return [...prev, { peer, userId: joinedUserId, stream, videoEnabled: hasVideo }];
             });
             pendingPeers.current.delete(joinedUserId);
             setConnectionStatus('connected');
@@ -350,18 +388,46 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
             }
         };
 
-        const handleUserJoined = ({ userId: joinedUserId }: { userId: string }) => {
-            console.log(`[Socket] User ${joinedUserId} joined, callId=${callId}, localStream=${!!localStream}, peersCount=${peers.length}`);
+        function isValidVisualType(value: string): value is 'emoji' | 'initial' {
+            return value === 'emoji' || value === 'initial';
+        }
+
+        const handleUserJoined = ({
+            userId: joinedUserId,
+            firstName,
+            lastName,
+            visualType,
+            visualValue,
+        }: {
+            userId: string;
+            firstName: string;
+            lastName: string;
+            visualType: string;
+            visualValue: string;
+        }) => {
             if (joinedUserId !== userId && localStream && callId) {
                 setPeers((prev) => {
-                    if (prev.find((p) => p.userId === joinedUserId)) {
-                        console.log(`[Peer] Peer for ${joinedUserId} already exists, skipping`);
-                        return prev;
-                    }
+                    if (prev.find((p) => p.userId === joinedUserId)) return prev;
+
                     const peer = createPeer(joinedUserId, true);
-                    return peer ? [...prev, { peer, userId: joinedUserId, stream: null }] : prev;
+                    if (!peer) return prev;
+
+                    const validVisualType: 'emoji' | 'initial' = isValidVisualType(visualType) ? visualType : 'initial';
+
+                    return [
+                        ...prev,
+                        {
+                            peer,
+                            userId: joinedUserId,
+                            stream: null,
+                            name: `${firstName} ${lastName}`,
+                            visualType: validVisualType,
+                            visualValue,
+                            videoEnabled: true,
+                        },
+                    ];
                 });
-                setConnectionStatus('connecting');
+                setConnectionStatus("connecting");
             }
         };
 
@@ -379,7 +445,7 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                     const peer = createPeer(from, false);
                     if (peer) {
                         peer.signal(data);
-                        return [...prev, { peer, userId: from, stream: null }];
+                        return [...prev, { peer, userId: from, stream: null, videoEnabled: true }]; // Assume true inicialmente
                     }
                 }
                 return prev;
@@ -410,6 +476,14 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
             }
         };
 
+        const handlePeerVideoToggled = ({ userId, videoEnabled }: { userId: string; videoEnabled: boolean }) => {
+            setPeers((prev) =>
+                prev.map((p) =>
+                    p.userId === userId ? { ...p, videoEnabled } : p
+                )
+            );
+        };
+
         const handleCallEnded = ({ callId: endedCallId }: { callId: string }) => {
             console.log(`[Socket] Received call-ended: callId=${endedCallId}, userId=${userId}`);
             if (endedCallId === callId) {
@@ -427,8 +501,10 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
         videoSocket.on('user-joined', handleUserJoined);
         videoSocket.on('signal', handleSignal);
         videoSocket.on('user-left', handleUserLeft);
-        videoSocket.on('call-created', handleCallCreated); // Use videoSocket
-        videoSocket.on('call-ended', handleCallEnded); // Use videoSocket
+        videoSocket.on('call-created', handleCallCreated);
+        videoSocket.on('call-ended', handleCallEnded);
+        videoSocket.on('peer-video-toggled', handlePeerVideoToggled);
+
         videoSocket.on('connect_error', (err) => {
             console.error(`[Socket] videoSocket connect_error for userId=${userId}:`, err);
             // toast.error(`Video call connection error: ${err.message}`);
@@ -448,6 +524,7 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
             videoSocket.off('user-left', handleUserLeft);
             videoSocket.off('call-created', handleCallCreated);
             videoSocket.off('call-ended', handleCallEnded);
+            videoSocket.off('peer-video-toggled', handlePeerVideoToggled);
         };
     }, [userId, partnershipId, currentUser?.id, videoSocket, callId, localStream]);
 
@@ -476,11 +553,21 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
     const toggleVideo = () => {
         if (localStream) {
             const enabled = !videoEnabled;
+
             localStream.getVideoTracks().forEach((track) => {
                 track.enabled = enabled;
                 console.log(`[Media] Video track ${enabled ? 'enabled' : 'disabled'} for ${userId}`);
             });
+
             setVideoEnabled(enabled);
+
+            // Emitir para os outros da call
+            videoSocket?.emit('video-toggled', {
+                userId,
+                callId,
+                videoEnabled: enabled,
+            });
+
             if (enabled && localVideoRef.current) {
                 localVideoRef.current.play().catch((err) => {
                     console.error(`[Media] Failed to play video after toggle for ${userId}:`, err);
@@ -641,7 +728,14 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
     //     }
     // }
 
-    const handleAICallSubmit = async (prompt: string, audioBlob?: Blob | null, transcription?: string) => {
+    const handleAICallSubmit = async (
+        prompt: string,
+        audioBlob?: Blob | null,
+        transcription?: string,
+        history?: AICallContent[],
+        callId?: string,
+        isShared: boolean = false
+    ): Promise<string | { prompt: string; transcription?: string; response?: string; history?: AICallContent[] } | null> => {
         if (!currentUser?.id) {
             toast.error('User not authenticated', {
                 duration: 3000,
@@ -680,12 +774,16 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
             return null;
         }
 
-        console.log(`[AICall] Prompt: ${prompt}, Audio Blob:`, audioBlob, `Transcription: ${transcription}`);
-
         try {
-            if (audioBlob) {
+            if (audioBlob && audioBlob.size > 0) {
+                // Construir contexto para prompts com áudio
+                const context = history
+                    ? history.map((item) => `Prompt: ${item.prompt}\nResponse: ${item.response || 'None'}`).join('\n\n')
+                    : '';
+                const fullPrompt = context ? `${context}\n\nPrompt: ${prompt}` : prompt;
+                console.log(`[AICall] Submitting full prompt: ${fullPrompt}, audioBlob=${!!audioBlob}, transcription=${transcription}`);
+
                 // Handle audio submission via HTTP
-                const fullPrompt = transcription ? `${prompt} (Context): ${transcription}` : prompt;
                 const res = await processAudioWithAI('generate', audioBlob, currentUser.id, {
                     prompt: fullPrompt,
                     transcription,
@@ -702,15 +800,15 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                 //     prompt,
                 //     response: res.text,
                 //     transcription,
-                //     isShared: isShared, // Assume isShared is in scope (from state)
+                //     isShared,
                 //     createdAt: new Date().toISOString(),
                 // });
 
                 return res.text;
             }
 
-            // For text-only, return to AICallModal to emit submit-ai-content
-            return { prompt, transcription };
+            // Para prompts de texto puro, delegar ao servidor via submit-ai-content
+            return { prompt, transcription, history };
         } catch (error: any) {
             console.error('[AICall] Failed to process prompt:', error);
             toast.error('Failed to get AI response', {
@@ -798,8 +896,7 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
 
     return (
         <div
-            className={`h-full p-1 md:p-4 ${theme === "light" ? "bg-white text-gray-800" : "bg-gray-900 text-gray-200"
-                }`}
+            className={`h-full p-1 md:p-4 ${theme === "light" ? "bg-white text-gray-800" : "bg-gray-900 text-gray-200"}`}
         >
             {mediaError && (
                 <div className="text-red-500 p-4 text-center">{mediaError}</div>
@@ -821,8 +918,7 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                 <div className="h-full">
                     <div className="mb-4 text-center">
                         <p
-                            className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-400"
-                                }`}
+                            className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}
                         >
                             {connectionStatus === "connected" && participantCount > 1
                                 ? `Connected: ${participantCount} participants`
@@ -849,27 +945,28 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                                             setConnectionStatus("error");
                                         }}
                                     />
+
+
                                 ) : (
-                                    <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-400 rounded-lg">
-                                        <p>Video Disabled</p>
-                                        <div>
-                                            <Avatar 
-                                                name={`${currentUser.firstName} ${currentUser.lastName}`}
-                                                visualType={currentUser.visualType}
-                                                visualValue={currentUser.visualValue}
-                                                size='medium'
-                                            />
-                                        </div>
+                                    <div className="w-full h-full bg-gray-800 flex flex-col items-center justify-center text-gray-400 rounded-lg">
+                                        <Avatar
+                                            name={`${currentUser.firstName} ${currentUser.lastName}`}
+                                            visualType={currentUser.visualType}
+                                            visualValue={currentUser.visualValue}
+                                            size="large"
+                                        />
+                                        <p className="mt-2 text-sm text-white">
+                                            {`${currentUser.firstName} ${currentUser.lastName}`}
+                                        </p>
                                     </div>
                                 )}
                                 <div className="absolute bottom-4 left-4 flex gap-2">
                                     <button
                                         onClick={toggleMic}
                                         disabled={!localStream}
-                                        className={`p-2 rounded-full ${!localStream ? "opacity-50 cursor-not-allowed" : ""
-                                            } ${theme === "light"
-                                                ? "bg-gray-200 text-gray-800"
-                                                : "bg-gray-700 text-gray-200"
+                                        className={`p-2 rounded-full ${!localStream ? "opacity-50 cursor-not-allowed" : ""} ${theme === "light"
+                                            ? "bg-gray-200 text-gray-800"
+                                            : "bg-gray-700 text-gray-200"
                                             }`}
                                     >
                                         {micEnabled ? <Mic size={20} /> : <MicOff size={20} />}
@@ -877,10 +974,9 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                                     <button
                                         onClick={toggleVideo}
                                         disabled={!localStream}
-                                        className={`p-2 rounded-full ${!localStream ? "opacity-50 cursor-not-allowed" : ""
-                                            } ${theme === "light"
-                                                ? "bg-gray-200 text-gray-800"
-                                                : "bg-gray-700 text-gray-200"
+                                        className={`p-2 rounded-full ${!localStream ? "opacity-50 cursor-not-allowed" : ""} ${theme === "light"
+                                            ? "bg-gray-200 text-gray-800"
+                                            : "bg-gray-700 text-gray-200"
                                             }`}
                                     >
                                         {videoEnabled ? <Video size={20} /> : <VideoOff size={20} />}
@@ -893,22 +989,27 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                                     </button>
                                 </div>
                                 <p className="absolute top-2 left-2 text-white bg-black bg-opacity-50 px-2 py-1 rounded">
-                                    You ({userId})
+                                    You
                                 </p>
                             </div>
                         )}
                         {peers.map((peer) => (
                             <div key={peer.userId} className="relative h-full">
-                                {peer.stream ? (
-                                    <PeerVideo key={peer.userId} stream={peer.stream} userId={peer.userId} />
+                                {peer.videoEnabled !== false && peer.stream ? (
+                                    <PeerVideo stream={peer.stream} userId={peer.userId} />
                                 ) : (
-                                    <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-400 rounded-lg">
-                                        <p>Waiting for {peer.userId}...</p>
+                                    <div className="w-full h-full bg-gray-800 flex flex-col items-center justify-center text-gray-400 rounded-lg">
+                                        <Avatar
+                                            name={peer.name || "Unknown User"}
+                                            visualType={peer.visualType || "initial"}
+                                            visualValue={peer.visualValue || "#4B5EFC"}
+                                            size="large"
+                                        />
+                                        <p className="mt-2 text-sm text-white">
+                                            {peer.name || `User Unknown`}
+                                        </p>
                                     </div>
                                 )}
-                                <p className="absolute top-2 left-2 text-white bg-black bg-opacity-50 px-2 py-1 rounded">
-                                    User {peer.userId}
-                                </p>
                             </div>
                         ))}
                     </div>

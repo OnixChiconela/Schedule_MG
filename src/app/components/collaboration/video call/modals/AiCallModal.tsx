@@ -16,7 +16,7 @@ import { FaExchangeAlt } from "react-icons/fa";
 import { useNotifications } from "@/app/context/NotificationContext";
 import ExpandedAICallModal from "./aiModalComponents/ExpandedAICallModal";
 
-interface AICallContent {
+export interface AICallContent {
   id: string;
   callId: string;
   userId: string;
@@ -30,10 +30,15 @@ interface AICallContent {
 interface AICallModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (prompt: string, audioBlob?: Blob | null, transcription?: string) => Promise<string | null>;
+  onSubmit: (
+    prompt: string,
+    audioBlob?: Blob | null,
+    transcription?: string,
+    history?: AICallContent[]
+  ) => Promise<string | { prompt: string; transcription?: string; response?: string } | null>;
   peerStream?: MediaStream | null;
   localStream?: MediaStream | null;
-  callId: string
+  callId: string;
 }
 
 interface MiniAICallModalProps {
@@ -51,32 +56,6 @@ interface MiniAICallModalProps {
   audioSource: "local" | "peer" | "mixed";
   setAudioSource: (source: "local" | "peer" | "mixed") => void;
 }
-
-// interface ExpandedAICallModalProps {
-//   theme: string;
-//   prompt: string;
-//   setPrompt: (value: string) => void;
-//   onSubmit: (prompt: string, audioBlob?: Blob | null, transcription?: string) => void;
-//   onMinimize: () => void;
-//   isRecording: boolean;
-//   toggleRecording: () => void;
-//   peerStream?: MediaStream | null;
-//   localStream?: MediaStream | null;
-//   audioBlob: Blob | null;
-//   position: { x: number; y: number };
-//   isDragging?: boolean;
-//   response: string | null;
-//   isResponseStreaming: boolean;
-//   audioSource: "local" | "peer" | "mixed";
-//   setAudioSource: (source: "local" | "peer" | "mixed") => void;
-//   transcription: string | null;
-//   downloadAudio: () => void;
-//   suggestion: string | null
-//   isShared: boolean
-//   setIsShared: (value: boolean) => void
-//   aiContentHistory: AICallContent[]
-//   toggleSharing: () => void
-// }
 
 function MiniAICallModal({
   theme,
@@ -265,6 +244,7 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
   const destinationRef = useRef<MediaStreamAudioDestinationNode | null>(null);
   const dataReceivedRef = useRef<boolean>(false);
   const abortControllerRef = useRef<AbortController | null>(null)
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const bufferIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const suggestionIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -280,42 +260,215 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
   );
 
   useEffect(() => {
+    abortControllerRef.current = new AbortController();
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
+  // useEffect(() => {
+  //   if (!videoSocket || !currentUser?.id || !callId || !isOpen) {
+  //     console.log(`[AICallModal] Skipping socket setup:  videoSocket=${!!videoSocket}, userId=${currentUser?.id}`)
+  //     return
+  //   }
+
+  //   console.log(`[AICallModal] Setting up videoScoket listiners for callId=${callId}, userId=${currentUser.id}`)
+  //   videoSocket.emit('join-room', { callId })
+
+  //   const handleAIContentUpdate = async (content: AICallContent) => {
+  //     console.log(`[AICallModal] Received ai-content-update:`, content)
+  //     if (content && typeof content === 'object' && 'isShared' in content) {
+  //       const tempId = `temp-${Date.now()}`
+  //       setAIContentHistory((prev) => [
+  //         ...prev,
+  //         { ...content, id: tempId, response: content.response ? '' : content.response }
+  //       ])
+
+  //       if (content.isShared && content.response && typeof content.response === 'string') {
+  //         setIsGenerating(true)
+  //         // setResponse('');
+  //         setIsResponseStreaming(true);
+  //         try {
+  //           await simulateStreamingBChunk(
+  //             content.response,
+  //             (chunk) =>
+  //               setAIContentHistory((prev) =>
+  //                 prev.map((item) =>
+  //                   item.id === tempId ? { ...item, response: item.response ? item.response + ' ' + chunk : chunk } : item
+  //                 )
+  //               ),
+  //             5,
+  //             200,
+  //             abortControllerRef.current?.signal
+  //           );
+  //           console.log(`[AICallModal] Shared AI response streamed: ${content.response}`);
+  //           toast.success('New shared AI content received', {
+  //             duration: 3000,
+  //             style: {
+  //               background: theme === 'light' ? '#fff' : '#1e293b',
+  //               color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+  //               border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+  //             },
+  //           });
+  //           setAIContentHistory((prev) => prev.map((item) => (item.id === tempId ? { ...item, id: content.id } : item)))
+  //         } catch (error: any) {
+  //           console.error(`[AICallModal] Streaming failed: ${error.message}`);
+  //           toast.error(`Failed to stream AI response: ${error.message}`, {
+  //             duration: 3000,
+  //             style: {
+  //               background: theme === 'light' ? '#fff' : '#1e293b',
+  //               color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+  //               border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+  //             },
+  //           });
+  //           //Remove em caso de error
+  //           setAIContentHistory((prev) => prev.filter((item) => item.id !== tempId))
+  //         }
+  //         setIsResponseStreaming(false);
+  //         setIsGenerating(false)
+  //         setTranscription(content.transcription || null);
+  //       } else {
+  //         setTranscription(content.transcription || null);
+  //         console.warn(`[AICallModal] Streaming skipped for ai-content-update: isShared=${content.isShared}, response=${content.response}`);
+  //       }
+  //     } else {
+  //       console.warn(`[AICallModal] Invalid ai-content-update received:`, content);
+  //     }
+  //   }
+
+  //   const handleAISharingUpdated = ({ callId: updatedCallId, isShared }: { callId: string; isShared: boolean }) => {
+  //     if (updatedCallId === callId) {
+  //       console.log(`[AICallModal] Received ai-sharing-updated: isShared=${isShared}`);
+  //       setIsShared(isShared);
+  //       toast.success(isShared ? 'AI sharing enabled' : 'AI sharing disabled', {
+  //         duration: 3000,
+  //         style: {
+  //           background: theme === 'light' ? '#fff' : '#1e293b',
+  //           color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+  //           border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+  //         },
+  //       });
+  //     }
+  //   };
+
+  //   videoSocket.on('ai-content-update', handleAIContentUpdate)
+  //   videoSocket.on('ai-sharing-updated', handleAISharingUpdated)
+  //   videoSocket.on('connect_error', (err) => {
+  //     console.error(`[AICall] videoSocket connect_error:`, err);
+  //     toast.error(`Video call connection error: ${err.message}`, {
+  //       duration: 3000,
+  //       style: {
+  //         background: theme === 'light' ? '#fff' : '#1e293b',
+  //         color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+  //         border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+  //       },
+  //     });
+  //   });
+
+  //   return () => {
+  //     videoSocket.off('ai-content-update', handleAIContentUpdate)
+  //     videoSocket.off('ai-sharing-updated', handleAISharingUpdated)
+  //     videoSocket.off('connect_error')
+  //   }
+  // }, [videoSocket, currentUser?.id, callId, isOpen, theme, setIsShared, setTranscription, setIsGenerating, setAIContentHistory])
+
+  useEffect(() => {
     if (!videoSocket || !currentUser?.id || !callId || !isOpen) {
-      console.log(`[AICallModal] Skipping socket setup:  videoSocket=${!!videoSocket}, userId=${currentUser?.id}`)
-      return
+      console.log(`[AICallModal] Skipping socket setup: videoSocket=${!!videoSocket}, userId=${currentUser?.id}, callId=${callId}, isOpen=${isOpen}`);
+      return;
     }
 
-    console.log(`[AICallModal] Setting up videoScoket listiners for callId=${callId}, userId=${currentUser.id}`)
-    videoSocket.emit('join-room', { callId })
+    console.log(`[AICallModal] Setting up videoSocket listeners for callId=${callId}, userId=${currentUser.id}`);
+    videoSocket.emit('join-room', { callId });
 
-    const handleAIContentUpdate = (content: AICallContent) => {
-      console.log(`[AICallModal] Received ai-content-update:`, content)
-      // setAIContentHistory(content)
-      // if (content.length > 0 && content[content.length - 1].isShared) {
-      //   toast.success('New shared AI content received', {
-      //     duration: 3000,
-      //     style: {
-      //       background: theme === 'light' ? '#fff' : '#1e293b',
-      //       color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-      //       border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
-      //     },
-      //   });
-      // }
-      if (content.isShared) {
-        setResponse(content.response || null)
-        setTranscription(content.transcription || null)
-        toast.success('New shared AI content received', {
+    const handleAIContentUpdate = async (content: AICallContent) => {
+      console.log(`[AICallModal] Received ai-content-update:`, content);
+      if (!content || typeof content !== 'object' || !('isShared' in content)) {
+        console.warn(`[AICallModal] Invalid ai-content-update received:`, content);
+        return;
+      }
+
+      if (content.isShared && content.response && typeof content.response === 'string') {
+        console.log(`[AICallModal] Processing shared response with streaming: response=${content.response.substring(0, 50)}...`);
+        const tempId = `temp-${Date.now()}`;
+        setAIContentHistory((prev) => [
+          ...prev,
+          { ...content, id: tempId, response: '' }, // Entrada temporária para streaming
+        ]);
+        setIsResponseStreaming(true);
+        setIsGenerating(true);
+        try {
+          await simulateStreamingBChunk(
+            content.response,
+            (chunk) => {
+              console.log(`[AICallModal] Streaming chunk: ${chunk}`);
+              setAIContentHistory((prev) =>
+                prev.map((item) =>
+                  item.id === tempId ? { ...item, response: item.response ? item.response + ' ' + chunk : chunk } : item
+                )
+              );
+            },
+            5,
+            200,
+            abortControllerRef.current?.signal
+          );
+          console.log(`[AICallModal] Shared AI response streamed successfully: id=${content.id}`);
+          toast.success('New shared AI content received', {
+            duration: 3000,
+            style: {
+              background: theme === 'light' ? '#fff' : '#1e293b',
+              color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+              border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+            },
+          });
+          // Atualizar o ID real após o streaming
+          setAIContentHistory((prev) =>
+            prev.map((item) => (item.id === tempId ? { ...item, id: content.id } : item))
+          );
+        } catch (error: any) {
+          console.error(`[AICallModal] Streaming failed: ${error.message}`);
+          toast.error(`Failed to stream AI response: ${error.message}`, {
+            duration: 3000,
+            style: {
+              background: theme === 'light' ? '#fff' : '#1e293b',
+              color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+              border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+            },
+          });
+          setAIContentHistory((prev) => prev.filter((item) => item.id !== tempId));
+        } finally {
+          // setIsResponseStreaming(false);
+          setIsGenerating(false);
+          // setTranscription(content.transcription || null);
+        }
+        setIsResponseStreaming(false);
+        setIsGenerating(false);
+        setTranscription(content.transcription || null);
+      } else {
+        console.log(`[AICallModal] Adding non-shared response to history: response=${content.response?.substring(0, 50) || 'none'}...`);
+        setAIContentHistory((prev) => [...prev, { ...content }]);
+        setTranscription(content.transcription || null);
+        console.log(`[AICallModal] Non-streamed content added:`, content);
+      }
+    };
+
+    const handleAISharingUpdated = ({ callId: updatedCallId, isShared }: { callId: string; isShared: boolean }) => {
+      if (updatedCallId === callId) {
+        console.log(`[AICallModal] Received ai-sharing-updated: isShared=${isShared}`);
+        setIsShared(isShared);
+        toast.success(isShared ? 'AI sharing enabled' : 'AI sharing disabled', {
           duration: 3000,
           style: {
-            background: theme === "light" ? "#fff" : "#1e293b",
-            color: theme === "light" ? "#1f2937" : "#f4f4f6",
-            border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`
-          }
-        })
+            background: theme === 'light' ? '#fff' : '#1e293b',
+            color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+            border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+          },
+        });
       }
-    }
+    };
 
-    videoSocket.on('ai-content-update', handleAIContentUpdate)
+    videoSocket.on('ai-content-update', handleAIContentUpdate);
+    videoSocket.on('ai-sharing-updated', handleAISharingUpdated);
     videoSocket.on('connect_error', (err) => {
       console.error(`[AICall] videoSocket connect_error:`, err);
       toast.error(`Video call connection error: ${err.message}`, {
@@ -329,10 +482,11 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
     });
 
     return () => {
-      videoSocket.off('ai-content-update', handleAIContentUpdate)
-      videoSocket.off('connect_error')
-    }
-  }, [videoSocket, currentUser?.id, callId, isOpen, theme])
+      videoSocket.off('ai-content-update', handleAIContentUpdate);
+      videoSocket.off('ai-sharing-updated', handleAISharingUpdated);
+      videoSocket.off('connect_error');
+    };
+  }, [videoSocket, currentUser?.id, callId, isOpen, theme, setIsShared, setTranscription, setIsGenerating, setIsResponseStreaming, setAIContentHistory]);
 
   const toggleSharing = () => {
     if (!videoSocket || !currentUser?.id || !callId) {
@@ -1200,8 +1354,25 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
       },
     });
 
+    const canUse = await checkAIUsage(currentUser.id);
+    if (!canUse) {
+      toast.error("Daily AI usage limit reached", {
+        duration: 3000,
+        style: {
+          background: theme === "light" ? "#fff" : "#1e293b",
+          color: theme === "light" ? "#1f2937" : "#f4f4f6",
+          border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+        },
+      });
+      router.push("/pricing")
+      return;
+    }
+
+    setIsGenerating(true);
     try {
-      const result = await onSubmit(prompt, audioBlob, transcription);
+      console.log(`[AICall] Submitting prompt: ${prompt}, audioBlob=${!!audioBlob}, transcription=${transcription}`);
+      const result = await onSubmit(prompt, audioBlob, transcription, aiContentHistory);
+      console.log(`[AICall] Received result: type=${typeof result}, value=`, result);
       toast.dismiss(toastId);
 
       if (!result) {
@@ -1213,36 +1384,53 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
             border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
           },
         });
+        setIsGenerating(false);
         return;
       }
 
       const payload = {
         callId,
         userId: currentUser.id,
-        prompt: typeof result === 'string' ? prompt : (result as { prompt: string; transcription?: string }).prompt,
-        transcription: typeof result === 'string' ? transcription : (result as { prompt: string; transcription?: string }).transcription,
-        response: typeof result === 'string' ? result : undefined,
+        prompt,
+        transcription: transcription || undefined,
+        response: typeof result === 'string' ? result : result.response,
         isShared,
         createdAt: new Date().toISOString(),
+        id: `temp-${Date.now()}`,
+        history: aiContentHistory, // Adicionar histórico ao payload
       };
 
-      if (audioBlob && typeof result === "string") {
-        // Audio submission: stream response
-        setResponse('');
+      console.log(`[AICall] Processing submission: response=${payload.response?.substring(0, 50) || 'none'}...`);
+
+      // Adicionar respostas não compartilhadas diretamente
+      if (!isShared || !payload.response || typeof payload.response !== 'string') {
+        setAIContentHistory((prev) => [...prev, { ...payload, history: undefined }]);
+        setIsGenerating(false);
+        console.log(`[AICall] Non-streamed content added:`, payload);
+      } else {
+        // Streaming para respostas compartilhadas
+        setAIContentHistory((prev) => [
+          ...prev,
+          { ...payload, response: '', history: undefined },
+        ]);
         setIsResponseStreaming(true);
         await simulateStreamingBChunk(
-          result as string,
-          (chunk) => setResponse((prev) => (prev ? prev + ' ' + chunk : chunk)),
+          payload.response,
+          (chunk) => {
+            console.log(`[AICall] Streaming chunk: ${chunk}`);
+            setAIContentHistory((prev) =>
+              prev.map((item) =>
+                item.id === payload.id ? { ...item, response: item.response ? item.response + ' ' + chunk : chunk } : item
+              )
+            );
+          },
           5,
           200,
-          abortControllerRef.current!.signal
+          abortControllerRef.current?.signal
         );
         setIsResponseStreaming(false);
-        console.log(`[AICallModal] AI response received: ${result}`);
-      } else {
-        // Text-only submission: set static response
-        setResponse('Pending response...');
-        setTranscription(transcription || null);
+        setIsGenerating(false);
+        console.log(`[AICall] AI response streamed: ${payload.response}`);
       }
 
       if (videoSocket) {
@@ -1258,8 +1446,14 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
                 border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
               },
             });
+            setAIContentHistory((prev) => prev.filter((item) => item.id !== payload.id));
           } else {
             console.log(`[AICall] AI content shared: contentId=${response.contentId}`);
+            setAIContentHistory((prev) =>
+              prev.map((item) =>
+                item.id === payload.id ? { ...item, id: response.contentId || item.id } : item
+              )
+            );
             toast.success('AI content shared', {
               duration: 3000,
               style: {
@@ -1271,15 +1465,6 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
           }
         });
       }
-
-      toast.success('Response generated successfully', {
-        duration: 3000,
-        style: {
-          background: theme === 'light' ? '#fff' : '#1e293b',
-          color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-          border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
-        },
-      });
     } catch (error: any) {
       console.error('[AICall] Failed to process prompt:', error);
       toast.dismiss(toastId);
@@ -1291,6 +1476,7 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
           border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
         },
       });
+      setIsGenerating(false);
     }
   };
 
@@ -1411,6 +1597,7 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
             setIsShared={setIsShared}
             aiContentHistory={aiContentHistory}
             toggleSharing={toggleSharing}
+            isGenerating={isGenerating}
           />
         )}
       </AnimatePresence>

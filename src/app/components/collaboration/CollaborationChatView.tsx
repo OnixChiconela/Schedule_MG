@@ -46,7 +46,7 @@ interface MessageResponse {
 type PartnershipMembership = {
     userId: string;
     partnershipId: string;
-    role: "OWNER" | "ADMIN" | "COLABORATOR" | "GUEST";
+    role: "OWNER" | "ADMIN" | "COLLABORATOR" | "GUEST";
     joinedAt: Date;
 };
 
@@ -101,7 +101,7 @@ const CollaborationChatView = ({ partnershipId }: { partnershipId: string }) => 
 
     const isAuthorized = partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "OWNER"
         || partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "ADMIN"
-        || partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "COLABORATOR"
+        || partnershipDetails?.members.find((member) => member.userId === currentUser?.id)?.role === "COLLABORATOR"
         || false
 
     // Data loading
