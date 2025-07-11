@@ -413,14 +413,14 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
             abortControllerRef.current?.signal
           );
           console.log(`[AICallModal] Shared AI response streamed successfully: id=${content.id}`);
-          toast.success('New shared AI content received', {
-            duration: 3000,
-            style: {
-              background: theme === 'light' ? '#fff' : '#1e293b',
-              color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-              border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
-            },
-          });
+          // toast.success('New shared AI content received', {
+          //   duration: 3000,
+          //   style: {
+          //     background: theme === 'light' ? '#fff' : '#1e293b',
+          //     color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+          //     border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+          //   },
+          // });
           // Atualizar o ID real após o streaming
           setAIContentHistory((prev) =>
             prev.map((item) => (item.id === tempId ? { ...item, id: content.id } : item))
@@ -456,14 +456,14 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
       if (updatedCallId === callId) {
         console.log(`[AICallModal] Received ai-sharing-updated: isShared=${isShared}`);
         setIsShared(isShared);
-        toast.success(isShared ? 'AI sharing enabled' : 'AI sharing disabled', {
-          duration: 3000,
-          style: {
-            background: theme === 'light' ? '#fff' : '#1e293b',
-            color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-            border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
-          },
-        });
+        // toast.success(isShared ? 'AI sharing enabled' : 'AI sharing disabled', {
+        //   duration: 3000,
+        //   style: {
+        //     background: theme === 'light' ? '#fff' : '#1e293b',
+        //     color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+        //     border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+        //   },
+        // });
       }
     };
 
@@ -1454,14 +1454,14 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
                 item.id === payload.id ? { ...item, id: response.contentId || item.id } : item
               )
             );
-            toast.success('AI content shared', {
-              duration: 3000,
-              style: {
-                background: theme === 'light' ? '#fff' : '#1e293b',
-                color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-                border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
-              },
-            });
+            // toast.success('AI content shared', {
+            //   duration: 3000,
+            //   style: {
+            //     background: theme === 'light' ? '#fff' : '#1e293b',
+            //     color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+            //     border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+            //   },
+            // });
           }
         });
       }
