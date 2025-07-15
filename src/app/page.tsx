@@ -500,6 +500,11 @@ export default function LandingPage() {
                   icon={BiQuestionMark}
                   title=""
                   content=""
+                  from={`${theme == "light" ? "from-neutral-200/60" : "from-slate-700"}`}
+                  to={`${theme == "light" ? "to-neutral-50" : "to-slate-600"}`}
+                  contentColor={`${theme == "light" ? "text-neutral-700" : "text-neutral-300"}`}
+                  smallBg={`${theme == "light" ? "bg-neutral-400/20" : "bg-slate-500/30"}`}
+                  iconColor={`${theme == "light" ? "black" : "gray"}`}
                 />
               </div>
             </div>

@@ -183,7 +183,12 @@ function ExpandedAICallModal({
   };
 
   const latestContent = aiContentHistory[aiContentHistory.length - 1]
-  console.log("latest response", latestContent)
+
+  const sortedHistory = [...aiContentHistory].sort((a, b) => {
+    const aTime = new Date(a.createdAt || 0).getTime();
+    const bTime = new Date(b.createdAt || 0).getTime();
+    return aTime - bTime;
+  });
 
   return (
     <motion.div
@@ -308,8 +313,8 @@ function ExpandedAICallModal({
             {latestContent.response ? (
               <div
                 className={`w-full p-4 h-[200px] rounded-lg overflow-y-auto ${theme === 'light'
-                    ? 'bg-gray-50/20 text-neutral-800 border border-gray-200/30'
-                    : 'bg-slate-800/20 text-neutral-200 border border-slate-600/30'
+                  ? 'bg-gray-50/20 text-neutral-800 border border-gray-200/30'
+                  : 'bg-slate-800/20 text-neutral-200 border border-slate-600/30'
                   }`}
                 data-testid={`response-text-${latestContent.id}`}
                 aria-live="polite"
@@ -430,8 +435,8 @@ function ExpandedAICallModal({
             </div>
             <div
               className={`w-full p-4 rounded-lg overflow-y-auto ${theme === 'light'
-                  ? 'bg-gray-50/20 text-neutral-800 border border-gray-200/30'
-                  : 'bg-slate-800/20 text-neutral-200 border border-slate-600/30'
+                ? 'bg-gray-50/20 text-neutral-800 border border-gray-200/30'
+                : 'bg-slate-800/20 text-neutral-200 border border-slate-600/30'
                 }`}
               data-testid="suggestion-text"
               aria-live="polite"
