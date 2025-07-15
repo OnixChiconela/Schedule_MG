@@ -9,7 +9,8 @@ export const updateChatpermissions = async (chatId: string, userId: string, visi
             withCredentials: true
         })
         return res.data
-    } catch (error) {
-        console.error("Failed to update chat permission: ", error)
+    } catch (error: any) {
+        console.error("Error fetching partnership members:", error)
+        throw new Error(error)
     }
 }

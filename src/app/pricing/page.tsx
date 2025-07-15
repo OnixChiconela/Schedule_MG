@@ -33,20 +33,23 @@ const PricingPage = () => {
 
     const handleSubscribe = async (planId: string) => {
         setIsLoading(true)
+        const loadingToast = toast.loading("Redirecting to PayPal...")
+
         try {
             // Show modal instead of calling API
-            setIsModalOpen(true)
-            /*
-            const { approvalUrl, subscriptionId } = await handleSubscribeWithPaypal(currentUser?.id as string, planId)
+            // setIsModalOpen(true)
+
+            const { approvalUrl /* subscriptionId*/ } = await handleSubscribeWithPaypal(currentUser?.id as string, planId)
             if (approvalUrl) {
-              window.location.href = approvalUrl
+                window.location.href = approvalUrl
             } else {
-              toast.error("Failed to initiate subscription")
+                toast.error("Failed to initiate subscription")
             }
-            */
+
         } catch (error) {
             toast.error("An error occurred. Please try again.")
         } finally {
+            toast.dismiss(loadingToast)
             setIsLoading(false)
         }
     }

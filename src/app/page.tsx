@@ -57,7 +57,7 @@ export default function LandingPage() {
                       <Container>
                         <div className="flex flex-col ">
                           <h1 className={`text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-center  ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`}>
-                            {`Where conversations`}
+                            {`Talk smarter with your team,`}
                             <br />
                             <span
                               style={{
@@ -67,11 +67,14 @@ export default function LandingPage() {
                               }}
                               className="bg-gradient-to-r from-fuchsia-500 to-fuchsia-900 text-transparent"
                             >
-                              {`spark progress`}
+                              {`not louder`}
                             </span>
                           </h1>
-                          <p className={`text-lg sm:text-xl max-w-2xl mb-8 text-center ${theme == "light" ? "text-gray-600" : "text-neutral-400/90"}`}>
+                          {/* <p className={`text-lg sm:text-xl max-w-2xl mb-8 text-center ${theme == "light" ? "text-gray-600" : "text-neutral-400/90"}`}>
                             {`Scheuor is your space for real-time, meaningful conversations, solo or in partnership. Let AI assist and enhace your interaction, every step or of the way.`}
+                          </p> */}
+                          <p className={`text-lg sm:text-xl max-w-2xl mb-8 text-center ${theme == "light" ? "text-gray-600" : "text-neutral-400/90"}`}>
+                            {`In Scheuor, your AI listens with you, not for you. Add your people, activate Telepathy Mode, and let the right insights reach the rigth minds, all in real time`}
                           </p>
                           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <div
@@ -139,10 +142,11 @@ export default function LandingPage() {
                       ${theme == "light" ? "text-neutral-200 bg-neutral-900" : "text-neutral-800 bg-neutral-200"} rounded-xl`}>
                         {`1`}
                       </div>
-                      <h3 className={`mb-4 text-4xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In Meetings`}</h3>
+                      <h3 className={`mb-4 text-4xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`During meetings`}</h3>
                       <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Lead smarter meetings.`}</a>
-                        {`Scheuor's AI listens quietly. suggests intelligently, and stays invisible unless you choose to reveal it`}
+                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Meet with clarity, not noise. `}</a>
+                        {`Scheuor listens, reply in real time and offers silent support only tot those you allow. From subtle nudges to full summaries,
+                        you lead the call, the AI just keeps you sharp`}
                       </p>
                     </div>
                   </div>
@@ -156,10 +160,11 @@ export default function LandingPage() {
                       ${theme == "light" ? "text-neutral-200 bg-neutral-900" : "text-neutral-800 bg-neutral-200"} rounded-xl`}>
                         {`2`}
                       </div>
-                      <h3 className={`mb-4 text-4xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In chats.`}</h3>
+                      <h3 className={`mb-4 text-4xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In shared spaces.`}</h3>
                       <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Engage on tailored chats `}</a>
-                        {`Whether professional or personal, scheuor adapts to each partnership. We support your conversation in real time, understanding its context to help guide your next move`}
+                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Your team second brain. `}</a>
+                        {`Create spaces with teammates or clients and let AI help navigate decisions, hightlight blind spots,and stay aligned, wether you're 
+                        live or async.Everyone sees what they should, and nothing more`}
                       </p>
                     </div>
                     <div className="flex-1 lg:max-w-xl ">
@@ -188,10 +193,11 @@ export default function LandingPage() {
                       ${theme == "light" ? "text-neutral-200 bg-neutral-900" : "text-neutral-800 bg-neutral-200"} rounded-xl`}>
                         {`3`}
                       </div>
-                      <h3 className={`mb-4 text-4xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In private`}</h3>
+                      <h3 className={`mb-4 text-4xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In your private zone`}</h3>
                       <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Your space. Your pace. `}</a>
-                        {`Scheuor helps you shape your personal flow, generate ideias, and evolve with smart suggestions tailored to you`}
+                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Think on your own terms. `}</a>
+                        {`Use Scheuor solo to brainstorm, prepare before meetings, generate content to refine your thoughts, no distractions, no audience.
+                        Just you and your personal assistent that knows your flow`}
                       </p>
                     </div>
                   </div>
@@ -215,10 +221,11 @@ export default function LandingPage() {
                       ${theme == "light" ? "text-neutral-200 bg-neutral-900" : "text-neutral-800 bg-neutral-200"} rounded-xl`}>
                         {`1`}
                       </div>
-                      <h3 className={`mb-4 text-3xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In meetings`}</h3>
+                      <h3 className={`mb-4 text-3xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`During meetings`}</h3>
                       <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Lead smarter meetings. `}</a>
-                        {`Scheuor's AI listens quietly. suggests intelligently, and stays invisible unless you choose to reveal it`}
+                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Meet with clarity, not noise.`}</a>
+                        {`Scheuor listens, reply in real time and offers silent support only tot those you allow. From subtle nudges to full summaries,
+                        you lead the call, the AI just keeps you sharp`}
                       </p>
                     </div>
                   </div>
@@ -239,10 +246,11 @@ export default function LandingPage() {
                       ${theme == "light" ? "text-neutral-200 bg-neutral-900" : "text-neutral-800 bg-neutral-200"} rounded-xl`}>
                         {`2`}
                       </div>
-                      <h3 className={`mb-4 text-3xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In chats.`}</h3>
+                      <h3 className={`mb-4 text-3xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In shared spaces.`}</h3>
                       <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Engage on tailored chats `}</a>
-                        {`Whether professional or personal, scheuor adapts to each partnership. We support your conversation in real time, understanding its context to help guide your next move`}
+                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Your team second brain. `}</a>
+                        {`Create spaces with teammates or clients and let AI help navigate decisions, hightlight blind spots,and stay aligned, wether you're 
+                        live or async.Everyone sees what they should, and nothing more`}
                       </p>
                     </div>
                   </div>
@@ -264,10 +272,11 @@ export default function LandingPage() {
                       ${theme == "light" ? "text-neutral-200 bg-neutral-900" : "text-neutral-800 bg-neutral-200"} rounded-xl`}>
                         {`3`}
                       </div>
-                      <h3 className={`mb-4 text-3xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In private`}</h3>
+                      <h3 className={`mb-4 text-3xl font-bold ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>{`In your private zone`}</h3>
                       <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
-                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Your space. Your pace: `}</a>
-                        {`Scheuor helps you shape your personal flow, generate ideias, and evolve with smart suggestions tailored to you`}
+                        <a className={`font-semibold ${theme == "light" ? "text-neutral-900" : "text-neutral-200"}`}>{`Think on your own terms. `}</a>
+                        {`Use Scheuor solo to brainstorm, prepare before meetings, generate content to refine your thoughts, no distractions, no audience.
+                        Just you and your personal assistent that knows your flow`}
                       </p>
                     </div>
                   </div>
@@ -312,14 +321,14 @@ export default function LandingPage() {
                         : "from-neutral-200 to-neutral-600 text-neutral-800"} font-semibold transition-colors`}>
                         Partners
                       </h3> */}
-                      <span className={`p-2 bg-gradient-to-l w-[30%] rounded-xl mb-5 flex ${theme === "light" 
-                          ? "from-neutral-400 to-neutral-800" : "from-neutral-600 to-neutral-200"} transition-colors`}>
-                          <h3 className={`  ${theme == "light"
-                            ? " text-neutral-50"
-                            : " text-neutral-800"} font-semibold `}>
-                            Partners
-                          </h3>
-                        </span>
+                      <span className={`p-2 bg-gradient-to-l w-[30%] rounded-xl mb-5 flex ${theme === "light"
+                        ? "from-neutral-400 to-neutral-800" : "from-neutral-600 to-neutral-200"} transition-colors`}>
+                        <h3 className={`  ${theme == "light"
+                          ? " text-neutral-50"
+                          : " text-neutral-800"} font-semibold `}>
+                          Partners
+                        </h3>
+                      </span>
                       <div className="flex-none md:flex-1">
                         <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">
                           {/* <Image
@@ -331,7 +340,7 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <div className="flex justify-end">
-                        <span className={`p-2 bg-gradient-to-r w-[30%] rounded-xl mb-5 flex justify-end ${theme === "light" 
+                        <span className={`p-2 bg-gradient-to-r w-[30%] rounded-xl mb-5 flex justify-end ${theme === "light"
                           ? "from-neutral-400 to-neutral-800" : "from-neutral-600 to-neutral-200"} transition-colors`}>
                           <h3 className={`  ${theme == "light"
                             ? " text-neutral-50"
@@ -370,6 +379,36 @@ export default function LandingPage() {
                       </h4>
                       <p className={`text-base leading-relaxed ${theme === "light" ? "text-gray-800" : "text-gray-300"}`}>
                         Sometimes you don't need to think twice. Just hit reply, Scheuor knows what to say, how to say it, and when it matters most. It's like having someone who always gets you.
+                      </p>
+                    </div>
+
+                    {/* Image Section */}
+                    <div className="w-full md:flex-[0.65]">
+                      <div className="relative aspect-[2/1.2] w-full overflow-hidden rounded-2xl shadow-lg shadow-fuchsia-300 flex">
+                        {/* <Image alt="calendar" src={""} /> */}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className={`flex flex-col gap-4 mb-20`}>
+                    <h3 className={`text-4xl font-bold ${theme == "light" ? "text-gray-900" : "text-gray-200"}`}>{`Take Scheuor with you`}</h3>
+                    <p className={`text-xl leading-relaxed ${theme == "light" ? "text-gray-800" : "text-gray-300"}`}>
+                      {`Wherever the conversation happens.`}<br />
+                      {`Scheuor ins't just for your workspace.
+                      Add our browser extension and bring it with you, into zoom calls, Google Meet, or even when you're replying to an email.`}
+                    </p>
+                  </div>
+                  <div className="flex flex-col md:flex-row gap-8 md:gap-12">
+                    {/* Text Section */}
+                    <div className="w-full md:flex-[0.35]">
+                      <h4 className={`text-2xl font-semibold mb-4 ${theme === "light" ? "text-neutral-700" : "text-neutral-300"}`}>
+                        {`Scheuor Extension `}<span>{`(soon)`}</span>
+                      </h4>
+                      <p className={`text-base leading-relaxed ${theme === "light" ? "text-gray-800" : "text-gray-300"}`}>
+                        {`Whether you're in a meeting, writing a message, or reviewing something important, Scheuor with you permission, quietly undarstands,
+                         and helps you, right when it matters.`}
                       </p>
                     </div>
 

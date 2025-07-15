@@ -7,7 +7,8 @@ export const summarizeChat = async (partnershipId: string, chatId: string, userI
             withCredentials: true
         })
         return res.data
-    } catch (error) {
-        console.error("failed to summarize:", error)
+    } catch (error: any) {
+        console.error("Error fetching partnership members:", error)
+        throw new Error(error)
     }
 }

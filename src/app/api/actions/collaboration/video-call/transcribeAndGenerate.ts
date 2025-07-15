@@ -38,6 +38,6 @@ export const transcribeAndGenerate = async (
         return response.data
     } catch (error) {
         console.error(`[transcribeAndGenerate] Failed to process ${action}:`, error);
-        throw error;
+        throw new Error;
     }
 }

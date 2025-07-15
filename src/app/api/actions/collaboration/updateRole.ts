@@ -11,8 +11,8 @@ export const updateMemberRole = async (
             requireUserId
         }, { withCredentials: true, })
         res.data
-    } catch (error) {
-        console.log("Failed to update member role", error)
-        throw error;
+    } catch (error: any) {
+        console.error("Error fetching partnership members:", error)
+        throw new Error(error)
     }
 }

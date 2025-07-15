@@ -13,8 +13,8 @@ export const removeMember = async(
         })
         toast.success("removing")
         return res.data
-    } catch (error) {
-        console.error("Failed to remove member")
-        throw error;
+    } catch (error: any) {
+        console.error("Error fetching partnership members:", error)
+        throw new Error(error)
     }
 }

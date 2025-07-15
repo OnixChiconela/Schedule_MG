@@ -19,6 +19,7 @@ import CollaborationChatView from "@/app/components/collaboration/CollaborationC
 import CollabMemberBar from "@/app/components/collaboration/CollaborationMemberBar";
 import CollaborationVideoCallView from "@/app/components/collaboration/video call/CollaborationVideoCallView";
 import MainNavbar from "@/app/components/navbars/MainNavbar";
+import EmptyState from "@/app/components/errors/EmptyState";
 
 export default function CollaborationPage() {
   const { collaborationId } = useParams<{ collaborationId: string }>();
@@ -189,9 +190,12 @@ export default function CollaborationPage() {
   console.log("partnership: ", partnership)
 
   if (!partnership) {
-    return <div>Loading...</div>;
+    return (
+      <div>
+        <EmptyState />
+      </div>
+    )
   }
-
   return (
     <div className={`flex min-h-screen w-full ${theme === "light" ? "bg-white" : "bg-slate-900"} transition-colors duration-300`}>
       <CollaborationSidebar

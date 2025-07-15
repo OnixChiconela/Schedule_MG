@@ -6,7 +6,8 @@ export const getUserCollabSpace = async(userId: string) => {
             withCredentials: true
         }) 
         return response.data
-    } catch (error) {
-
+    } catch (error: any) {
+        console.error("Error fetching partnership members:", error)
+        throw new Error(error)
     }
 }

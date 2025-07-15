@@ -7,8 +7,8 @@ export const getCollabMembers = async (id: string) => {
             withCredentials: true
         })
         return res.data
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching partnership members:", error)
-        throw error
+        throw new Error(error)
     }
 }

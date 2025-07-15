@@ -72,7 +72,7 @@ const LandingFooter = () => {
                                         : 'text-neutral-400 hover:text-fuchsia-400'
                                         } transition`}
                                 >
-                                    Features
+                                    How it works
                                 </Link>
                             </li>
                             <li>
@@ -99,13 +99,13 @@ const LandingFooter = () => {
                             </li>
                             <li>
                                 <Link
-                                    href="/#"
+                                    href="/pricing"
                                     className={`${theme === 'light'
                                         ? 'text-gray-600 hover:text-fuchsia-600'
                                         : 'text-neutral-400 hover:text-fuchsia-400'
                                         } transition`}
                                 >
-                                    About
+                                    Pricing
                                 </Link>
                             </li>
                         </ul>
@@ -166,7 +166,7 @@ const LandingFooter = () => {
 
                         <div className="flex gap-4">
                             <a
-                                href="https://x.com/scheuor"
+                                href="https://x.com/Gowithscheuor"
                                 className={`${theme === 'light' ? 'text-gray-600' : 'text-neutral-400'
                                     } hover:text-fuchsia-600 transition`}
                                 aria-label="Twitter"
@@ -174,21 +174,21 @@ const LandingFooter = () => {
                                 <IoLogoTwitter size={24} />
                             </a>
                             <a
-                                href="https://linkedin.com/company/scheuor"
+                                href="/#"
                                 className={`${theme === 'light' ? 'text-gray-600' : 'text-neutral-400'
                                     } hover:text-fuchsia-600 transition`}
                                 aria-label="LinkedIn"
                             >
                                 <IoLogoLinkedin size={24} />
                             </a>
-                            <a
+                            {/* <a
                                 href="https://instagram.com/scheuor"
                                 className={`${theme === 'light' ? 'text-gray-600' : 'text-neutral-400'
                                     } hover:text-fuchsia-600 transition`}
                                 aria-label="Instagram"
                             >
                                 <IoLogoInstagram size={24} />
-                            </a>
+                            </a> */}
                         </div>
                     </motion.div>
                 </div>

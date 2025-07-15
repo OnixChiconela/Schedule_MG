@@ -298,20 +298,19 @@ function ExpandedAICallModal({
             <div className="flex items-center gap-2 mb-2">
               <Sparkles size={16} />
               <h3
-                className={`text-base font-semibold ${
-                  theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'
-                }`}
+                className={`text-base font-semibold ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'
+                  }`}
               >
-                Response {isShared && <span className="text-xs text-teal-500">(Telepathy)</span>}
+                Response {isResponseStreaming && <span className="text-gray-500 ml-1">generating...</span>}
+                {isShared && <span className="text-xs text-teal-500">(Telepathy)</span>}
               </h3>
             </div>
             {latestContent.response ? (
               <div
-                className={`w-full p-4 h-[200px] rounded-lg overflow-y-auto ${
-                  theme === 'light'
+                className={`w-full p-4 h-[200px] rounded-lg overflow-y-auto ${theme === 'light'
                     ? 'bg-gray-50/20 text-neutral-800 border border-gray-200/30'
                     : 'bg-slate-800/20 text-neutral-200 border border-slate-600/30'
-                }`}
+                  }`}
                 data-testid={`response-text-${latestContent.id}`}
                 aria-live="polite"
               >
@@ -333,12 +332,12 @@ function ExpandedAICallModal({
                         {children}
                       </h3>
                     ),
-                    p: ({ children }) => (
-                      <p className={`text-sm mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
-                        {children}
-                        {isResponseStreaming && <span className="text-gray-500 ml-1">generating...</span>}
-                      </p>
-                    ),
+                    // p: ({ children }) => (
+                    //   <p className={`text-sm mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                    //     {children}
+                    //     {isResponseStreaming && <span className="text-gray-500 ml-1">generating...</span>}
+                    //   </p>
+                    // ),
                     ul: ({ children }) => (
                       <ul className={`list-disc list-inside mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
                         {children}
@@ -379,9 +378,8 @@ function ExpandedAICallModal({
             {(latestContent.transcription || transcription) && (
               <div className="mt-4">
                 <h4
-                  className={`text-sm font-medium ${
-                    theme === 'light' ? 'text-neutral-800' : 'text-neutral-300'
-                  }`}
+                  className={`text-sm font-medium ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-300'
+                    }`}
                 >
                   Transcription {isShared && <span className="text-xs text-teal-500">(Shared)</span>}
                 </h4>
@@ -424,19 +422,17 @@ function ExpandedAICallModal({
             <div className="flex items-center gap-2 mb-2">
               <Sparkles size={16} />
               <h3
-                className={`text-base font-semibold ${
-                  theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'
-                }`}
+                className={`text-base font-semibold ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'
+                  }`}
               >
                 Suggestion {isShared && <span className="text-xs text-teal-500">(Telepathy)</span>}
               </h3>
             </div>
             <div
-              className={`w-full p-4 rounded-lg overflow-y-auto ${
-                theme === 'light'
+              className={`w-full p-4 rounded-lg overflow-y-auto ${theme === 'light'
                   ? 'bg-gray-50/20 text-neutral-800 border border-gray-200/30'
                   : 'bg-slate-800/20 text-neutral-200 border border-slate-600/30'
-              }`}
+                }`}
               data-testid="suggestion-text"
               aria-live="polite"
             >

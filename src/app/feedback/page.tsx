@@ -6,9 +6,9 @@ import { toast } from 'react-hot-toast'
 import { useTheme } from '../themeContext'
 
 export default function FeedbackPage() {
+  const {theme} = useTheme()
   const [feedback, setFeedback] = useState('')
   const [suggestionsFeedback, setSuggestionsFeedback] = useState('')
-  const { theme } = useTheme()
 
   const handleSubmit = () => {
     if (!feedback.trim()) {
@@ -21,7 +21,7 @@ export default function FeedbackPage() {
   }
 
   return (
-    <div className="p-6 min-h-screen bg-gray-100 dark:bg-slate-900">
+    <div className={`p-6 min-h-screen ${theme == "light" ? "bg-gray-100": "bg-slate-900"}`}>
       <h2 className={`text-xl font-semibold mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-gray-100'}`}>
         Feedback
       </h2>

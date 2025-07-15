@@ -6,8 +6,8 @@ export const getCollabById = async (id: string) => {
             withCredentials: true
         })
         return res.data
-    } catch (error) {
-        console.error("Error fetching partnership:", error)
-        throw error
+    } catch (error: any) {
+        console.error("Error fetching partnership members:", error)
+        throw new Error(error)
     }
 }
