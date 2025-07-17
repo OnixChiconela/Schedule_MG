@@ -58,7 +58,7 @@ const PricingPage = () => {
 
     return (
         <ClientOnly>
-            <div className={`${theme === "light" ? "bg-white" : "bg-slate-800"} transition-colors duration-300 h-full flex flex-col pb-5`}>
+            <div className={`${theme === "light" ? "bg-white" : "bg-slate-800"} transition-colors duration-300 min-h-screen flex flex-col pb-5`}>
                 <LandingNavbar />
                 <Container>
                     <div className="flex flex-col gap-16">

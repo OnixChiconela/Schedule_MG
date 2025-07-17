@@ -138,7 +138,7 @@ const Auth = () => {
             }`}
           >
             <div
-              className={`hidden md:block w-1/2 bg-cover bg-center ${imageConfig.fallback || ""} ${imageConfig.className || ""}`}
+              className={`hidden md:block w-1/2 bg-cover bg-center m-3 rounded-lg ${imageConfig.fallback || ""} ${imageConfig.className || ""}`}
               style={{ backgroundImage: `url(${imageConfig.url})` }}
               role="img"
               aria-label={imageConfig.alt}

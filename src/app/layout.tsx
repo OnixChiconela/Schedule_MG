@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <link rel="icon" type="image/png" sizes="12x12" href="/scheuor_logo.png" />
+        <link rel="icon" type="image/png" sizes="12x12" href="/scheuor-logo.png" />
         {gaTrackingId && (
           <>
             <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaTrackingId}`}></script>

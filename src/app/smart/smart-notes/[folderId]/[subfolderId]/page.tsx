@@ -6,7 +6,7 @@ import ToolsNavbar from "@/app/components/navbars/ToolsNavbar";
 import { useTheme } from "@/app/themeContext";
 import toast from "react-hot-toast";
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useQuill } from "react-quilljs";
 import "quill/dist/quill.snow.css";
@@ -19,6 +19,8 @@ import { createPortal } from "react-dom";
 import { marked } from "marked"
 import { canUseAI } from "@/app/api/actions/AI/CanUseAI";
 import { Delta } from "quill";
+import { checkAIUsage } from "@/app/api/actions/AI/checkAIUsage";
+import { useUser } from "@/app/context/UserContext";
 
 type Subfolder = {
     id: number;
@@ -40,7 +42,9 @@ type Folder = {
 };
 
 const SubfolderNote = () => {
+    const router = useRouter()
     const { theme } = useTheme();
+    const { currentUser } = useUser()
     const [folders, setFolders] = useState<Folder[]>(() => {
         if (typeof window !== "undefined") {
             const saved = localStorage.getItem("smartNotesFolders");
@@ -262,6 +266,32 @@ const SubfolderNote = () => {
 
     const handleAISubmit = async (prompt: string) => {
         // console.log("handleAISubmit chamado com prompt:", prompt);
+        if (!currentUser) {
+            toast.error("Oops, make sure you're logged in", {
+                duration: 3000,
+                style: {
+                    background: theme === "light" ? "#fff" : "#1e293b",
+                    color: theme === "light" ? "#1f2937" : "#f4f4f6",
+                    border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+                },
+            });
+            router.push("/my-space/auth/login")
+            return;
+        }
+        const canUse = await checkAIUsage(currentUser!.id);
+        if (!canUse) {
+            toast.error("Daily AI usage limit reached", {
+                duration: 3000,
+                style: {
+                    background: theme === "light" ? "#fff" : "#1e293b",
+                    color: theme === "light" ? "#1f2937" : "#f4f4f6",
+                    border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+                },
+            });
+            router.push("/pricing")
+            return;
+        }
+
         const sendPrompt = `without conversational introductions: ${prompt}`;
         setIsModalOpen(false);
         setIsGenerating(true);
@@ -303,6 +333,31 @@ const SubfolderNote = () => {
     };
 
     const handleEnhanceText = async () => {
+        if (!currentUser) {
+            toast.error("Oops, make sure you're logged in", {
+                duration: 3000,
+                style: {
+                    background: theme === "light" ? "#fff" : "#1e293b",
+                    color: theme === "light" ? "#1f2937" : "#f4f4f6",
+                    border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+                },
+            });
+            router.push("/my-space/auth/login")
+            return;
+        }
+        const canUse = await checkAIUsage(currentUser!.id);
+        if (!canUse) {
+            toast.error("Daily AI usage limit reached", {
+                duration: 3000,
+                style: {
+                    background: theme === "light" ? "#fff" : "#1e293b",
+                    color: theme === "light" ? "#1f2937" : "#f4f4f6",
+                    border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+                },
+            });
+            router.push("/pricing")
+            return;
+        }
         if (!selectedText || !quill) {
             toast.error("Please select text to enhance.");
             return;
@@ -353,6 +408,31 @@ const SubfolderNote = () => {
     };
 
     const handleSummarizeText = async () => {
+        if (!currentUser) {
+            toast.error("Oops, make sure you're logged in", {
+                duration: 3000,
+                style: {
+                    background: theme === "light" ? "#fff" : "#1e293b",
+                    color: theme === "light" ? "#1f2937" : "#f4f4f6",
+                    border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+                },
+            });
+            router.push("/my-space/auth/login")
+            return;
+        }
+        const canUse = await checkAIUsage(currentUser!.id);
+        if (!canUse) {
+            toast.error("Daily AI usage limit reached", {
+                duration: 3000,
+                style: {
+                    background: theme === "light" ? "#fff" : "#1e293b",
+                    color: theme === "light" ? "#1f2937" : "#f4f4f6",
+                    border: `1px solid ${theme === "light" ? "#e5e7eb" : "#374151"}`,
+                },
+            });
+            router.push("/pricing")
+            return;
+        }
         if (!selectedText || !quill) {
             toast.error("Please select text to summarize.");
             return;

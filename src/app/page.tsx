@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { IoMdArrowForward } from 'react-icons/io'
 import { FaClock } from 'react-icons/fa'
-import { MdChecklist, MdSettings, MdSummarize, MdTrendingUp } from 'react-icons/md'
+import { MdChecklist, MdSettings, MdStar, MdSummarize, MdTrendingUp } from 'react-icons/md'
 import { BiGlobe, BiQuestionMark, BiSpreadsheet, BiTask, BiWorld } from 'react-icons/bi'
 import Container from './components/Container'
 import { useTheme } from './themeContext'
@@ -17,8 +17,9 @@ import LandingFooter from './components/footers/LandingFooter'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import FloatingWaitingButton from './components/buttons/FloationgWaitingButton'
-import { Languages, Map, MessageSquareReply, Minimize, StarIcon } from 'lucide-react'
+import { Languages, Map, MessageSquareReply, Minimize, Star, StarIcon } from 'lucide-react'
 import { awakeSv } from './api/actions/awake'
+import Avatar from './components/Avatar'
 
 export default function LandingPage() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false)
@@ -524,26 +525,40 @@ export default function LandingPage() {
                   <div className="p-6">
                     <div className="flex items-center mb-2">
                       {[...Array(5)].map((_, i) => (
-                        <StarIcon key={i} className="text-yellow-400 w-4 h-4" />
+                        <MdStar key={i} className="text-fuchsia-400 w-4 h-4" />
                       ))}
                     </div>
                     <p className={`${theme == "light" ? "text-gray-700" : "text-neutral-300"}`}>
                       {`"Loved the idea of AI that only joins when I allow it, just create a partnership and it's there. The scheduled replies feature is amazing. Though, I sent one to my girlfriend and it ended with 'Sincerely, Ricky Otavio.' So formal, she laughed! at least"`}
                     </p>
-                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>{`— Ricky Otavio, First User`}</h4>
+                    <div className='flex items-center gap-2 mt-4'>
+                      <div>
+                        <Avatar visualType='initial' visualValue='' name='Rick' />
+                      </div>
+                      <div>
+                        <h4 className={`font-semibold ${theme == "light" ? "text-black" : "text-white"}`}>{` Ricky Otavio, First User`}</h4>
+                      </div>
+                    </div>
                   </div>
                 </Card>
                 <Card>
                   <div className="p-6">
                     <div className="flex items-center mb-2">
                       {[...Array(5)].map((_, i) => (
-                        <StarIcon key={i} className="text-yellow-400 w-4 h-4" />
+                        <MdStar key={i} className="text-fuchsia-400 w-4 h-4" />
                       ))}
                     </div>
                     <p className={`${theme == "light" ? "text-gray-700" : "text-neutral-300"}`}>
                       {`"The AI modal is a game changer. Me and my partner see the suggestions, the other person doesn't. It's like we're sharing the same brain. Can't wait to use this more!"`}
                     </p>
-                    <h4 className={`font-semibold mt-4 ${theme == "light" ? "text-black" : "text-white"}`}>{`— Jessica Alburquerque, Early User`}</h4>
+                    <div className='flex items-center gap-2 mt-4'>
+                      <div>
+                        <Avatar visualType='initial' visualValue='' name='Jessica' />
+                      </div>
+                      <div>
+                        <h4 className={`font-semibold ${theme == "light" ? "text-black" : "text-white"}`}>{` Jessica Alburquerque, Early User`}</h4>
+                      </div>
+                    </div>
                   </div>
                 </Card>
                 {/* <Card>

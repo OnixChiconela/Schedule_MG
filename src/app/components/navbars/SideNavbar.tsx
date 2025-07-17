@@ -156,7 +156,7 @@ export default function SideNavbar({
         {isOpen && !isDesktop && (
           <motion.div
             key="overlay"
-            className="lg:hidden fixed inset-0 bg-black/50 z-[800]"
+            className="lg:hidden fixed inset-0 bg-black/50 z-10"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -171,7 +171,7 @@ export default function SideNavbar({
           <motion.nav
             key="sidebar"
             className={`fixed w-[260px] h-screen p-4 ${theme === "light" ? "bg-gray-100" : "bg-slate-950"
-              } z-[900] flex flex-col top-0 left-0`}
+              } z-50 flex flex-col top-0 left-0`}
             initial={{ x: (isDesktop && !isVisible) || (!isDesktop && !isOpen) ? -260 : 0 }}
             animate={{ x: (isDesktop && !isVisible) || (!isDesktop && !isOpen) ? -260 : 0 }}
             exit={{ x: (isDesktop && !isVisible) || (!isDesktop && !isOpen) ? -260 : 0 }}

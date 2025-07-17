@@ -25,7 +25,7 @@ const Logo: React.FC<LogoProps> = ({
                 className="md:block cursor-pointer"
                 height={height}
                 width={width}
-                src={require("@/../public/scheuor_logo.png")}
+                src={require("@/../public/scheuor-logo.png")}
             />
         </div>
 

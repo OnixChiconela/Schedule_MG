@@ -10,11 +10,20 @@ import { HiMenu, HiX } from "react-icons/hi";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Logo from "./Logo";
+import { useUser } from "@/app/context/UserContext";
 
 const LandingNavbar = () => {
     const { theme, toggleTheme } = useTheme()
     const router = useRouter()
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const {currentUser} = useUser()
+
+    const isLoggedIn = () => {
+        if (!currentUser) {
+            router.push(`/my-space/auth/login`)
+        }
+        router.push(`/dashboard`)
+    }   
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -77,7 +86,7 @@ const LandingNavbar = () => {
                                 {`Pricing`}
                             </a>
                             <div
-                                onClick={() => router.push(`/my-space/auth/login`)}
+                                onClick={() => isLoggedIn()}
                                 className={`px-3 py-2 rounded-md ${theme === 'light'
                                     ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                     : 'hover:bg-slate-600 hover:text-fuchsia-400'
@@ -163,7 +172,7 @@ const LandingNavbar = () => {
                                     {`Pricing`}
                                 </a>
                                 <div
-                                    onClick={() => router.push(`/my-space/auth/login`)}
+                                    onClick={() => isLoggedIn()}
                                     className={`text-base font-medium py-2 px-4 rounded-md ${theme === 'light'
                                         ? 'hover:bg-gray-100 hover:text-fuchsia-600'
                                         : 'hover:bg-slate-600 hover:text-fuchsia-400 text-neutral-200'
