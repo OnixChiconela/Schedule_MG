@@ -48,11 +48,11 @@ export default function CollaborationPage() {
 
   useEffect(() => {
     const fetchPartnership = async () => {
-      // if (!collaborationId || !currentUser?.id) {
-      //   toast.error("Invalid collaboration or user ID");
-      //   setIsLoading(false)
-      //   return;
-      // }
+      if (!collaborationId || !currentUser?.id) {
+        toast.error("Invalid collaboration or user ID");
+        setIsLoading(false)
+        return;
+      }
       if (!currentUser) {
         toast.error("Invalid user");
         setIsLoading(false)
@@ -71,6 +71,7 @@ export default function CollaborationPage() {
           toast.error("No partnership data found.");
         }
       } catch (error) {
+        console.error("Error fetching partnership:", error);
         toast.error("Failed to load partnership data.");
       } finally {
         setIsLoading(false)
@@ -205,8 +206,8 @@ export default function CollaborationPage() {
     setPanelSizes(previousState.panelSizes);
   };
 
-  if (!currentUser || isLoading) {
-    return <Loader />;
+  if (isLoading) {
+    return <div><Loader /></div>
   }
   if (!partnership) {
     return (
