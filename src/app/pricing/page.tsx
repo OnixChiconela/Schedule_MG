@@ -11,8 +11,10 @@ import { getPlans } from "../api/actions/plans/getPlans"
 import toast from "react-hot-toast"
 import { Plan } from "../types/back-front"
 import { handleSubscribeWithPaypal } from "../api/actions/paypal/handleSubscribeWithPaypal"
+import { useRouter } from "next/navigation"
 
 const PricingPage = () => {
+    const router = useRouter();
     const { theme } = useTheme()
     const { currentUser } = useUser()
     const [plans, setPlans] = useState<Plan[]>([])
@@ -32,27 +34,44 @@ const PricingPage = () => {
     }, [plans])
 
     const handleSubscribe = async (planId: string) => {
-        setIsLoading(true)
-        const loadingToast = toast.loading("Redirecting to PayPal...")
+
+        if (!currentUser?.id) {
+            toast.error('Please log in to subscribe.');
+            return;
+        }
+
+        // Encontrar o plano na lista de planos
+        const plan = plans.find((p) => p.id === planId);
+        if (!plan) {
+            toast.error('Plan not found.');
+            return;
+        }
+
+        setIsLoading(true);
+        const loadingMessage = plan.price === 0 ? 'Activating free plan...' : 'Redirecting to PayPal...';
+        const loadingToast = toast.loading(loadingMessage);
 
         try {
-            // Show modal instead of calling API
-            // setIsModalOpen(true)
-
-            const { approvalUrl /* subscriptionId*/ } = await handleSubscribeWithPaypal(currentUser?.id as string, planId)
-            if (approvalUrl) {
-                window.location.href = approvalUrl
+            if (plan.price === 0) {
+                // Plano gratuito: chamar a API e redirecionar com router
+                // toast.success('Free plan activated successfully!');
+                router.push('/dashboard');
             } else {
-                toast.error("Failed to initiate subscription")
+                // Plano pago: redirecionar para PayPal
+                const { approvalUrl } = await handleSubscribeWithPaypal(currentUser.id, planId);
+                if (approvalUrl) {
+                    window.location.href = approvalUrl;
+                } else {
+                    toast.error('Failed to initiate PayPal subscription.');
+                }
             }
-
         } catch (error) {
-            toast.error("An error occurred. Please try again.")
+            toast.error('An error occurred. Please try again.');
         } finally {
-            toast.dismiss(loadingToast)
-            setIsLoading(false)
+            toast.dismiss(loadingToast);
+            setIsLoading(false);
         }
-    }
+    };
 
 
 

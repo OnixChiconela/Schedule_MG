@@ -12,7 +12,7 @@ import EventSuggestions from '../components/events/EventSuggestions';
 // import { useLocation } from '../context/LocationContext';
 import { initialSuggestions } from '../fake/suggestions';
 import { emojiOptions } from '../components/emojiOptions';
-import Notes from '../components/Notes';
+import Notes from '../components/Notes'; 
 import AICallModal from '../components/collaboration/video call/modals/AiCallModal';
 
 type Task = {
@@ -142,8 +142,6 @@ export default function DashboardPage() {
         return 'Good evening, how was your day?';
     };
 
-    const accessToken = localStorage.getItem('access_token')
-
     return (
         <ClientOnly>
             <Navbar
@@ -168,14 +166,13 @@ export default function DashboardPage() {
                     className="flex-1 p-4 sm:p-6 lg:ml-[260px] sm:pt-20 max-w-screen-xl mx-auto"
                     style={{ paddingTop: `calc(5rem + env(safe-area-inset-top, 0px))` }}
                 >
-
                     <section className="mb-6">
                         <motion.h1
                             className={`text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 ${theme === 'light' ? 'text-gray-900' : 'text-gray-100'}`}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5 }}
-                            >
+                        >
                             {`${getGreeting()}`}
                         </motion.h1>
                         <motion.div
@@ -194,15 +191,12 @@ export default function DashboardPage() {
                             addNote={addNote}
                             emojiOptions={emojiOptions}
                         />
-                        <div className='w-full flex'>
-                            {accessToken}
-                        </div>
                     </section>
                     <section className="mb-6">
                         {corners ? (
-                            <h2 className={`text-xl sm:text-[22px] font-semibold mb-3 sm:mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-gray-100'}`}>
-                                Upcoming
-                            </h2>
+                        <h2 className={`text-xl sm:text-[22px] font-semibold mb-3 sm:mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-gray-100'}`}>
+                            Upcoming
+                        </h2>
                         ) : (
                             <div></div>
                         )}
@@ -238,7 +232,7 @@ export default function DashboardPage() {
                             isOpen={true}
                             
                         /> */}
-
+                        
                     </section>
                     {/* <section className="mb-6">
                         <EventSuggestions userCategories={userInterests} location={location} />

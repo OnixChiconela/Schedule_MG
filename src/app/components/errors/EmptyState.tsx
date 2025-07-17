@@ -22,7 +22,7 @@ const EmptyState: React.FC<EmptyState> = ({
 
     return (
         <div className="">
-            <MainNavbar />
+            {/* <MainNavbar /> */}
             <div className={`
             min-h-screen
             flex
