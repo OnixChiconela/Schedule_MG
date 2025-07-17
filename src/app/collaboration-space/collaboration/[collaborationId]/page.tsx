@@ -20,6 +20,7 @@ import CollabMemberBar from "@/app/components/collaboration/CollaborationMemberB
 import CollaborationVideoCallView from "@/app/components/collaboration/video call/CollaborationVideoCallView";
 import MainNavbar from "@/app/components/navbars/MainNavbar";
 import EmptyState from "@/app/components/errors/EmptyState";
+import Loader from "@/app/components/Loader";
 
 export default function CollaborationPage() {
   const { collaborationId } = useParams<{ collaborationId: string }>();
@@ -43,23 +44,31 @@ export default function CollaborationPage() {
   const [panelWidths, setPanelWidths] = useState<number[]>([0]);
   const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchPartnership = async () => {
-      if (!collaborationId || !currentUser?.id) {
-        toast.error("Invalid collaboration or user ID");
-        return;
+ useEffect(() => {
+  const fetchPartnership = async () => {
+    console.log("Fetching partnership with collaborationId:", collaborationId, "and userId:", currentUser?.id);
+    if (!collaborationId || !currentUser?.id) {
+      toast.error("Invalid collaboration or user ID");
+      setIsLoading(false)
+      return;
+    }
+    try {
+      const res = await getCollabById(collaborationId);
+      setPartnership(res);
+      if (!res) {
+        toast.error("No partnership data found.");
       }
-      try {
-        const res = await getCollabById(collaborationId);
-        setPartnership(res);
-      } catch (error) {
-        console.error("Error fetching partnership:", error);
-        toast.error("Failed to load partnership data.");
-      }
-    };
-    fetchPartnership();
-  }, [collaborationId, currentUser?.id]);
+    } catch (error) {
+      console.error("Error fetching partnership:", error);
+      toast.error("Failed to load partnership data.");
+    } finally {
+      setIsLoading(false)
+    }
+  };
+  fetchPartnership();
+}, [collaborationId, currentUser?.id]);
 
   useEffect(() => {
     const updateWidths = () => {
@@ -187,12 +196,15 @@ export default function CollaborationPage() {
     setPanelSizes(previousState.panelSizes);
   };
 
-  console.log("partnership: ", partnership)
-
+  if (isLoading) {
+    return <div><Loader /></div>
+  }
   if (!partnership) {
     return (
-      <div>
-        {partnership!.id}
+      <div className="h-full bg-blue-500">
+        {/* <div className="text-neutral-800 text-2xl bg-red-500 h-20">
+          {partnership!.id}
+        </div> */}
         <EmptyState reload/>
       </div>
     )
