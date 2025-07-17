@@ -1,3 +1,4 @@
+import toast from "react-hot-toast"
 import api from "../../api"
 
 export const getCollabById = async (id: string) => {
@@ -7,7 +8,8 @@ export const getCollabById = async (id: string) => {
         })
         return res.data
     } catch (error: any) {
-        console.error("Error fetching partnership members:", error)
+        console.error("Error fetching partnership:", error)
+        toast.error(`oops shdgashdjgasjhdgja ${error}`)
         throw new Error(error)
     }
 }

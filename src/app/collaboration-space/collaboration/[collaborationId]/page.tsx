@@ -71,7 +71,6 @@ export default function CollaborationPage() {
           toast.error("No partnership data found.");
         }
       } catch (error) {
-        console.error("Error fetching partnership:", error);
         toast.error("Failed to load partnership data.");
       } finally {
         setIsLoading(false)
