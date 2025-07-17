@@ -53,7 +53,6 @@ const CollaborationPage = () => {
       userId: currentUser?.id,
       cookies: document.cookie,
     });
-    toast.success("Test toast on mobile");
 
     const fetchPartnership = async () => {
       if (!collaborationId || !currentUser?.id) {

@@ -16,14 +16,15 @@ const LandingNavbar = () => {
     const { theme, toggleTheme } = useTheme()
     const router = useRouter()
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const {currentUser} = useUser()
+    const { currentUser } = useUser()
 
     const isLoggedIn = () => {
         if (!currentUser) {
             router.push(`/my-space/auth/login`)
+        } else {
+            router.push(`/dashboard`)
         }
-        router.push(`/dashboard`)
-    }   
+    }
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -43,7 +44,7 @@ const LandingNavbar = () => {
                 <div className="flex flex-row items-center justify-between py-6  mx-auto">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2">
-                        <Logo width={40} height={40}/>
+                        <Logo width={40} height={40} />
                         <span
                             className={`text-md font-medium ${theme === 'light' ? 'text-gray-900' : 'text-neutral-200'
                                 } hidden sm:block`}

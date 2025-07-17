@@ -11,18 +11,9 @@ const ErrorState: React.FC<ErrorStateProps> = ({
     error
 }) => {
     useEffect(() => {
-        const msg = error?.message || "";
-
-        if (msg.includes("Loading chunk") || msg.includes("missing")) {
-            toast.error("New version detected. Reloading...");
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-        } else {
-            toast.error(msg);
-            console.error(error);
-        }
-    }, []);
+        toast.error(error.message)
+        console.error(error)
+    }, [])
 
     return (
         <div className="pt-28">
