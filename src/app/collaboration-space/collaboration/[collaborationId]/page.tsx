@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useTheme } from "@/app/themeContext";
 import { useMediaQuery } from "react-responsive";
-import { useEffect, useRef, useState } from "react";
+import { Component, useEffect, useRef, useState } from "react";
 import { useUser } from "@/app/context/UserContext";
 import { Partnership } from "@/app/components/collaboration/CollaborationCard";
 import { Maximize, Minimize, X } from "lucide-react";
@@ -21,8 +21,9 @@ import CollaborationVideoCallView from "@/app/components/collaboration/video cal
 import MainNavbar from "@/app/components/navbars/MainNavbar";
 import EmptyState from "@/app/components/errors/EmptyState";
 import Loader from "@/app/components/Loader";
+import { CollaborationErrorBoundary } from "@/app/components/CollaborationErrorBoundary";
 
-export default function CollaborationPage() {
+const CollaborationPage = () => {
   const { collaborationId } = useParams<{ collaborationId: string }>();
   const { theme } = useTheme();
   // const isSmallScreen = useMediaQuery({ maxWidth: 1024 });
@@ -47,38 +48,37 @@ export default function CollaborationPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    console.log("CollaborationPage useEffect", {
+      collaborationId,
+      userId: currentUser?.id,
+      cookies: document.cookie,
+    });
+    toast.success("Test toast on mobile");
+
     const fetchPartnership = async () => {
       if (!collaborationId || !currentUser?.id) {
+        console.log("Invalid inputs", { collaborationId, userId: currentUser?.id });
         toast.error("Invalid collaboration or user ID");
-        setIsLoading(false)
+        setIsLoading(false);
         return;
       }
-      if (!currentUser) {
-        toast.error("Invalid user");
-        setIsLoading(false)
-        return;
-      };
-      if (!collaborationId) {
-        toast.error("Invalid partnership");
-        setIsLoading(false)
-        return;
-      };
-
       try {
+        console.log("Calling getCollabById with ID:", collaborationId);
         const res = await getCollabById(collaborationId);
-        setPartnership(res);
+        console.log("getCollabById response:", res);
         if (!res) {
-          toast.error("No partnership data found.");
+          toast.error("No partnership data found for this ID.");
         }
+        setPartnership(res);
       } catch (error) {
         console.error("Error fetching partnership:", error);
         toast.error("Failed to load partnership data.");
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     };
     fetchPartnership();
-  }, [collaborationId, currentUser?.id]);
+  }, [collaborationId, currentUser]);
 
   useEffect(() => {
     const updateWidths = () => {
@@ -283,5 +283,13 @@ export default function CollaborationPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function CollaborationPageWrapper() {
+  return (
+    <CollaborationErrorBoundary>
+      <CollaborationPage />
+    </CollaborationErrorBoundary>
   );
 }

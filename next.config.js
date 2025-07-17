@@ -4,6 +4,10 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  generateBuildId: async () => {
+    return `${Date.now()}`;
+  },
+  output: "standalone",
   async headers() {
     return [
       {
