@@ -192,7 +192,8 @@ export default function CollaborationPage() {
   if (!partnership) {
     return (
       <div>
-        <EmptyState />
+        {partnership!.id}
+        <EmptyState reload/>
       </div>
     )
   }
