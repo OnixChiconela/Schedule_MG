@@ -46,29 +46,39 @@ export default function CollaborationPage() {
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true)
 
- useEffect(() => {
-  const fetchPartnership = async () => {
-    console.log("Fetching partnership with collaborationId:", collaborationId, "and userId:", currentUser?.id);
-    if (!collaborationId || !currentUser?.id) {
-      toast.error("Invalid collaboration or user ID");
-      setIsLoading(false)
-      return;
-    }
-    try {
-      const res = await getCollabById(collaborationId);
-      setPartnership(res);
-      if (!res) {
-        toast.error("No partnership data found.");
+  useEffect(() => {
+    const fetchPartnership = async () => {
+      // if (!collaborationId || !currentUser?.id) {
+      //   toast.error("Invalid collaboration or user ID");
+      //   setIsLoading(false)
+      //   return;
+      // }
+      if (!currentUser) {
+        toast.error("Invalid user");
+        setIsLoading(false)
+        return;
+      };
+      if (!collaborationId) {
+        toast.error("Invalid partnership");
+        setIsLoading(false)
+        return;
+      };
+
+      try {
+        const res = await getCollabById(collaborationId);
+        setPartnership(res);
+        if (!res) {
+          toast.error("No partnership data found.");
+        }
+      } catch (error) {
+        console.error("Error fetching partnership:", error);
+        toast.error("Failed to load partnership data.");
+      } finally {
+        setIsLoading(false)
       }
-    } catch (error) {
-      console.error("Error fetching partnership:", error);
-      toast.error("Failed to load partnership data.");
-    } finally {
-      setIsLoading(false)
-    }
-  };
-  fetchPartnership();
-}, [collaborationId, currentUser?.id]);
+    };
+    fetchPartnership();
+  }, [collaborationId, currentUser?.id]);
 
   useEffect(() => {
     const updateWidths = () => {
@@ -196,16 +206,13 @@ export default function CollaborationPage() {
     setPanelSizes(previousState.panelSizes);
   };
 
-  if (isLoading) {
-    return <div><Loader /></div>
+  if (!currentUser || isLoading) {
+    return <Loader />;
   }
   if (!partnership) {
     return (
-      <div className="h-full bg-blue-500">
-        {/* <div className="text-neutral-800 text-2xl bg-red-500 h-20">
-          {partnership!.id}
-        </div> */}
-        <EmptyState reload/>
+      <div className="">
+        <EmptyState reload />
       </div>
     )
   }
@@ -227,7 +234,7 @@ export default function CollaborationPage() {
       <main
         // className={`flex-1 p-4 sm:p-6 transition-all duration-300 w-full ${isSidebarOpen && !isSmallScreen ? "lg:max-w-[calc(100%-12rem)] ml-40" : "max-w-full"
         className={`flex-1 p-1 sm:p-2 md:p-4 transition-all duration-300 w-full ${isSidebarOpen && !isSmallScreen ? 'lg:max-w-[calc(100%-12rem)] ml-40' : 'max-w-full'}`}
-          
+
         style={{ paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}
       >
         <CollabMemberBar partnership={partnership} />
