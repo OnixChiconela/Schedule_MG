@@ -22,7 +22,7 @@ const CollabMemberBar: React.FC<CollabMemberBarProps> = ({ partnership }) => {
     const isOwner = partnership.ownerId === currentUser?.id;
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const [inviteEmail, setInviteEmail] = useState('');
-    const [inviteRole, setInviteRole] = useState('COLABORATOR');
+    const [inviteRole, setInviteRole] = useState('COLLABORATOR');
     const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [inviteSearchQuery, setInviteSearchQuery] = useState('');
@@ -88,7 +88,7 @@ const CollabMemberBar: React.FC<CollabMemberBarProps> = ({ partnership }) => {
             setIsInviteModalOpen(false);
             setInviteUserId('');
             setInviteSearchQuery('');
-            setInviteRole('COLABORATOR');
+            setInviteRole('COLLABORATOR');
         } catch (error) {
             toast.error('Failed to send invitation');
             console.error('Invite error:', error);
@@ -203,7 +203,7 @@ const CollabMemberBar: React.FC<CollabMemberBarProps> = ({ partnership }) => {
                                     className={`w-full px-3 py-2 rounded-md border ${theme === 'light' ? 'border-gray-300 bg-white text-gray-900' : 'border-slate-600 bg-slate-700 text-neutral-200'
                                         }`}
                                 >
-                                    <option value="COLABORATOR">Colaborator</option>
+                                    <option value="COLLABORATOR">Collaborator</option>
                                     <option value="ADMIN">Admin</option>
                                     <option value="GUEST">Guest</option>
                                 </select>
