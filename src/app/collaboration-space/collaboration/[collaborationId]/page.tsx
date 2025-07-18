@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useTheme } from "@/app/themeContext";
 import { useMediaQuery } from "react-responsive";
-import { Component, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useUser } from "@/app/context/UserContext";
 import { Partnership } from "@/app/components/collaboration/CollaborationCard";
 import { Maximize, Minimize, X } from "lucide-react";
@@ -21,9 +21,8 @@ import CollaborationVideoCallView from "@/app/components/collaboration/video cal
 import MainNavbar from "@/app/components/navbars/MainNavbar";
 import EmptyState from "@/app/components/errors/EmptyState";
 import Loader from "@/app/components/Loader";
-import { CollaborationErrorBoundary } from "@/app/components/CollaborationErrorBoundary";
 
-const CollaborationPage = () => {
+export default function CollaborationPage() {
   const { collaborationId } = useParams<{ collaborationId: string }>();
   const { theme } = useTheme();
   // const isSmallScreen = useMediaQuery({ maxWidth: 1024 });
@@ -53,6 +52,7 @@ const CollaborationPage = () => {
       userId: currentUser?.id,
       cookies: document.cookie,
     });
+    toast.success("Test toast on mobile");
 
     const fetchPartnership = async () => {
       if (!collaborationId || !currentUser?.id) {
@@ -282,13 +282,5 @@ const CollaborationPage = () => {
         </div>
       </main>
     </div>
-  );
-}
-
-export default function CollaborationPageWrapper() {
-  return (
-    <CollaborationErrorBoundary>
-      <CollaborationPage />
-    </CollaborationErrorBoundary>
   );
 }

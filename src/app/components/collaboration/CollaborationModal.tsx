@@ -30,62 +30,62 @@ export default function CreatePartnershipModal({
     const [suggestions, setSuggestions] = useState<Users[]>([]);
     const [users, setUsers] = useState<Users[]>([]);
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const data = await getUsers();
-                setUsers(data || []);
-            } catch (error) {
-                console.error("Error fetching users:", error);
-                toast.error("Failed to load users.");
-            }
-        };
-        fetchUsers();
-    }, []);
+    // useEffect(() => {
+    //     const fetchUsers = async () => {
+    //         try {
+    //             const data = await getUsers();
+    //             setUsers(data || []);
+    //         } catch (error) {
+    //             console.error("Error fetching users:", error);
+    //             toast.error("Failed to load users.");
+    //         }
+    //     };
+    //     fetchUsers();
+    // }, []);
 
-    useEffect(() => {
-        const debounce = setTimeout(() => {
-            if (searchQuery.length > 2 && users.length > 0) {
-                const filtered = users
-                    .filter((user) => {
-                        const firstName = user.firstName || "";
-                        const lastName = user.lastName || "";
-                        const email = user.email || "";
-                        return (
-                            firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            email.toLowerCase().includes(searchQuery.toLowerCase())
-                        );
-                    })
-                    .slice(0, 5);
-                setSuggestions(filtered);
-            } else {
-                setSuggestions([]);
-            }
-        }, 300);
-        return () => clearTimeout(debounce);
-    }, [searchQuery, users]);
+    // useEffect(() => {
+    //     const debounce = setTimeout(() => {
+    //         if (searchQuery.length > 2 && users.length > 0) {
+    //             const filtered = users
+    //                 .filter((user) => {
+    //                     const firstName = user.firstName || "";
+    //                     const lastName = user.lastName || "";
+    //                     const email = user.email || "";
+    //                     return (
+    //                         firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    //                         lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    //                         email.toLowerCase().includes(searchQuery.toLowerCase())
+    //                     );
+    //                 })
+    //                 .slice(0, 5);
+    //             setSuggestions(filtered);
+    //         } else {
+    //             setSuggestions([]);
+    //         }
+    //     }, 300);
+    //     return () => clearTimeout(debounce);
+    // }, [searchQuery, users]);
 
-    const handleAddInvitee = (user: Users) => {
-        const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
-        if (form.invitedUserIds.includes(user.id) || user.id === userId) {
-            toast.error("User already invited or cannot invite yourself");
-            return;
-        }
-        setForm({
-            ...form,
-            invitedUserIds: [...form.invitedUserIds, user.id],
-        });
-        setSearchQuery("");
-        setSuggestions([]);
-    };
+    // const handleAddInvitee = (user: Users) => {
+    //     const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
+    //     if (form.invitedUserIds.includes(user.id) || user.id === userId) {
+    //         toast.error("User already invited or cannot invite yourself");
+    //         return;
+    //     }
+    //     setForm({
+    //         ...form,
+    //         invitedUserIds: [...form.invitedUserIds, user.id],
+    //     });
+    //     setSearchQuery("");
+    //     setSuggestions([]);
+    // };
 
-    const handleRemoveInvitee = (userIdToRemove: string) => {
-        setForm({
-            ...form,
-            invitedUserIds: form.invitedUserIds.filter((id) => id !== userIdToRemove),
-        });
-    };
+    // const handleRemoveInvitee = (userIdToRemove: string) => {
+    //     setForm({
+    //         ...form,
+    //         invitedUserIds: form.invitedUserIds.filter((id) => id !== userIdToRemove),
+    //     });
+    // };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -98,12 +98,10 @@ export default function CreatePartnershipModal({
         const loadingToast = toast.loading("Creating partnership...");
         try {
             const data = {
-                userId: userId as string,
                 name: form.name,
                 description: form.description,
-                invitedUserIds: form.invitedUserIds,
             };
-            const res = await createCollab(data)
+            const res = await createCollab(userId, data)
             if (!res) {
                 throw new Error('Failed to create team: Invalid response from server');
             }
@@ -112,7 +110,6 @@ export default function CreatePartnershipModal({
                 name: form.name,
                 description: form.description,
                 ownerId: userId,
-                // role: "OWNER",
                 members: [],
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
@@ -185,7 +182,7 @@ export default function CreatePartnershipModal({
                         />
                     </div>
                     <div className="mb-4">
-                        <label className="block mb-1">Invite Members</label>
+                        {/* <label className="block mb-1">Invite Members</label>
                         <input
                             type="text"
                             value={searchQuery}
@@ -194,8 +191,8 @@ export default function CreatePartnershipModal({
                                 }`}
                             placeholder="Search for a member..."
                             disabled={loading}
-                        />
-                        {suggestions.length > 0 && (
+                        /> */}
+                        {/* {suggestions.length > 0 && (
                             <div
                                 className={`absolute w-full mt-1 rounded-lg shadow-lg z-10 ${theme === "light" ? "bg-white" : "bg-slate-700"
                                     }`}
@@ -211,9 +208,9 @@ export default function CreatePartnershipModal({
                                     </div>
                                 ))}
                             </div>
-                        )}
+                        )} */}
                     </div>
-                    {form.invitedUserIds.length > 0 && (
+                    {/* {form.invitedUserIds.length > 0 && (
                         <div className="mb-4">
                             <h3 className="text-sm font-medium">Invited Members:</h3>
                             <ul className="mt-1">
@@ -240,7 +237,7 @@ export default function CreatePartnershipModal({
                                 })}
                             </ul>
                         </div>
-                    )}
+                    )} */}
                     <div className="flex justify-end gap-2">
                         <button
                             type="button"

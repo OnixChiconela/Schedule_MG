@@ -25,7 +25,7 @@ const ErrorState: React.FC<ErrorStateProps> = ({
     }, []);
 
     return (
-        <div className="pt-28">
+        <div className="">
             <EmptyState />
         </div>
     )

@@ -1403,34 +1403,47 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
       console.log(`[AICall] Processing submission: response=${payload.response?.substring(0, 50) || 'none'}...`);
 
       // Adicionar respostas não compartilhadas diretamente
-      if (!isShared || !payload.response || typeof payload.response !== 'string') {
-        setAIContentHistory((prev) => [...prev, { ...payload, history: undefined }]);
-        setIsGenerating(false);
-        console.log(`[AICall] Non-streamed content added:`, payload);
-      } else {
-        // Streaming para respostas compartilhadas
+      if (payload.response && typeof payload.response === 'string') {
         setAIContentHistory((prev) => [
           ...prev,
-          { ...payload, response: '', history: undefined },
+          { ...payload, response: '', history: undefined }, // Start with empty response for streaming
         ]);
         setIsResponseStreaming(true);
-        await simulateStreamingBChunk(
-          payload.response,
-          (chunk) => {
-            console.log(`[AICall] Streaming chunk: ${chunk}`);
-            setAIContentHistory((prev) =>
-              prev.map((item) =>
-                item.id === payload.id ? { ...item, response: item.response ? item.response + ' ' + chunk : chunk } : item
-              )
-            );
-          },
-          5,
-          200,
-          abortControllerRef.current?.signal
-        );
-        setIsResponseStreaming(false);
+        try {
+          await simulateStreamingBChunk(
+            payload.response,
+            (chunk) => {
+              console.log(`[AICall] Streaming chunk: ${chunk}`);
+              setAIContentHistory((prev) =>
+                prev.map((item) =>
+                  item.id === payload.id ? { ...item, response: item.response ? item.response + ' ' + chunk : chunk } : item
+                )
+              );
+            },
+            5, // Chunk size
+            200, // Delay in ms
+            abortControllerRef.current?.signal
+          );
+        } catch (error: any) {
+          console.error(`[AICall] Streaming failed: ${error.message}`);
+          toast.error(`Failed to stream AI response: ${error.message}`, {
+            duration: 3000,
+            style: {
+              background: theme === 'light' ? '#fff' : '#1e293b',
+              color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+              border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+            },
+          });
+          setAIContentHistory((prev) => prev.filter((item) => item.id !== payload.id));
+        } finally {
+          setIsResponseStreaming(false);
+          setIsGenerating(false);
+        }
+      } else {
+        // Handle non-string or invalid responses
+        setAIContentHistory((prev) => [...prev, { ...payload, history: undefined }]);
         setIsGenerating(false);
-        console.log(`[AICall] AI response streamed: ${payload.response}`);
+        console.log(`[AICall] Non-string content added:`, payload);
       }
 
       if (videoSocket) {

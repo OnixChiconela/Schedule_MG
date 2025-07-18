@@ -250,11 +250,11 @@ export default function CollaborationSpace() {
                                 </div>
                             </div>
                         </div>
-                        <div className="mt-12">
+                        <div className="mt-8">
                             {loading ? (
                                 <p className={theme === "light" ? "text-neutral-600" : "text-neutral-400"}>Loading partnerships...</p>
                             ) : error ? (
-                                <p className="text-neutral-500">something went wrong</p>
+                                <p className="text-neutral-500">{`${partnerships.length == 0 ? "Seems like you're not in any partnership" : "Something went wrong"}`}</p>
                             ) : !currentUser ? (
                                 <p className="text-neutral-500">Please log in to view partnerships.</p>
                             ) : (

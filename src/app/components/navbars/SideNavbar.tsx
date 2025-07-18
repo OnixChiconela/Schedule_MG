@@ -114,8 +114,7 @@ export default function SideNavbar({
   };
 
   const handleSettingsClick = () => {
-    toast.success("coming soon")
-    // router.push('/settings');
+    router.push('/my-space/settings');
   };
   const handleProfileClick = () => {
     toast.success("coming soon")
