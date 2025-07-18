@@ -388,12 +388,13 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
         return;
       }
 
-      if (content.isShared && content.response && typeof content.response === 'string') {
-        console.log(`[AICallModal] Processing shared response with streaming: response=${content.response.substring(0, 50)}...`);
+      if (content.response && typeof content.response === 'string') {
+        console.log(`[AICallModal] Processing response with streaming: response=${content.response.substring(0, 50)}...`);
         const tempId = `temp-${Date.now()}`;
+        // Add temporary entry for streaming
         setAIContentHistory((prev) => [
           ...prev,
-          { ...content, id: tempId, response: '' }, // Entrada temporária para streaming
+          { ...content, id: tempId, response: '' }, // Start with empty response
         ]);
         setIsResponseStreaming(true);
         setIsGenerating(true);
@@ -408,20 +409,20 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
                 )
               );
             },
-            5,
-            200,
+            5, // Chunk size
+            200, // Delay between chunks
             abortControllerRef.current?.signal
           );
-          console.log(`[AICallModal] Shared AI response streamed successfully: id=${content.id}`);
-          // toast.success('New shared AI content received', {
-          //   duration: 3000,
-          //   style: {
-          //     background: theme === 'light' ? '#fff' : '#1e293b',
-          //     color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-          //     border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
-          //   },
-          // });
-          // Atualizar o ID real após o streaming
+          console.log(`[AICallModal] AI response streamed successfully: id=${content.id}`);
+          toast.success(`${content.isShared ? 'Shared' : 'Non-shared'} AI content received`, {
+            duration: 3000,
+            style: {
+              background: theme === 'light' ? '#fff' : '#1e293b',
+              color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+              border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+            },
+          });
+          // Update with real ID after streaming
           setAIContentHistory((prev) =>
             prev.map((item) => (item.id === tempId ? { ...item, id: content.id } : item))
           );
@@ -437,18 +438,15 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
           });
           setAIContentHistory((prev) => prev.filter((item) => item.id !== tempId));
         } finally {
-          // setIsResponseStreaming(false);
+          setIsResponseStreaming(false);
           setIsGenerating(false);
-          // setTranscription(content.transcription || null);
+          setTranscription(content.transcription || null);
         }
-        setIsResponseStreaming(false);
-        setIsGenerating(false);
-        setTranscription(content.transcription || null);
       } else {
-        console.log(`[AICallModal] Adding non-shared response to history: response=${content.response?.substring(0, 50) || 'none'}...`);
+        console.log(`[AICallModal] Adding content without response:`, content);
         setAIContentHistory((prev) => [...prev, { ...content }]);
         setTranscription(content.transcription || null);
-        console.log(`[AICallModal] Non-streamed content added:`, content);
+        console.log(`[AICallModal] Non-response content added:`, content);
       }
     };
 

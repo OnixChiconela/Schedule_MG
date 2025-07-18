@@ -5,7 +5,7 @@ import { motion, useAnimation } from 'framer-motion';
 import { Sparkles, Mic, MicOff, X, Download, Send, Brain } from 'lucide-react';
 import { FaExchangeAlt } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useUser } from '@/app/context/UserContext';
 import ReactMarkdown from "react-markdown"
 import remarkGfm from 'remark-gfm';
@@ -89,7 +89,7 @@ function ExpandedAICallModal({
     id: 'expanded-ai-call-modal',
   });
   const { currentUser } = useUser();
-
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const [recordingTime, setRecordingTime] = useState(0);
 
   // Dynamic recording timer
@@ -112,6 +112,12 @@ function ExpandedAICallModal({
     const secs = seconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [aiContentHistory, suggestion, isResponseStreaming]);
 
   const handleToggleSharing = async () => {
     try {
@@ -189,6 +195,15 @@ function ExpandedAICallModal({
     const bTime = new Date(b.createdAt || 0).getTime();
     return aTime - bTime;
   });
+
+  const uniqueHistory = Array.from(
+    new Map(
+      aiContentHistory.map(item => [
+        `${item.id}-${item.prompt}-${item.response || ''}-${item.transcription || ''}`,
+        item
+      ])
+    ).values()
+  ).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
   return (
     <motion.div
@@ -283,7 +298,136 @@ function ExpandedAICallModal({
       </div>
 
       {/* Content Area */}
-      <div className="mb-4 ">
+      <div
+        ref={chatContainerRef}
+        className="mb-4 flex-1 overflow-y-auto space-y-4 p-2"
+        style={{ maxHeight: '350px' }}
+      >
+        {isGenerating && !uniqueHistory.length && !suggestion ? (
+          <div className="flex justify-center items-center h-[100px]">
+            <motion.p
+              animate={{
+                opacity: [0.5, 1, 0.5],
+                transition: { repeat: Infinity, duration: 1.5, ease: 'easeInOut' },
+              }}
+              className={`text-sm font-medium ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-300'}`}
+              data-testid="generating-indicator"
+            >
+              Generating...
+            </motion.p>
+          </div>
+        ) : (
+          <>
+            {uniqueHistory.map((content) => (
+              <div key={content.id} className="space-y-2">
+                {/* User Prompt */}
+                {content.prompt && (
+                  <div className="flex justify-end">
+                    <div
+                      className={`max-w-[70%] p-3 rounded-lg ${theme === 'light' ? 'bg-neutral-50 text-neutral-800' : 'bg-slate-950/50 text-neutral-200'}`}
+                    >
+                      <p className="text-sm">{content.prompt}</p>
+                      <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} mt-1`}>
+                        {new Date(content.createdAt).toLocaleTimeString()}
+                        {content.isShared && <span className="ml-1 text-teal-500">(Shared)</span>}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {/* AI Response */}
+                {content.response && (
+                  <div className="flex justify-start">
+                    <div
+                      className={`p-3 rounded-lg ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}
+                    >
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          p: ({ children }) => <p className="text-sm mb-2">{children}</p>,
+                          ul: ({ children }) => <ul className="list-disc list-inside mb-2">{children}</ul>,
+                          ol: ({ children }) => <ol className="list-decimal list-inside mb-2">{children}</ol>,
+                          li: ({ children }) => <li className="text-sm">{children}</li>,
+                          strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                          em: ({ children }) => <em className="italic">{children}</em>,
+                          code: ({ children }) => (
+                            <code className={`bg-gray-200 dark:bg-slate-700 px-1 py-0.5 rounded ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                              {children}
+                            </code>
+                          ),
+                          blockquote: ({ children }) => (
+                            <blockquote className={`border-l-4 border-gray-300 pl-4 italic mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
+                              {children}
+                            </blockquote>
+                          ),
+                        }}
+                      >
+                        {content.response}
+                      </ReactMarkdown>
+                      <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} mt-1`}>
+                        {new Date(content.createdAt).toLocaleTimeString()}
+                        {content.isShared && <span className="ml-1 text-teal-500">(Telepathy)</span>}
+                        {isResponseStreaming && content.id === uniqueHistory[uniqueHistory.length - 1].id && (
+                          <span className="ml-1 text-gray-500">generating...</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {/* Transcription (Collapsible) */}
+                {content.transcription && (
+                  <div className="flex justify-start">
+                    <details className="max-w-[70%]">
+                      <summary className={`text-sm font-medium cursor-pointer ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-300'}`}>
+                        Transcription {content.isShared && <span className="text-xs text-teal-500">(Shared)</span>}
+                      </summary>
+                      <div
+                        className={`mt-2 p-3 rounded-lg ${theme === 'light' ? 'bg-gray-50 text-neutral-800' : 'bg-slate-700 text-neutral-200'}`}
+                      >
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            p: ({ children }) => <p className="text-sm mb-2">{children}</p>,
+                            ul: ({ children }) => <ul className="list-disc list-inside mb-2">{children}</ul>,
+                            ol: ({ children }) => <ol className="list-decimal list-inside mb-2">{children}</ol>,
+                            li: ({ children }) => <li className="text-sm">{children}</li>,
+                          }}
+                        >
+                          {content.transcription}
+                        </ReactMarkdown>
+                      </div>
+                    </details>
+                  </div>
+                )}
+              </div>
+            ))}
+            {suggestion && (
+              <div className="flex justify-start">
+                <div
+                  className={`max-w-[70%] p-3 rounded-lg ${theme === 'light' ? 'bg-yellow-100 text-neutral-800' : 'bg-yellow-900 text-neutral-200'}`}
+                >
+                  <p className="text-sm font-medium">Suggestion</p>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      p: ({ children }) => <p className="text-sm mb-2">{children}</p>,
+                      ul: ({ children }) => <ul className="list-disc list-inside mb-2">{children}</ul>,
+                      ol: ({ children }) => <ol className="list-decimal list-inside mb-2">{children}</ol>,
+                      li: ({ children }) => <li className="text-sm">{children}</li>,
+                    }}
+                  >
+                    {suggestion}
+                  </ReactMarkdown>
+                  <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} mt-1`}>
+                    {new Date().toLocaleTimeString()}
+                    {isShared && <span className="ml-1 text-teal-500">(Telepathy)</span>}
+                  </p>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+      {/* <div className="mb-4 ">
         {isGenerating && !latestContent && !suggestion ? (
           <div className="flex justify-center items-center h-[100px]">
             <motion.p
@@ -337,12 +481,6 @@ function ExpandedAICallModal({
                         {children}
                       </h3>
                     ),
-                    // p: ({ children }) => (
-                    //   <p className={`text-sm mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
-                    //     {children}
-                    //     {isResponseStreaming && <span className="text-gray-500 ml-1">generating...</span>}
-                    //   </p>
-                    // ),
                     ul: ({ children }) => (
                       <ul className={`list-disc list-inside mb-2 ${theme === 'light' ? 'text-neutral-800' : 'text-neutral-200'}`}>
                         {children}
@@ -500,7 +638,7 @@ function ExpandedAICallModal({
             </div>
           </div>
         ) : null}
-      </div>
+      </div> */}
 
       {/* Footer */}
       <textarea
