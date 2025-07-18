@@ -414,28 +414,28 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
             abortControllerRef.current?.signal
           );
           console.log(`[AICallModal] AI response streamed successfully: id=${content.id}`);
-          toast.success(`${content.isShared ? 'Shared' : 'Non-shared'} AI content received`, {
-            duration: 3000,
-            style: {
-              background: theme === 'light' ? '#fff' : '#1e293b',
-              color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-              border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
-            },
-          });
+          // toast.success(`${content.isShared ? 'Shared' : 'Non-shared'} AI content received`, {
+          //   duration: 3000,
+          //   style: {
+          //     background: theme === 'light' ? '#fff' : '#1e293b',
+          //     color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+          //     border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+          //   },
+          // });
           // Update with real ID after streaming
           setAIContentHistory((prev) =>
             prev.map((item) => (item.id === tempId ? { ...item, id: content.id } : item))
           );
         } catch (error: any) {
           console.error(`[AICallModal] Streaming failed: ${error.message}`);
-          toast.error(`Failed to stream AI response: ${error.message}`, {
-            duration: 3000,
-            style: {
-              background: theme === 'light' ? '#fff' : '#1e293b',
-              color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-              border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
-            },
-          });
+          // toast.error(`Failed to stream AI response: ${error.message}`, {
+          //   duration: 3000,
+          //   style: {
+          //     background: theme === 'light' ? '#fff' : '#1e293b',
+          //     color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+          //     border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+          //   },
+          // });
           setAIContentHistory((prev) => prev.filter((item) => item.id !== tempId));
         } finally {
           setIsResponseStreaming(false);
@@ -489,14 +489,14 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
   const toggleSharing = () => {
     if (!videoSocket || !currentUser?.id || !callId) {
       console.error(`[AICall] Cannot toggle sharing: videoSocket=${!!videoSocket}, userId=${currentUser?.id}, callId=${callId}`);
-      toast.error('Cannot toggle sharing: connection issue', {
-        duration: 3000,
-        style: {
-          background: theme === 'light' ? '#fff' : '#1e293b',
-          color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-          border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
-        },
-      });
+      // toast.error('Cannot toggle sharing: connection issue', {
+      //   duration: 3000,
+      //   style: {
+      //     background: theme === 'light' ? '#fff' : '#1e293b',
+      //     color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+      //     border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+      //   },
+      // });
       return;
     }
 
@@ -506,14 +506,14 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
       (response: { success: boolean; isShared: boolean; error?: string }) => {
         if (response.error) {
           console.error(`[AICall] toggle-ai-sharing failed:`, response.error);
-          toast.error(`Failed to toggle sharing: ${response.error}`, {
-            duration: 3000,
-            style: {
-              background: theme === 'light' ? '#fff' : '#1e293b',
-              color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-              border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
-            },
-          });
+          // toast.error(`Failed to toggle sharing: ${response.error}`, {
+          //   duration: 3000,
+          //   style: {
+          //     background: theme === 'light' ? '#fff' : '#1e293b',
+          //     color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+          //     border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+          //   },
+          // });
         } else {
           setIsShared(newIsShared)
           console.log(`[AICall] Sharing toggled: isShared=${newIsShared}`)
@@ -1449,14 +1449,14 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
         videoSocket.emit('submit-ai-content', payload, (response: { success: boolean; contentId?: string; error?: string }) => {
           if (response.error) {
             console.error(`[AICall] submit-ai-content failed:`, response.error);
-            toast.error(`Failed to share AI content: ${response.error}`, {
-              duration: 3000,
-              style: {
-                background: theme === 'light' ? '#fff' : '#1e293b',
-                color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-                border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
-              },
-            });
+            // toast.error(`Failed to share AI content: ${response.error}`, {
+            //   duration: 3000,
+            //   style: {
+            //     background: theme === 'light' ? '#fff' : '#1e293b',
+            //     color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+            //     border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+            //   },
+            // });
             setAIContentHistory((prev) => prev.filter((item) => item.id !== payload.id));
           } else {
             console.log(`[AICall] AI content shared: contentId=${response.contentId}`);
