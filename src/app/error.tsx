@@ -15,8 +15,9 @@ const ErrorState: React.FC<ErrorStateProps> = ({
 
         if (msg.includes("Loading chunk") || msg.includes("missing")) {
             toast.error("New version detected. Reloading...");
+             sessionStorage.setItem("reload", "true");
             setTimeout(() => {
-                window.location.href = window.location.pathname;
+                window.location.reload()
             }, 1500);
         } else {
             toast.error(msg);
