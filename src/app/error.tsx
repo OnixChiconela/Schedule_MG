@@ -18,7 +18,7 @@ const ErrorState: React.FC<ErrorStateProps> = ({
             toast.error(error.message)
              sessionStorage.setItem("reload", "true");
             setTimeout(() => {
-                window.location.reload()
+                window.location.href = "/"
             }, 1500);
         } else {
             toast.error(msg);
