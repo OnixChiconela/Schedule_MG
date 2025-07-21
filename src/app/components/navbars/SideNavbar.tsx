@@ -28,7 +28,7 @@ import api from '@/app/api/api';
 import { clearTokenFromStorage } from '@/app/api/actions/auth/clearTokenFromStorage';
 
 interface SideNavbarProps {
-  theme: 'light' | 'dark';
+  theme: string;
   toggleTheme: () => void;
   isOpen?: boolean;
   setIsOpen?: (isOpen: boolean) => void;
@@ -155,7 +155,7 @@ export default function SideNavbar({
         {isOpen && !isDesktop && (
           <motion.div
             key="overlay"
-            className="lg:hidden fixed inset-0 bg-black/50 z-10"
+            className="lg:hidden fixed inset-0 bg-black/50 z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -316,13 +316,13 @@ export default function SideNavbar({
   );
 }
 
-export const Divider = ({ theme }: { theme: 'light' | 'dark' }) => (
+export const Divider = ({ theme }: { theme: string }) => (
   <div className="py-2">
     <hr className={`${theme === 'light' ? 'text-gray-300' : 'text-neutral-700'}`} />
   </div>
 );
 
-const SideNavButton = ({
+export const SideNavButton = ({
   title,
   link,
   icon: Icon,
@@ -331,7 +331,7 @@ const SideNavButton = ({
   title: string;
   link?: string;
   icon: IconType;
-  theme: 'light' | 'dark';
+  theme: string;
 }) => {
   return (
     <Link href={link!}>

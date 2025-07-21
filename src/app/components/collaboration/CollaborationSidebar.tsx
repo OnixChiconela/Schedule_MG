@@ -1,9 +1,10 @@
 "use client";
 
-import { ArrowRight, Menu, X } from "lucide-react";
+import { Mail, MessageCircle, Notebook, Video, X } from "lucide-react";
 import { Partnership } from "./CollaborationCard";
 import { useTheme } from "@/app/themeContext";
 import { MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
+import { IconType } from "react-icons";
 
 interface CollaborationSidebarProps {
   isOpen: boolean;
@@ -11,6 +12,30 @@ interface CollaborationSidebarProps {
   isSmallScreen: boolean;
   onSectionSelect: (section: string) => void;
   partnership: Partnership;
+}
+
+interface SectionIconProps {
+  icon: IconType
+  label: string
+  onClick: () => void
+  theme: string
+}
+
+const SectionItem = ({icon: Icon, label, onClick, theme}: SectionIconProps) => {
+  return (
+    <li
+      className={`p-2 mb-2 rounded cursor-pointer draggable
+      ${theme === "light" ? "hover:bg-gray-200" : "hover:bg-slate-700"}`}
+      draggable
+      onDragStart={(e) => e.dataTransfer.setData("text/plain", label)}
+      onClick={onClick}
+    >
+      <div className="flex items-center gap-2">
+        <Icon size={20} />
+        {label}
+      </div>
+    </li>
+  )
 }
 
 export default function CollaborationSidebar({
@@ -21,7 +46,37 @@ export default function CollaborationSidebar({
   partnership,
 }: CollaborationSidebarProps) {
   const { theme } = useTheme();
-  const sections = ["Chat", "Notes", "Emails", "Video call", "Summary"];
+   const sections = [
+    { key: 'Chat', icon: MessageCircle, label: 'Chat' },
+    { key: 'Notes', icon: Notebook, label: 'Notes' },
+    { key: 'Emails', icon: Mail, label: 'Emails' },
+    { key: 'Video call', icon: Video, label: 'Video call' },
+    { key: 'Summary', icon: MessageCircle, label: 'Summary' },
+  ];
+
+  // const Input = ({
+  //   key,
+  //   icon: Icon,
+  //   label
+  // } : {
+  //   key: string, 
+  //   icon: IconType, 
+  //   label: string
+  // }) => {
+  //   return (
+  //     <div key={key} className="flex gap-1 ">
+  //       <Icon size={20} />
+  //       {label}
+  //     </div>
+  //   )
+  // }
+  // const sections = [
+  //   <Input key="Chat" icon={MessageCircle} label="Chats"/>,
+  //   <Input key="Notes" icon={Notebook} label="Notes"/>,
+  //   <Input key="Emails" icon={Mail} label="Emails"/>,
+  //   <Input key="Video calls" icon={HiOutlineVideoCamera} label="Video call"/>,
+  //   <Input key="Summary" icon={MessageCircle} label="Summary"/>,
+  // ];
 
   return (
     <>
@@ -33,29 +88,26 @@ export default function CollaborationSidebar({
         ${theme === "light" ? "bg-gray-100 ext-neutral-800" : "bg-slate-800 text-neutral-200"}`}
       >
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold">{partnership.name}</h2>
+          <h2 className="text-xl font-semibold">{partnership.name}</h2>
           <button
             onClick={() => setIsOpen(false)}
-            className={`p-1 rounded ${theme === "light" ? "hover:bg-gray-200" : "hover:bg-slate-700"}`}
+            className={`p-1 rounded-full ${theme === "light" ? "hover:bg-gray-200" : "hover:bg-slate-700"}`}
           >
             <X size={20} />
           </button>
         </div>
-        <ul className="p-4">
-          {sections.map((section) => (
-            <li
-              key={section}
-              className={`p-2 mb-2 rounded cursor-pointer draggable
-              ${theme === "light" ? "hover:bg-gray-200" : "hover:bg-slate-700"}`}
-              draggable
-              onDragStart={(e) => e.dataTransfer.setData("text/plain", section)}
+         <ul className="p-4">
+          {sections.map(({ key, icon, label }) => (
+            <SectionItem
+              key={key}
+              icon={icon}
+              label={label}
+              theme={theme}
               onClick={() => {
-                onSectionSelect(section);
+                onSectionSelect(label);
                 if (isSmallScreen) setIsOpen(false);
               }}
-            >
-              {section}
-            </li>
+            />
           ))}
         </ul>
       </div>
@@ -65,7 +117,7 @@ export default function CollaborationSidebar({
         <button
           onClick={() => setIsOpen(true)}
           className={`fixed top-14 left-4 z-50 p-2 rounded-full
-          ${theme === "light" ? "bg-gray-100 text-gray-800 hover:bg-gray-200" : "bg-slate-800 text-white hover:bg-slate-700"}`}
+          ${theme === "light" ? "bg-gray-100 text-gray-800 hover:bg-gray-200" : "bg-slate-700 text-white hover:bg-slate-700"}`}
         >
           <MdOutlineKeyboardDoubleArrowRight size={16} />
         </button>

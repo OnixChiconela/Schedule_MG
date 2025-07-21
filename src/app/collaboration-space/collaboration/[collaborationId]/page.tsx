@@ -207,6 +207,13 @@ export default function CollaborationPage() {
   if (isLoading) {
     return <div><Loader /></div>
   }
+
+  const fakePartnership = {
+    id: "123456789",
+    name: "thisPa",
+    ownerId: "123",
+    members: []
+  }
   if (!partnership) {
     return (
       <div className="">

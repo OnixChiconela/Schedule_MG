@@ -30,7 +30,7 @@ const MainNavbar = ({
       className={`fixed w-full z-50 shadow-md ${theme === "light" ? "bg-white" : "bg-slate-700"
         } transition-colors duration-300`}
     >
-      <Container>
+      {/* <Container> */}
 
         <div className="px-5">
           <div className="flex flex-row items-center justify-between py-4 mx-auto">
@@ -121,7 +121,7 @@ const MainNavbar = ({
             )}
           </div>
         </div>
-      </Container>
+      {/* </Container> */}
     </div>
   );
 };

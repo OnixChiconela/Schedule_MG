@@ -8,7 +8,10 @@ import { AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { MoonStar, Sun, X } from "lucide-react"
+import { DollarSign, MoonStar, Sun, X } from "lucide-react"
+import { Divider, SideNavButton } from "@/app/components/navbars/SideNavbar"
+import { MdPerson } from "react-icons/md"
+import { HiCash } from "react-icons/hi"
 
 const SettingsPage = () => {
     const { theme } = useTheme()
@@ -32,7 +35,7 @@ const SettingsPage = () => {
                         className={`min-h-screen flex ${theme === 'light' ? 'bg-white' : 'bg-slate-900'} transition-colors duration-300`}
                         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
                     >
-                        <SettingSidenav theme="theme" />
+                        <SettingSidenav theme={theme} />
                     </div>
                 </Container>
             </div>
@@ -100,7 +103,7 @@ const SettingSidenav: React.FC<sideNav> = ({
                 {(isOpen || isDesktop) && (
                     <motion.div
                         key="setting_sidenav"
-                        className={`fixed w-[260px] h-screen p-4 ${theme === "light" ? "bg-gray-100" : "bg-slate-950"
+                        className={`fixed w-[240px] h-screen p-4 ${theme === "light" ? "bg-gray-100" : "bg-slate-950"
                             } z-20 flex flex-col top-0 left-0`}
                         initial={{ x: (isDesktop && !isVisible) || (!isDesktop && !isOpen) ? -260 : 0 }}
                         animate={{ x: (isDesktop && !isVisible) || (!isDesktop && !isOpen) ? -260 : 0 }}
@@ -108,47 +111,52 @@ const SettingSidenav: React.FC<sideNav> = ({
                         transition={{ duration: 0.3 }}
                     >
                         <div className="flex flex-col w-full h-full">
-                            <Container>
-                                <div className="flex items-center justify-between mt-20 gap-10">
-                                    <h2 className={`text-2xl font-bold ${theme === "light" ? "text-gray-900" : "text-gray-100"}`}>
-                                        Jose
-                                    </h2>
-                                    <div className="flex items-center gap-2">
+                            {/* <Container> */}
+                            <div className="flex items-center justify-between mt-20 gap-10 pl-2 ">
+                                <h2 className={`text-2xl font-bold ${theme === "light" ? "text-gray-900" : "text-gray-100"}`}>
+                                    Settings
+                                </h2>
+                                <div className="flex items-center gap-2">
+                                    {!isDesktop && (
                                         <motion.button
-                                            // onClick={toggleTheme}
+                                            onClick={() => setIsOpen(false)}
+                                            className="lg:hidden p-2 rounded-lg bg-fuchsia-600 text-white shadow-md border 
+                                            border-fuchsia-700 hover:shadow-lg hover:shadow-fuchsia-500/50 hover:cursor-pointer"
+                                            variants={buttonVariants}
                                             whileHover="hover"
                                             whileTap="tap"
-                                            variants={buttonVariants}
-                                            className={`px-3 py-2 rounded-lg ${theme === "light"
-                                                ? "bg-gray-200 text-gray-900"
-                                                : "bg-slate-800 text-gray-200"
-                                                }`}
                                         >
-                                            {theme === "light" ? <Sun size={20} /> : <MoonStar size={20} />}
+                                            <X size={20} />
                                         </motion.button>
-                                        {!isDesktop && (
-                                            <motion.button
-                                                onClick={() => setIsOpen(false)}
-                                                className="lg:hidden p-2 rounded-lg bg-fuchsia-600 text-white shadow-md border border-fuchsia-700 hover:shadow-lg hover:shadow-fuchsia-500/50"
-                                                variants={buttonVariants}
-                                                whileHover="hover"
-                                                whileTap="tap"
-                                            >
-                                                <X size={20} />
-                                            </motion.button>
-                                        )}
-                                    </div>
+                                    )}
                                 </div>
-                                <div>
-                                    
-                                </div>
-                            </Container>
+                            </div>
+                            <div className="mt-3">
+                                <Divider theme={theme} />
+                                <ul className="mt-3 flex flex-col gap-2">
+                                    <li>
+                                        <SideNavButton
+                                            title="Account"
+                                            link="/account"
+                                            icon={MdPerson}
+                                            theme={theme}
+                                        />
+                                    </li>
+                                    <li>
+                                        <SideNavButton
+                                            title="Billing"
+                                            link="/billing"
+                                            icon={DollarSign}
+                                            theme={theme}
+                                        />
+                                    </li>
+                                </ul>
+                            </div>
+                            {/* </Container> */}
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence >
         </>
-
-
     )
 }

@@ -42,7 +42,7 @@ const EmptyState: React.FC<EmptyState> = ({
                     {reload && (
                         <div className={`flex justify-center border py-1 rounded-md transition-all cursor-pointer ${theme == "light"
                             ? "border-neutral-800 text-neutral-800" : "border-neutral-200 text-neutral-200"} hover:-translate-y-0.5`}
-                            onClick={() => router.refresh()}
+                            onClick={() => window.location.reload()}
                         >
                             Reload
                         </div>

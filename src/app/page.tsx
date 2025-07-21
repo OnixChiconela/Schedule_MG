@@ -551,7 +551,7 @@ export default function LandingPage() {
                     <p className={`${theme == "light" ? "text-gray-700" : "text-neutral-300"}`}>
                       {`"The AI modal is a game changer. Me and my partner see the suggestions, the other person doesn't. It's like we're sharing the same brain. Can't wait to use this more!"`}
                     </p>
-                    <div className='flex items-center gap-2 mt-4'>
+                    <div className='flex items-center gap-2 mt-16'>
                       <div>
                         <Avatar visualType='initial' visualValue='' name='Jessica' />
                       </div>
@@ -645,7 +645,6 @@ export default function LandingPage() {
 
         {/* Footer */}
         <LandingFooter />
-
         <FloatingWaitingButton />
       </div>
     </ClientOnly>

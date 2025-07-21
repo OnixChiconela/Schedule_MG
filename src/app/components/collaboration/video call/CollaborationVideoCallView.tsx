@@ -2,7 +2,7 @@
 
 import { useUser } from '@/app/context/UserContext';
 import { useTheme } from '@/app/themeContext';
-import { Mic, MicOff, PhoneOff, Video, VideoOff } from 'lucide-react';
+import { Mic, MicOff, PhoneOff, Plus, Video, VideoOff } from 'lucide-react';
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import Peer from 'simple-peer';
 import CreateCallModal from './modals/CreateCallModal';
@@ -33,9 +33,9 @@ interface PeerConnection {
     peer: Peer.Instance;
     userId: string;
     stream: MediaStream | null;
-    name?: string; // Nome completo do usuário (firstName + lastName)
-    visualType?: 'emoji' | 'initial'; // Tipo de avatar
-    visualValue?: string; // Valor do avatar (emoji ou cor)
+    name?: string;
+    visualType?: 'emoji' | 'initial';
+    visualValue?: string; // Valor do 
     videoEnabled?: boolean;
 }
 
@@ -464,7 +464,7 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                 return prev.filter((p) => p.userId !== leftUserId);
             });
             pendingPeers.current.delete(leftUserId);
-            setConnectionStatus(peers.length > 0 ? 'connected' : 'waiting');
+            setConnectionStatus(peers.length > 1 ? 'connected' : 'waiting');
         };
 
         const handleCallCreated = ({ callId: newCallId, title, partnershipId: pid, createdById }: { callId: string; title: string; partnershipId: string; createdById: string }) => {
@@ -484,6 +484,7 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
             );
         };
 
+
         const handleCallEnded = ({ callId: endedCallId }: { callId: string }) => {
             console.log(`[Socket] Received call-ended: callId=${endedCallId}, userId=${userId}`);
             if (endedCallId === callId) {
@@ -492,8 +493,13 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                 setPeers([]);
                 stopMediaStream(localStream);
                 isMediaSetup.current = false;
+                isCreatorRef.current = false;
+                pendingPeers.current.clear();
+                lastSignalTimes.current.clear();
                 setConnectionStatus('disconnected');
                 toast.success('Call ended');
+            } else {
+                console.warn(`[Socket] Ignored call-ended for non-active callId=${endedCallId}, current callId=${callId}`);
             }
         };
 
@@ -582,20 +588,40 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
         }
     };
 
+    // const endCall = () => {
+    //     if (callId && videoSocket) {
+    //         console.log(`[Call] Ending call: callId=${callId}, userId=${userId}`);
+    //         videoSocket.emit('leave-room', { callId });
+    //         peers.forEach((p) => p.peer.destroy());
+    //         setPeers([]);
+    //         stopMediaStream(localStream);
+    //         isMediaSetup.current = false;
+    //         setCallId(null);
+    //         isCreatorRef.current = false; // Reset creator status
+    //         setConnectionStatus('disconnected');
+    //         toast.success('Call ended');
+    //     }
+    // };
     const endCall = () => {
         if (callId && videoSocket) {
-            console.log(`[Call] Ending call: callId=${callId}, userId=${userId}`);
-            videoSocket.emit('end-room', { callId });
+            if (peers.length > 0) {
+                console.log(`[Call] Leaving: callId=${callId}, userId=${userId}`);
+                videoSocket.emit('leave-room', { callId });
+            } else {
+                videoSocket.emit('end-room', { callId });
+            }
             peers.forEach((p) => p.peer.destroy());
             setPeers([]);
-            stopMediaStream(localStream);
-            isMediaSetup.current = false;
-            setCallId(null);
-            isCreatorRef.current = false; // Reset creator status
-            setConnectionStatus('disconnected');
-            toast.success('Call ended');
+            stopMediaStream(localStream)
+            isMediaSetup.current = false
+            setCallId(null)
+            isCreatorRef.current = false
+            pendingPeers.current.clear()
+            lastSignalTimes.current.clear()
+            setConnectionStatus('disconnected')
+            toast.success('Call ended')
         }
-    };
+    }
 
     const createCall = (title: string) => {
         if (videoSocket && !callId) {
@@ -902,36 +928,37 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                 <div className="text-red-500 p-4 text-center">{mediaError}</div>
             )}
             {!callId ? (
-                <div className="flex flex-col items-center justify-center h-full">
-                    <p className="text-gray-400 mb-4">No active call</p>
-                    <button
-                        onClick={() => setShowCreateCallModal(true)}
-                        className={`px-4 py-2 rounded-lg ${theme === "light"
-                            ? "bg-fuchsia-500 hover:bg-fuchsia-600 text-white"
-                            : "bg-fuchsia-600 hover:bg-fuchsia-700 text-white"
-                            }`}
-                    >
-                        Start Call
-                    </button>
+                <div>
+                    <div className="flex items-center h-full justify-end gap-2">
+                        <p className="text-gray-400 hidden md:flex">No active call</p>
+                        <button
+                            onClick={() => setShowCreateCallModal(true)}
+                            className={`px-2 py-2 rounded-full items-center ${theme === "light"
+                                ? "bg-fuchsia-500 hover:bg-fuchsia-600 text-white"
+                                : "bg-fuchsia-600 hover:bg-fuchsia-700 text-white"
+                                }`}
+                        >
+                            <Plus size={16} />
+                        </button>
+                    </div>
                 </div>
             ) : (
-                <div className="h-full">
-                    <div className="mb-4 text-center">
-                        <p
-                            className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}
-                        >
-                            {connectionStatus === "connected" && participantCount > 1
-                                ? `Connected: ${participantCount} participants`
-                                : connectionStatus === "connecting"
-                                    ? "Connecting to call..."
-                                    : connectionStatus === "error"
-                                        ? "Connection error. Please try again."
-                                        : "Waiting for others to join..."}
-                        </p>
+                <div className="h-full relative">
+                    {/*Floating connection status */}
+                    <div
+                        className={`absolute top-4 left-4 z-10 px-3 rounded-lg text-sm ${theme == "light"
+                            ? "bg-black/70 text-white" : "bg-neutral-300/70 text-neutral-800"}`}>
+                        {connectionStatus === 'connected' && participantCount > 1
+                            ? `Connected: ${participantCount} participants`
+                            : connectionStatus === 'connecting'
+                                ? 'Connecting to call...'
+                                : connectionStatus === 'error'
+                                    ? 'Connection error. Please try again.'
+                                    : 'Waiting for others to join...'}
                     </div>
-                    <div className={`grid ${gridClass} gap-4 h-[calc(100%-2rem)]`}>
+                    <div className={`grid ${gridClass} gap-2 h-full`}>{/*h-[calc(100%-2rem)] */}
                         {localStream && (
-                            <div className="relative h-full">
+                            <div className="relative h-full max-h-[calc(100%-4rem)]">
                                 {videoEnabled ? (
                                     <video
                                         ref={localVideoRef}
@@ -948,58 +975,36 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
 
 
                                 ) : (
-                                    <div className="w-full h-full bg-gray-800 flex flex-col items-center justify-center text-gray-400 rounded-lg">
+                                    <div className={`w-full h-full flex flex-col items-center justify-center  rounded-lg ${theme == "light"
+                                        ? "bg-gray-200 text-neutral-800" : "bg-gray-800 text-gray-400"
+                                        }`}
+                                    >
                                         <Avatar
                                             name={`${currentUser.firstName} ${currentUser.lastName}`}
                                             visualType={currentUser.visualType}
                                             visualValue={currentUser.visualValue}
                                             size="large"
                                         />
-                                        <p className="mt-2 text-sm text-white">
+                                        <p className="mt-2 text-sm">
                                             {`${currentUser.firstName} ${currentUser.lastName}`}
                                         </p>
                                     </div>
                                 )}
-                                <div className="absolute bottom-4 left-4 flex gap-2">
-                                    <button
-                                        onClick={toggleMic}
-                                        disabled={!localStream}
-                                        className={`p-2 rounded-full ${!localStream ? "opacity-50 cursor-not-allowed" : ""} ${theme === "light"
-                                            ? "bg-gray-200 text-gray-800"
-                                            : "bg-gray-700 text-gray-200"
-                                            }`}
-                                    >
-                                        {micEnabled ? <Mic size={20} /> : <MicOff size={20} />}
-                                    </button>
-                                    <button
-                                        onClick={toggleVideo}
-                                        disabled={!localStream}
-                                        className={`p-2 rounded-full ${!localStream ? "opacity-50 cursor-not-allowed" : ""} ${theme === "light"
-                                            ? "bg-gray-200 text-gray-800"
-                                            : "bg-gray-700 text-gray-200"
-                                            }`}
-                                    >
-                                        {videoEnabled ? <Video size={20} /> : <VideoOff size={20} />}
-                                    </button>
-                                    <button
-                                        onClick={endCall}
-                                        className="p-2 rounded-full bg-red-600 hover:bg-red-700 text-white"
-                                    >
-                                        <PhoneOff size={20} />
-                                    </button>
-                                </div>
                                 <p className="absolute top-2 left-2 text-white bg-black bg-opacity-50 px-2 py-1 rounded">
                                     You
                                 </p>
                             </div>
                         )}
+
                         {peers.map((peer) => (
                             <div key={peer.userId} className="relative h-full">
                                 {peer.videoEnabled !== false && peer.stream ? (
                                     <PeerVideo stream={peer.stream} userId={peer.userId} />
                                 ) : (
-                                    <div className="w-full h-full bg-gray-800 flex flex-col items-center justify-center text-gray-400 rounded-lg">
-                                        <Avatar
+                                    <div className={`w-full h-full flex flex-col items-center justify-center  rounded-lg ${theme == "light"
+                                        ? "bg-gray-200 text-neutral-800" : "bg-gray-800 text-gray-400"
+                                        }`}
+                                    >                                        <Avatar
                                             name={peer.name || "Unknown User"}
                                             visualType={peer.visualType || "initial"}
                                             visualValue={peer.visualValue || "#4B5EFC"}
@@ -1012,6 +1017,35 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                                 )}
                             </div>
                         ))}
+                    </div>
+                    {/*Wxpwrimwntal */}
+                    <div className={`absolute bottom-4 left-4 flex p-2 rounded-4xl gap-2 w-full ${theme == "light" ? "bg-neutral-100" : "bg-slate-700"}`}>
+                        <button
+                            onClick={toggleMic}
+                            disabled={!localStream}
+                            className={`p-2 rounded-full ${!localStream ? "opacity-50 cursor-not-allowed" : ""} ${theme === "light"
+                                ? "bg-gray-200 text-gray-800"
+                                : "bg-gray-700 text-gray-200"
+                                }`}
+                        >
+                            {micEnabled ? <Mic size={20} /> : <MicOff size={20} />}
+                        </button>
+                        <button
+                            onClick={toggleVideo}
+                            disabled={!localStream}
+                            className={`p-2 rounded-full ${!localStream ? "opacity-50 cursor-not-allowed" : ""} ${theme === "light"
+                                ? "bg-gray-200 text-gray-800"
+                                : "bg-gray-700 text-gray-200"
+                                }`}
+                        >
+                            {videoEnabled ? <Video size={20} /> : <VideoOff size={20} />}
+                        </button>
+                        <button
+                            onClick={endCall}
+                            className="p-2 rounded-full bg-red-600 hover:bg-red-700 text-white"
+                        >
+                            <PhoneOff size={20} />
+                        </button>
                     </div>
                 </div>
             )}

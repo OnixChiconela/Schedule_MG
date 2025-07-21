@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 interface CreateCallModalProps {
   isOpen: boolean;
@@ -15,9 +16,17 @@ export default function CreateCallModal({ isOpen, onClose, onCreate, theme }: Cr
   const [callTitle, setCallTitle] = useState("");
 
   const handleCreate = () => {
-    if (callTitle.trim()) {
-      onCreate(callTitle);
-      setCallTitle("");
+    const toastId = toast.loading("Starting call...")
+    try {
+      if (callTitle.trim()) {
+        onCreate(callTitle);
+        setCallTitle("");
+      }
+    } catch (error) {
+      toast.error("Failed to create call");
+    } finally {
+      onClose();
+      toast.dismiss(toastId);
     }
   };
 
