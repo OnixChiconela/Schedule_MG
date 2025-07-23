@@ -404,13 +404,19 @@ export default function LandingPage() {
                   <div className="flex flex-col md:flex-row gap-8 md:gap-12">
                     {/* Text Section */}
                     <div className="w-full md:flex-[0.35]">
-                      <h4 className={`text-2xl font-semibold mb-4 ${theme === "light" ? "text-neutral-700" : "text-neutral-300"}`}>
-                        {`Scheuor Extension `}<span>{`(soon)`}</span>
-                      </h4>
+                      <div className="flex gap-2 items-center mb-4 ">
+                        <h4 className={`text-2xl font-semibold ${theme === "light" ? "text-neutral-700" : "text-neutral-300"}`}>
+                          {`Scheuor Extension `}<span>{`(soon)`}</span>
+                        </h4>
+                      </div>
                       <p className={`text-base leading-relaxed ${theme === "light" ? "text-gray-800" : "text-gray-300"}`}>
                         {`Whether you're in a meeting, writing a message, or reviewing something important, Scheuor with you permission, quietly undarstands,
                          and helps you, right when it matters.`}
                       </p>
+                      <div className={`text-sm p-1 mt-2 rounded-full flex items-center gap-1 ${theme === "light" ? "bg-neutral-200/50 text-[#ff6200]" : "bg-slate-700 text-orange-200"}`}>
+                        <div className="h-2 w-2 rounded-full bg-[#ff6200]"/>
+                          In progress
+                        </div>
                     </div>
 
                     {/* Image Section */}

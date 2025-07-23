@@ -853,7 +853,7 @@ const CollabMembersModal: React.FC<CollabMembersModalProps> = ({ partnership, on
                             : "border-neutral-300 text-neutral-200 hover:border-neutral-200"
                             }`}
                         >
-                          Invite by Email
+                          create a link
                         </button>
                       </div>
                     )}

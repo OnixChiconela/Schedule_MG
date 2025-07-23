@@ -11,16 +11,6 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from 'remark-gfm';
 
 
-interface AICallContent {
-  id: string;
-  callId: string;
-  userId: string;
-  prompt: string;
-  response?: string;
-  isShared: boolean;
-  createdAt: string;
-}
-
 interface ExpandedAICallModalProps {
   theme: string;
   prompt: string;
@@ -52,7 +42,7 @@ interface AICallContent {
   id: string;
   callId: string;
   userId: string;
-  prompt: string;
+  prompt?: string;
   response?: string;
   transcription?: string
   isShared: boolean;
@@ -704,14 +694,14 @@ function ExpandedAICallModal({
               e.stopPropagation();
               onSubmit(prompt, audioBlob, transcription ?? undefined);
             }}
-            disabled={!prompt.trim()}
-            className={`px-4 py-2 rounded-lg font-medium ${!prompt.trim()
-              ? 'opacity-50 cursor-not-allowed'
-              : theme === 'light'
-                ? 'bg-neutral-800 hover:bg-neutral-900 text-white'
-                : 'bg-neutral-950 hover:bg-black text-white'
+            disabled={isGenerating || (!prompt.trim() && !audioBlob)}
+            className={`px-4 py-2 rounded-lg font-medium ${isGenerating || (!prompt.trim() && !audioBlob)
+                ? 'opacity-50 cursor-not-allowed'
+                : theme === 'light'
+                  ? 'bg-neutral-800 hover:bg-neutral-900 text-white'
+                  : 'bg-neutral-950 hover:bg-black text-white'
               }`}
-            aria-label="Send prompt to AI"
+            aria-label="Send prompt or audio to AI"
           >
             <Send size={12} />
           </button>

@@ -941,6 +941,11 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                             <Plus size={16} />
                         </button>
                     </div>
+                    <div className='mt-6'>
+                        <p className={`text-xl font-bold ${theme == "light" ? "text-neutral-800" : "text-neutral-200"}`}>
+                            Calls
+                        </p>
+                    </div>
                 </div>
             ) : (
                 <div className="h-full relative">
@@ -990,9 +995,9 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                                         </p>
                                     </div>
                                 )}
-                                <p className="absolute top-2 left-2 text-white bg-black bg-opacity-50 px-2 py-1 rounded">
+                                {/* <p className="absolute top-2 left-2 text-white bg-black bg-opacity-50 px-2 py-1 rounded">
                                     You
-                                </p>
+                                </p> */}
                             </div>
                         )}
 
@@ -1004,13 +1009,14 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                                     <div className={`w-full h-full flex flex-col items-center justify-center  rounded-lg ${theme == "light"
                                         ? "bg-gray-200 text-neutral-800" : "bg-gray-800 text-gray-400"
                                         }`}
-                                    >                                        <Avatar
+                                    >   
+                                    <Avatar
                                             name={peer.name || "Unknown User"}
                                             visualType={peer.visualType || "initial"}
                                             visualValue={peer.visualValue || "#4B5EFC"}
                                             size="large"
                                         />
-                                        <p className="mt-2 text-sm text-white">
+                                        <p className="mt-2 text-sm">
                                             {peer.name || `User Unknown`}
                                         </p>
                                     </div>

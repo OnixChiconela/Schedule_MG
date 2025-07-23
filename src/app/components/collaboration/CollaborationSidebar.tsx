@@ -85,7 +85,7 @@ export default function CollaborationSidebar({
         className={`fixed top-16 left-0 h-full z-40 transition-transform duration-300 ease-in-out
         ${isOpen ? "translate-x-0" : "-translate-x-full"} 
         ${isSmallScreen ? "w-64" : "w-48"}
-        ${theme === "light" ? "bg-gray-100 ext-neutral-800" : "bg-slate-800 text-neutral-200"}`}
+        ${theme === "light" ? "bg-gray-100 text-neutral-800" : "bg-slate-800 text-neutral-200"}`}
       >
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold">{partnership.name}</h2>
