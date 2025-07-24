@@ -839,42 +839,7 @@ const CollabMembersModal: React.FC<CollabMembersModalProps> = ({ partnership, on
                         ))}
                       </div>
                     )}
-                    {!isEmailInviteMode && inviteSearchQuery && suggestions.length === 0 && (
-                      <div className="absolute right-0 mt-[3.2px]">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsEmailInviteMode(true);
-                            setInviteEmail(inviteSearchQuery);
-                            setInviteSearchQuery("");
-                          }}
-                          className={`w-full px-3 py-1 bg-transparent border rounded-lg ${theme === "light"
-                            ? "border-neutral-600 text-neutral-800 hover:border-neutral-700"
-                            : "border-neutral-300 text-neutral-200 hover:border-neutral-200"
-                            }`}
-                        >
-                          create a link
-                        </button>
-                      </div>
-                    )}
-                    {isEmailInviteMode && (
-                      <div className="absolute right-0 mt-[3.2px]">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsEmailInviteMode(false);
-                            setInviteSearchQuery(inviteEmail);
-                            setInviteEmail("");
-                          }}
-                          className={`w-full px-3 py-1 bg-transparent border rounded-lg ${theme === "light"
-                            ? "border-neutral-600 text-neutral-800 hover:border-neutral-700"
-                            : "border-neutral-300 text-neutral-200 hover:border-neutral-200"
-                            }`}
-                        >
-                          Back to Search
-                        </button>
-                      </div>
-                    )}
+
                   </div>
                 </div>
                 <div className="mb-4">
@@ -894,6 +859,44 @@ const CollabMembersModal: React.FC<CollabMembersModalProps> = ({ partnership, on
                     <option value="ADMIN">Admin</option>
                     <option value="GUEST">Guest</option>
                   </select>
+                </div>
+                <div className="flex">
+                  {!isEmailInviteMode && inviteSearchQuery && suggestions.length === 0 && (
+                    <div className=" right-0 mt-[3.2px]">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEmailInviteMode(true);
+                          setInviteEmail(inviteSearchQuery);
+                          setInviteSearchQuery("");
+                        }}
+                        className={`w-full px-3 py-1 bg-transparent rounded-lg ${theme === "light"
+                          ? "border-neutral-600 text-neutral-800 hover:border-neutral-700"
+                          : "border-neutral-300 text-neutral-200 hover:border-neutral-200"
+                          }`}
+                      >
+                        <span>user isn't on Scheuor? </span><span className={`underline hover:cursor-pointer ${theme == "light" ? "" : ""}`}>create a link</span>
+                      </button>
+                    </div>
+                  )}
+                  {isEmailInviteMode && (
+                    <div className=" right-0 mt-[3.2px]">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEmailInviteMode(false);
+                          setInviteSearchQuery(inviteEmail);
+                          setInviteEmail("");
+                        }}
+                        className={`w-full px-3 py-1 bg-transparent rounded-lg ${theme === "light"
+                          ? "border-neutral-600 text-neutral-800 hover:border-neutral-700"
+                          : "border-neutral-300 text-neutral-200 hover:border-neutral-200"
+                          }`}
+                      >
+                      <span className={`underline hover:cursor-pointer ${theme == "light" ? "" : ""}`}>Back to search</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="flex justify-end gap-2">
                   <button

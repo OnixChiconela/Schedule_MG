@@ -26,32 +26,31 @@ export default function CollaborationSpace() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const { currentUser } = useUser();
 
-    useEffect(() => {
-        if (!currentUser) {
+    const fetchPartnerships = async () => {
+         if (!currentUser) {
             setLoading(false)
             toast.error("Oops, seems like you're not logged in!")
             return
         }
+        try {
+            setLoading(true);
+            const response = await getUserCollabSpace(currentUser.id);
+            // Garantir que members seja um array válido
+            const normalizedPartnerships = response.map((p: any) => ({
+                ...p,
+                members: Array.isArray(p.members) ? p.members : [],
+            }));
+            setPartnerships(normalizedPartnerships);
+        } catch (error) {
+            console.error("Error fetching partnerships:", error);
+            setError("Failed to load partnerships. Try again.");
+            toast.error("Failed to load partnerships. Try again");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        const fetchPartnerships = async () => {
-            try {
-                setLoading(true);
-                const response = await getUserCollabSpace(currentUser.id);
-                // Garantir que members seja um array válido
-                const normalizedPartnerships = response.map((p: any) => ({
-                    ...p,
-                    members: Array.isArray(p.members) ? p.members : [],
-                }));
-                setPartnerships(normalizedPartnerships);
-            } catch (error) {
-                console.error("Error fetching partnerships:", error);
-                setError("Failed to load partnerships. Try again.");
-                toast.error("Failed to load partnerships. Try again");
-            } finally {
-                setLoading(false);
-            }
-        };
-
+    useEffect(() => {
         fetchPartnerships();
     }, [currentUser, router]);
 
@@ -79,8 +78,8 @@ export default function CollaborationSpace() {
         tap: { scale: 0.95 }
     }
 
-    const handleCreateSucess = (newPartnership: Partnership) => {
-        setPartnerships([...partnerships, newPartnership])
+    const handleCreateSucess = async (newPartnership: Partnership) => {
+        await fetchPartnerships();
         setIsCreateModalOpen(false);
         toast.success("Partnership created successfully!")
     }

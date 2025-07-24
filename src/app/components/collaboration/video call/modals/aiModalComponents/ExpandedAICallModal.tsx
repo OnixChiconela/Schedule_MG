@@ -10,7 +10,6 @@ import { useUser } from '@/app/context/UserContext';
 import ReactMarkdown from "react-markdown"
 import remarkGfm from 'remark-gfm';
 
-
 interface ExpandedAICallModalProps {
   theme: string;
   prompt: string;

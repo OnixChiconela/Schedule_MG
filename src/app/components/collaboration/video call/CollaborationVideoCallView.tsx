@@ -250,12 +250,16 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                 iceServers: [
                     { urls: 'stun:stun.l.google.com:19302' },
                     { urls: 'stun:stun1.l.google.com:19302' },
-                    // Replace with real TURN server
-                    // {
-                    //     urls: 'turn:your-turn-server.com:3478',
-                    //     username: 'your-username',
-                    //     credential: 'your-password'
-                    // }
+                    {
+                        urls: 'turn:global.relay.twilio.com:3478?transport=udp',
+                        username: process.env.NEXT_PUBLIC_TW_USERNAME,
+                        credential: process.env.NEXT_PUBLIC_TW_PASS
+                    },
+                    {
+                        urls: 'turn:global.relay.twilio.com:3478?transport=tcp',
+                        username: process.env.NEXT_PUBLIC_TW_USERNAME,
+                        credential: process.env.NEXT_PUBLIC_TW_PASS
+                    }
                 ],
             },
         });
@@ -801,37 +805,37 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
         }
 
         try {
-            if (audioBlob && audioBlob.size > 0) {
-                // Construir contexto para prompts com áudio
-                const context = history
-                    ? history.map((item) => `Prompt: ${item.prompt}\nResponse: ${item.response || 'None'}`).join('\n\n')
-                    : '';
-                const fullPrompt = context ? `${context}\n\nPrompt: ${prompt}` : prompt;
-                console.log(`[AICall] Submitting full prompt: ${fullPrompt}, audioBlob=${!!audioBlob}, transcription=${transcription}`);
+            // if (audioBlob && audioBlob.size > 0) {
+            //     // Construir contexto para prompts com áudio
+            //     const context = history
+            //         ? history.map((item) => `Prompt: ${item.prompt}\nResponse: ${item.response || 'None'}`).join('\n\n')
+            //         : '';
+            //     const fullPrompt = context ? `${context}\n\nPrompt: ${prompt}` : prompt;
+            //     console.log(`[AICall] Submitting full prompt: ${fullPrompt}, audioBlob=${!!audioBlob}, transcription=${transcription}`);
 
-                // Handle audio submission via HTTP
-                const res = await processAudioWithAI('generate', audioBlob, currentUser.id, {
-                    prompt: fullPrompt,
-                    transcription,
-                });
+            //     // Handle audio submission via HTTP
+            //     const res = await processAudioWithAI('generate', audioBlob, currentUser.id, {
+            //         prompt: fullPrompt,
+            //         transcription,
+            //     });
 
-                if (!res?.text) {
-                    throw new Error('No response received');
-                }
+            //     if (!res?.text) {
+            //         throw new Error('No response received');
+            //     }
 
-                // Forward AI response to gateway for storage and broadcasting
-                // await api.post('/video-call/forward-ai-response', {
-                //     callId,
-                //     userId: currentUser.id,
-                //     prompt,
-                //     response: res.text,
-                //     transcription,
-                //     isShared,
-                //     createdAt: new Date().toISOString(),
-                // });
+            //     // Forward AI response to gateway for storage and broadcasting
+            //     // await api.post('/video-call/forward-ai-response', {
+            //     //     callId,
+            //     //     userId: currentUser.id,
+            //     //     prompt,
+            //     //     response: res.text,
+            //     //     transcription,
+            //     //     isShared,
+            //     //     createdAt: new Date().toISOString(),
+            //     // });
 
-                return res.text;
-            }
+            //     return res.text;
+            // }
 
             // Para prompts de texto puro, delegar ao servidor via submit-ai-content
             return { prompt, transcription, history };
@@ -1009,8 +1013,8 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
                                     <div className={`w-full h-full flex flex-col items-center justify-center  rounded-lg ${theme == "light"
                                         ? "bg-gray-200 text-neutral-800" : "bg-gray-800 text-gray-400"
                                         }`}
-                                    >   
-                                    <Avatar
+                                    >
+                                        <Avatar
                                             name={peer.name || "Unknown User"}
                                             visualType={peer.visualType || "initial"}
                                             visualValue={peer.visualValue || "#4B5EFC"}

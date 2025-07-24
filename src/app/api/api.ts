@@ -2,12 +2,12 @@ import axios from "axios"
 import { clearStorage, getTokenFromStorage, isTokenExpired } from "./actions/auth/isTokenExpired"
 import { useRouter } from "next/navigation";
 
-const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_FIND_BACKEND || 'http://localhost:8050/api'
-})
 // const api = axios.create({
-//     baseURL: 'http://localhost:8050/api'
+//     baseURL: process.env.NEXT_PUBLIC_FIND_BACKEND || 'http://localhost:8050/api'
 // })
+const api = axios.create({
+    baseURL: 'http://localhost:8050/api'
+})
 
 // Controle para evitar múltiplas renovações simultâneas
 let isRefreshing = false;

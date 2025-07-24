@@ -1354,23 +1354,22 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
     setIsGenerating(true);
     try {
       console.log(`[AICall] Submitting: prompt=${prompt}, audioBlob=${!!audioBlob}, transcription=${transcription}`);
-       const result = await onSubmit(prompt, audioBlob, transcription, aiContentHistory);
-      console.log(`[AICall] Received result: type=${typeof result}, value=`, result);
-      toast.dismiss(toastId);
+      const result = await onSubmit(prompt, audioBlob, transcription, aiContentHistory);
+          console.log(`[AICall] Received result: type=${typeof result}, value=`, result);
+          toast.dismiss(toastId);
 
-      if (!result) {
-        toast.error('No response received from AI', {
-          duration: 3000,
-          style: {
-            background: theme === 'light' ? '#fff' : '#1e293b',
-            color: theme === 'light' ? '#1f2937' : '#f4f4f6',
-            border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
-          },
-        });
-        setIsGenerating(false);
-        return;
-      }
-      
+          if (!result) {
+            toast.error('No response received from AI', {
+              duration: 3000,
+              style: {
+                background: theme === 'light' ? '#fff' : '#1e293b',
+                color: theme === 'light' ? '#1f2937' : '#f4f4f6',
+                border: `1px solid ${theme === 'light' ? '#e5e7eb' : '#374151'}`,
+              },
+            });
+            setIsGenerating(false);
+            return;
+          }
       const tempId = `temp-${Date.now()}`
       const payload: {
         callId: string;
@@ -1398,6 +1397,8 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
         payload.audioBuffer = await audioBlob.arrayBuffer();
         payload.audioMimeType = audioBlob.type;
       }
+
+      toast.error(`Failed to process AI ${payload.prompt}`)
 
       if (videoSocket) {
         console.log(`[AICall] Emitting submit-ai-content: callId=${callId}, payload=`, payload);
@@ -1435,19 +1436,19 @@ export default function AICallModal({ isOpen, onClose, onSubmit, peerStream, loc
       }
 
       // Add to history with temporary ID
-     setAIContentHistory((prev) => [
-      ...prev,
-      {
-        id: tempId,
-        callId,
-        userId: currentUser.id,
-        prompt: prompt || undefined,
-        transcription: transcription || undefined,
-        response: '',
-        isShared,
-        createdAt: payload.createdAt,
-      },
-    ]);
+      setAIContentHistory((prev) => [
+        ...prev,
+        {
+          id: tempId,
+          callId,
+          userId: currentUser.id,
+          prompt: prompt || undefined,
+          transcription: transcription || undefined,
+          response: '',
+          isShared,
+          createdAt: payload.createdAt,
+        },
+      ]);
       setIsResponseStreaming(true);
     } catch (error: any) {
       console.error('[AICall] Failed to process submission:', error);
