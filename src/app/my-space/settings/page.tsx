@@ -12,30 +12,40 @@ import { DollarSign, MoonStar, Sun, X } from "lucide-react"
 import { Divider, SideNavButton } from "@/app/components/navbars/SideNavbar"
 import { MdPerson } from "react-icons/md"
 import { HiCash } from "react-icons/hi"
+import { useMediaQuery } from "react-responsive"
 
 const SettingsPage = () => {
     const { theme } = useTheme()
     const [localIsOpen, setLocalIsOpen] = useState(false)
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     // const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : localIsOpen;
+
+    const toggleSidebar = () => {
+        setIsSidebarOpen(!isSidebarOpen);
+    };
 
     return (
         <ClientOnly>
             <div className={`${theme == "light" ? "bg-white" : "bg-slate-900"} min-h-screen transition-colors duration-300`}>
-                <div className="z-30">
-                    <MainNavbar
-                        themeButton={true}
-                        showToggleSidebarButton={true}
-                        // isSidebarOpen={isSidebarOpen}
-                        // toggleSidebar={toggleSidebar}
-                        showNotificationBell={true}
-                    />
+                <div className="z-50">
                 </div>
+                <MainNavbar
+                    themeButton={true}
+                    showToggleSidebarButton={true}
+                    isSidebarOpen={isSidebarOpen}
+                    toggleSidebar={toggleSidebar}
+                    showNotificationBell={true}
+                />
                 <Container>
                     <div
                         className={`min-h-screen flex ${theme === 'light' ? 'bg-white' : 'bg-slate-900'} transition-colors duration-300`}
                         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
                     >
-                        <SettingSidenav theme={theme} />
+                        <SettingSidenav
+                            theme={theme}
+                            isOpen={isSidebarOpen}
+                            setIsOpen={setIsSidebarOpen}
+                        />
                     </div>
                 </Container>
             </div>

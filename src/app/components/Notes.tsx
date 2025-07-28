@@ -55,6 +55,7 @@ const Notes: React.FC<NotesProps> = ({ notes, updateEmoji, updateNote, removeNot
                                     setOpenDropdownId(null);
                                 }}
                                 emojis={emojiOptions}
+                                initials={false}
                                 // icons={[]}
                                 // images={[]}
                             />

@@ -58,6 +58,9 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
     const [partnershipDetails, setPartnershipDetails] = useState<PartnershipDetails | null>(null)
 
     const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+    const [iceServers, setIceServers] = useState<RTCIceServer[]>([
+        { urls: 'stun:stun.1.google.com:19302' }
+    ])
     const [peers, setPeers] = useState<PeerConnection[]>([]);
     const [callId, setCallId] = useState<string | null>(null);
     const [micEnabled, setMicEnabled] = useState(true);
@@ -246,22 +249,7 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
         const peer = new Peer({
             initiator,
             stream: localStream,
-            config: {
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' },
-                    {
-                        urls: 'turn:global.relay.twilio.com:3478?transport=udp',
-                        username: process.env.NEXT_PUBLIC_TW_USERNAME,
-                        credential: process.env.NEXT_PUBLIC_TW_PASS
-                    },
-                    {
-                        urls: 'turn:global.relay.twilio.com:3478?transport=tcp',
-                        username: process.env.NEXT_PUBLIC_TW_USERNAME,
-                        credential: process.env.NEXT_PUBLIC_TW_PASS
-                    }
-                ],
-            },
+            config: { iceServers },
         });
         let signalingState: string = initiator ? "stable" : "stable";
         peer.on('signal', (data) => {
@@ -339,6 +327,17 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
         return peer;
     }, [localStream, callId, videoSocket, userId]);
 
+    //credentials refresh iceS
+    useEffect(() => {
+        if (iceServers.some(server => server.urls.includes('turn:'))) {
+            const refreshInterval = setInterval(() => {
+                console.log('[VideoCallView] Refreshing TURN cred')
+                videoSocket?.emit('request-turn-credentials')
+            }, 45 * 60 * 1000)
+            return () => clearInterval(refreshInterval)
+        }
+    }, [iceServers, videoSocket])
+
     useEffect(() => {
         if (currentUser?.id) {
             setupMedia();
@@ -386,6 +385,8 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
         const handleConnect = () => {
             console.log(`[Socket] videoSocket connected: userId=${userId}, socketId=${videoSocket.id}`);
             videoSocket.emit('join', userId);
+            //Req TURN credentials on connect
+            videoSocket.emit('request-turn-credentials')
             if (callId) {
                 console.log(`[Socket] Re-joining call: callId=${callId}, userId=${userId}`);
                 videoSocket.emit('join-room', { callId });
@@ -394,6 +395,20 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
 
         function isValidVisualType(value: string): value is 'emoji' | 'initial' {
             return value === 'emoji' || value === 'initial';
+        }
+
+        const handleTurnCredentials = (iceServers: RTCIceServer[]) => {
+            console.log('[VideoCallView] Received TURN credentials:', iceServers)
+            setIceServers([
+                ...iceServers,
+                { urls: 'stun:stun.1.google.com:19302' }
+            ])
+        }
+
+        const handleTurnCredentialsError = ({ message }: { message: string }) => {
+            console.error(`[Socket] Failed to fetch Turn credentials`)
+            toast.error(`Failed to initailize video call`)
+            setConnectionStatus('Warning')
         }
 
         const handleUserJoined = ({
@@ -508,6 +523,8 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
         };
 
         videoSocket.on('connect', handleConnect);
+        videoSocket.on('turn-credentials', handleTurnCredentials);
+        videoSocket.on('turn-credentials-error', handleTurnCredentialsError);
         videoSocket.on('user-joined', handleUserJoined);
         videoSocket.on('signal', handleSignal);
         videoSocket.on('user-left', handleUserLeft);
@@ -529,8 +546,10 @@ export default function CollaborationVideoCallView({ partnershipId }: VideoCallV
         return () => {
             console.log(`[Socket] Cleanup listeners: userId=${userId}`);
             videoSocket.off('connect', handleConnect);
-            videoSocket.off('user-joined', handleUserJoined);
-            videoSocket.off('signal', handleSignal);
+            videoSocket.off('user-joined', handleUserJoined)
+            videoSocket.off('turn-credentials', handleTurnCredentials)
+            videoSocket.off('turn-credentials-error', handleTurnCredentialsError)
+            videoSocket.off('signal', handleSignal)
             videoSocket.off('user-left', handleUserLeft);
             videoSocket.off('call-created', handleCallCreated);
             videoSocket.off('call-ended', handleCallEnded);
