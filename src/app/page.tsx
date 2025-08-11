@@ -56,7 +56,7 @@ export default function LandingPage() {
                         py-24 rounded-3xl  ${theme == "light" ? "" : "bg-slate-950/50"} transition`}
                     >
                       <Container>
-                        <div className="flex flex-col ">
+                        <div className="flex flex-col items-center">
                           <h1 className={`text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-center  ${theme == "light" ? "text-gray-900" : "text-neutral-200"}`}>
                             {`Talk smarter with your team,`}
                             <br />
@@ -71,9 +71,7 @@ export default function LandingPage() {
                               {`not louder`}
                             </span>
                           </h1>
-                          {/* <p className={`text-lg sm:text-xl max-w-2xl mb-8 text-center ${theme == "light" ? "text-gray-600" : "text-neutral-400/90"}`}>
-                            {`Scheuor is your space for real-time, meaningful conversations, solo or in partnership. Let AI assist and enhace your interaction, every step or of the way.`}
-                          </p> */}
+
                           <p className={`text-lg sm:text-xl max-w-2xl mb-8 text-center ${theme == "light" ? "text-gray-600" : "text-neutral-400/90"}`}>
                             {`In Scheuor, your AI listens with you, not for you. Add your people, activate Telepathy Mode, and let the right insights reach the rigth minds, all in real time`}
                           </p>
