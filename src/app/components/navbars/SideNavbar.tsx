@@ -236,7 +236,6 @@ export default function SideNavbar({
                 </li>
               </ul>
               <Divider theme={theme} />
-              
                 <div>
                   <ul className='flex flex-col'>
                     <li>
