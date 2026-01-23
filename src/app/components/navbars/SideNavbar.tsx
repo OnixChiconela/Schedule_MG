@@ -251,13 +251,14 @@ export default function SideNavbar({
                 </div>
               
               <ul className="flex flex-col">
+              {/*
                 <li>
                   <SideNavButton
                     title="My space"
                     link="/tasks"
                     icon={MdPersonOutline}
                     theme={theme} />
-                </li>
+                </li>*/}
                 {/* <li>
                   <SideNavButton title="Tasks" link="/tasks" icon={PenBox} theme={theme} />
                 </li>
@@ -281,7 +282,7 @@ export default function SideNavbar({
                 <li>
                   <SideNavButton title="Roadmap" link="/tracking" icon={Car} theme={theme} />
                 </li> */}
-                <Divider theme={theme} />
+               {/* <Divider theme={theme} />
                 <li>
                   <div
                     className={`flex items-center gap-2 mb-2 ${theme == "light" ? "text-neutral-900" : "text-neutral-200"
@@ -296,7 +297,7 @@ export default function SideNavbar({
                     icon={Notebook}
                     theme={theme}
                   />
-                </li>
+                </li> */}
                 <Divider theme={theme} />
                 <li>
                   <SideNavButton
