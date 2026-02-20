@@ -48,7 +48,7 @@ script.asvnc = true
 document.body.appendChild(script)
 return () => {
 document.body.removeChild(script)
-7
+}
 }, [])
 
   return (
