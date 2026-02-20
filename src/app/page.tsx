@@ -42,7 +42,7 @@ export default function LandingPage() {
   useEffect (() => {
     const script = document.createElement ('script')
     script.src = "https://trustlin.vercel.app/embed.js"
-    script.setAttribute('data-id', '698b554fba15835a0afe0b85')
+    script.setAttribute('data-id', '69982d588d91fc29e9bda268')
     script.async = true
 
     document.body.appendChild(script)
