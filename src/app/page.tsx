@@ -40,16 +40,17 @@ export default function LandingPage() {
   }, [])
 
   useEffect (() => {
-const script = document.createElement ('script')
-script.src = "https://trustlin.vercel.app/embed.js"
-script.setAttribute('data-id',
-'698b554fba15835a0afe0b85')
-script.asvnc = true
-document.body.appendChild(script)
-return () => {
-document.body.removeChild(script)
-}
-}, [])
+    const script = document.createElement ('script')
+    script.src = "https://trustlin.vercel.app/embed.js"
+    script.setAttribute('data-id', '698b554fba15835a0afe0b85')
+    script.asvnc = true
+
+    document.body.appendChild(script)
+
+    return () => {
+      document.body.removeChild(script)
+    }
+  }, [])
 
   return (
     <ClientOnly>
