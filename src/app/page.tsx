@@ -43,7 +43,7 @@ export default function LandingPage() {
     const script = document.createElement ('script')
     script.src = "https://trustlin.vercel.app/embed.js"
     script.setAttribute('data-id', '698b554fba15835a0afe0b85')
-    script.asvnc = true
+    script.async = true
 
     document.body.appendChild(script)
 
