@@ -578,9 +578,6 @@ export default function LandingPage() {
                     </div>
                   </div>
                 </Card>
-                <div id="trustlin-container">
-                  <p className="text-gray-500">loading...</p> 
-                </div>
                 {/* <Card>
                   <div className="p-6">
                     <p className={`${theme == "light" ? "text-gray-700" : "text-neutral-300"}`}>
