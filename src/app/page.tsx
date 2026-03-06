@@ -39,7 +39,7 @@ export default function LandingPage() {
     awakeServer()
   }, [])
 
-  useEffect (() => {
+  {/*useEffect (() => {
     const script = document.createElement ('script')
     script.src = "https://trustlin.vercel.app/embed.js"
     script.setAttribute('data-id', '69982d588d91fc29e9bda268')
@@ -50,7 +50,7 @@ export default function LandingPage() {
     return () => {
       document.body.removeChild(script)
     }
-  }, [])
+  }, [])*/}
 
   return (
     <ClientOnly>
